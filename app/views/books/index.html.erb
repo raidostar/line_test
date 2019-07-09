@@ -1,0 +1,32 @@
+<div class="container js-booksIndex">
+  <input type="" name="">
+  <hr/>
+  <div class="row">
+    <p v-for="book in allBooks" :id="'row_book_'+book.id" @click="setBookInfo(book.id)">
+      {{ book.title }}
+    </p>
+  </div>
+  <hr/>
+  <div class="row" v-show="bookInfoBool">
+    <div class="col s12 m12">
+      <div class="card blue-grey darken-1">
+        <div class="card-content white-text">
+          <span class="card-title">
+            {{ bookInfo.title }}
+          </span>
+          <div class="detail">
+            {{ bookInfo.author }}
+          </div>
+          <div class="detail">
+            {{ bookInfo.publisher }}
+          </div>
+          <div class="detail">
+            {{ bookInfo.genre}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%= javascript_pack_tag 'hello_vue' %>
