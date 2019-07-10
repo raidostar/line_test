@@ -7,5 +7,5 @@ Rails.application.routes.draw do
     resources :books, only: [:index, :create, :update, :show, :destroy]
   end
 
-  post '/callback' => 'linebot#callback'
+  post 'linebot/callback'
 end
