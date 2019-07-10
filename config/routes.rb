@@ -6,4 +6,6 @@ Rails.application.routes.draw do
   namespace :api, format: 'json' do
     resources :books, only: [:index, :create, :update, :show, :destroy]
   end
+
+  post '/callback' => 'linebot#callback'
 end
