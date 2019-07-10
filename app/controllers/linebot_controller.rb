@@ -4,7 +4,7 @@ class LinebotController < ApplicationController
   protect_from_forgery :except => [:callback]
 
   def client
-    @client || = Line::Bot::CLient.new{ |config|
+    @client ||= Line::Bot::Client.new{ |config|
       config.channel_secret = ENV["LINE_CHANNEL_SECRET"]
       config.channel_token = ENV["LINE_CHANNEL_TOKEN"]
     }
@@ -18,17 +18,19 @@ class LinebotController < ApplicationController
       head :bad_request
     end
 
-    events = client.parse_event_from(body)
+    events = client.parse_events_from(body)
 
     events.each { |event|
       case event
-      when Line::Bot::Event::MessageType::Text
-        message = {
-          type: 'text',
-          text: event.message['text']
-        }
-        client.reply_message(event['replyToken'], message)
-      end
+      when Line::Bot::Event::Message
+        case event.type
+        when Line::Bot::Event::MessageType::Text
+          message = {
+            type: 'text',
+            text: event.message['text']
+          }
+          client.reply_message(event['replyToken'], message)
+        end
       end
     }
 
