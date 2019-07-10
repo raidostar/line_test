@@ -10,14 +10,20 @@ import Page5 from './pages/page5.vue'
 import Page6 from './pages/page6.vue'
 import Page7 from './pages/page7.vue'
 import Page8 from './pages/page8.vue'
+import Page9 from './pages/page9.vue'
 
 import axios from 'axios'
 import BootstrapVue from 'bootstrap-vue'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 
+axios.defaults.headers.common = {
+    'X-Requested-With': 'XMLHttpRequest',
+    'X-CSRF-TOKEN' : document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+};
+
 Vue.use(BootstrapVue)
-Vue.prototype.$http = axios
+Vue.prototype.$https = axios
 Vue.use(VueRouter)
 Vue.config.productionTip = false
 
@@ -29,7 +35,8 @@ const routes = [
   { path: '/page5', component: Page5 },
   { path: '/page6', component: Page6 },
   { path: '/page7', component: Page7 },
-  { path: '/page8', component: Page8 }
+  { path: '/page8', component: Page8 },
+  { path: '/page9', component: Page9 }
 ];
 
 const router = new VueRouter({ routes });

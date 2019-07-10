@@ -27,11 +27,20 @@ class Api::BooksController < ApplicationController
     end
   end
 
+  def destroy
+    @book = Book.find(params[:id])
+    if @book.destroy
+      render :show, status: :ok
+    else
+      render json: @book.errors, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def book_params
     params.fetch(:book, {}).permit(
-      :title, :author, :publisher, :genre
+      :id, :title
     )
   end
 end

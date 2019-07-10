@@ -4,6 +4,6 @@ Rails.application.routes.draw do
   resources :books
 
   namespace :api, format: 'json' do
-    resources :books, only: [:index, :create, :update, :show]
+    resources :books, only: [:index, :create, :update, :show, :destroy]
   end
 end

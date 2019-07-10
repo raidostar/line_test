@@ -13,6 +13,7 @@
         <li><router-link to="/page6">Page6</router-link></li>
         <li><router-link to="/page7">Page7</router-link></li>
         <li><router-link to="/page8">Page8</router-link></li>
+        <li><router-link to="/page9">Page9</router-link></li>
       </ul>
     </div>
     <div id="page">
@@ -38,30 +39,30 @@
 </script>
 
 <style>
-  #app {
-    font-family: 'Avenir', Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-align: center;
-    color: #2c3e50;
-    margin-top: 60px;
-  }
-  #page {
-    width: 85%;
-    float: right;
-  }
-  #sidebar {
-    width: 15%;
-    float: left;
-    height: 80%;
-  }
-  #topbar {
-    height: 20px;
-    padding: 0px;
-    background-color: #00B900;
-  }
-  ul {
-    list-style: none;
-    padding-left: 0px;
-  }
+#app {
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  margin-top: 60px;
+}
+#page {
+  width: 85%;
+  float: right;
+}
+#sidebar {
+  width: 15%;
+  float: left;
+  height: 80%;
+}
+#topbar {
+  height: 20px;
+  padding: 0px;
+  background-color: #00B900;
+}
+ul {
+  list-style: none;
+  padding-left: 0px;
+}
 </style>

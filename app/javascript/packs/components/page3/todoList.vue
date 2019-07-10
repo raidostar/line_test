@@ -32,20 +32,7 @@
     data () {
       return {
         newTodoText: '',
-        todos: [
-        {
-          id: nextTodoId++,
-          text: 'Learn Vue'
-        },
-        {
-          id: nextTodoId++,
-          text: 'Learn about single-file components'
-        },
-        {
-          id: nextTodoId++,
-          text: 'Fall in love'
-        }
-        ]
+        todos: []
       }
     },
     methods: {
