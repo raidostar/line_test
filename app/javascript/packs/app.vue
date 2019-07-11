@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div id="topbar">
-      <i class="fas fa-comments fa-2x text-gray-300"></i>
+      <h3>LINE_TEST</h3>
     </div>
     <div id="sidebar">
       <ul>
@@ -39,13 +39,16 @@
 </script>
 
 <style>
+h3{
+  padding-top: 20px;
+}
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  margin-top: 0px;
 }
 #page {
   width: 85%;
@@ -54,10 +57,10 @@
 #sidebar {
   width: 15%;
   float: left;
-  height: 80%;
+  height: 80px;
 }
 #topbar {
-  height: 20px;
+  height: 100px;
   padding: 0px;
   background-color: #00B900;
 }
