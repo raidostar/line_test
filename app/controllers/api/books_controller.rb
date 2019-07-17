@@ -15,7 +15,7 @@ class Api::BooksController < ApplicationController
 
   def show
     @book = Book.find(params[:id])
-    render :show
+    render :show, status: :ok
   end
 
   def update
@@ -40,7 +40,7 @@ class Api::BooksController < ApplicationController
 
   def book_params
     params.fetch(:book, {}).permit(
-      :id, :title
+      :id, :title, :author, :publisher, :genre
     )
   end
 end

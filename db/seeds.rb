@@ -14,3 +14,11 @@
     genre: Faker::Book.genre,
   )
 end
+
+10.times do
+  Person.create(
+    name: Faker::Name.last_name,
+    gender: Faker::Gender.binary_type,
+    age: Faker::Number.between(20, 45)
+  )
+end

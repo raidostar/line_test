@@ -11,11 +11,14 @@ import Page6 from './pages/page6.vue'
 import Page7 from './pages/page7.vue'
 import Page8 from './pages/page8.vue'
 import Page9 from './pages/page9.vue'
+import Page10 from './pages/page10.vue'
 
 import axios from 'axios'
 import BootstrapVue from 'bootstrap-vue'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
+import Chartkick from 'vue-chartkick'
+import Chart from 'chart.js'
 
 axios.defaults.headers.common = {
     'X-Requested-With': 'XMLHttpRequest',
@@ -26,6 +29,7 @@ Vue.use(BootstrapVue)
 Vue.prototype.$https = axios
 Vue.use(VueRouter)
 Vue.config.productionTip = false
+Vue.use(Chartkick.use(Chart))
 
 const routes = [
   { path: '/', component: Page1 },
@@ -36,7 +40,8 @@ const routes = [
   { path: '/page6', component: Page6 },
   { path: '/page7', component: Page7 },
   { path: '/page8', component: Page8 },
-  { path: '/page9', component: Page9 }
+  { path: '/page9', component: Page9 },
+  { path: '/page10', component: Page10 }
 ];
 
 const router = new VueRouter({ routes });

@@ -1,21 +1,25 @@
 <template>
   <div id="app">
-    <div id="topbar">
+    <nav id="topbar">
       <h3>LINE_TEST</h3>
-    </div>
-    <div id="sidebar">
-      <ul>
-        <li><router-link to="/">Page1</router-link></li>
-        <li><router-link to="/page2">Page2</router-link></li>
-        <li><router-link to="/page3">Page3</router-link></li>
-        <li><router-link to="/page4">Page4</router-link></li>
-        <li><router-link to="/page5">Page5</router-link></li>
-        <li><router-link to="/page6">Page6</router-link></li>
-        <li><router-link to="/page7">Page7</router-link></li>
-        <li><router-link to="/page8">Page8</router-link></li>
-        <li><router-link to="/page9">Page9</router-link></li>
-      </ul>
-    </div>
+      <a rel="nofollow" data-method="delete" href="/users/sign_out">LOG_OUT</a>
+    </nav>
+    <nav id="sidebar">
+      <div class="side left nav-wrapper container">
+        <ul class="hide-on-med-and-down">
+          <li><router-link to="/">Page1</router-link></li>
+          <li><router-link to="/page2">Page2</router-link></li>
+          <li><router-link to="/page3">Page3</router-link></li>
+          <li><router-link to="/page4">Page4</router-link></li>
+          <li><router-link to="/page5">Page5</router-link></li>
+          <li><router-link to="/page6">Page6</router-link></li>
+          <li><router-link to="/page7">Page7</router-link></li>
+          <li><router-link to="/page8">Page8</router-link></li>
+          <li><router-link to="/page9">Page9</router-link></li>
+          <li><router-link to="/page10">Page10</router-link></li>
+        </ul>
+      </div>
+    </nav>
     <div id="page">
       <router-view/>
     </div>
@@ -39,6 +43,9 @@
 </script>
 
 <style>
+li{
+  width: 100%;
+}
 h3{
   padding-top: 20px;
 }
@@ -57,7 +64,8 @@ h3{
 #sidebar {
   width: 15%;
   float: left;
-  height: 80px;
+  height: 80%;
+  background-color: #00C800;
 }
 #topbar {
   height: 100px;

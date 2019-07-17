@@ -1,0 +1,71 @@
+<h2 class="center">Sign up</h2>
+<div class="bigBox">
+<%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+  <%= render "devise/shared/error_messages", resource: resource %>
+
+  <div class="field input-field">
+    <%= f.label :group %>
+    <input autofocus="autofocus" type="text" name="user[group]" id="user_group">
+    <!--<%= f.text_field :group, autofocus: true %> -->
+  </div>
+
+  <div class="field input-field">
+    <%= f.label :email %>
+    <%= f.email_field :email, autocomplete: "email" %>
+  </div>
+
+  <div class="field input-field">
+    <%= f.label :password %>
+    <%= f.password_field :password, autocomplete: "new-password" %>
+  </div>
+
+  <div class="field input-field">
+    <%= f.label :password_confirmation %>
+    <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
+  </div>
+
+  <div class="actions">
+    <button class="button" type="submit" name="commit" data-disable-with="Sign up">登録する</button>
+  </div>
+<% end %>
+
+<a class="right" href="/users/sign_in">ログイン画面に戻る</a>
+</div>
+<script>
+  $(function(){
+    var sample = ''
+    sample += '<option value=\"Rakuten\"/>';
+    sample += '<option value=\"Softbank\"/>';
+    sample += '<option value=\"Google Japan\"/>';
+    sample += '<option value=\"Amazon Japan\"/>';
+
+    $("#group").html(sample)
+  })
+</script>
+
+<style>
+  .bigBox {
+    width: 60%;
+    margin: 0 auto;
+  }
+
+  .button {
+    width: 100%;
+    cursor: pointer;
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+    border-radius: 10px;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    letter-spacing: 5px;
+    text-align: center;
+  }
+
+  .button:hover {
+    background-color: #039be5; /* Green */
+    color: white;
+  }
+</style>

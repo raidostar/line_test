@@ -1,7 +1,11 @@
 <template>
   <div>
-    <input class="form-control" @keydown.enter="createBook" v-model="newBook" :placeholder="message" />
-    <button v-if="buttonToggle" @click="createBook">ADD</button><hr/>
+    <input class="control" @keydown.enter="createBook" v-model="newBook" :placeholder="message"/>
+    <button class="bookButton addButton" v-if="buttonToggle" @click="createBook">
+      <i class="material-icons">add_circle_outline</i>
+    </button><hr/>
+    <input class="control" @keydown.enter="searchBook" placeholder="search" v-model="search.title_cont"/>
+    <button class="bookButton" @click="searchBook"><i class="material-icons">search</i></button><hr/>
     <div v-for="book in allBooks">
       <bookList :key="book.id" :book="book" id="'title_of_book_'+book.id" @setBook="setBookInfo(book.id)"/>
       <button v-if="buttonToggle" @click="toggleButton(book.title)">修正</button>
@@ -12,88 +16,18 @@
     <bookShow class="row" v-show="bookInfoBool" v-model="bookInfo" :bookInfo="bookInfo"/>
   </div>
 </template>
-<script>
-  import bookShow from './bookShow.vue'
-  import bookList from './bookList.vue'
-  import axios from 'axios'
-
-  export default {
-    name: 'thisBook',
-    components: {
-      bookList,
-      bookShow
-    },
-    data: function(){
-      return {
-        allBooks: [],
-        bookInfo: {},
-        bookInfoBool: false,
-        newBook: '',
-        message: 'Add Your Book',
-        buttonToggle: true
-      }
-    },
-    mounted: function(){
-      this.fetchBooks();
-    },
-    methods: {
-      toggleButton(title){
-        this.buttonToggle = !this.buttonToggle
-        if (!this.buttonToggle){
-          this.message = title
-        } else {
-          this.newBook = ''
-          this.message = 'Add Your Book'
-        }
-      },
-      setBookInfo(id){
-        console.log(id)
-        axios.get("/api/books/"+id+".json")
-        .then(res => {
-          console.log(res.data.book)
-          this.bookInfo = res.data.book
-          this.bookInfoBool = true
-          console.log(this.bookInfo.publisher)
-        })
-      },
-      fetchBooks: function(){
-        axios.get('/api/books').then((res) => {
-          this.allBooks = res.data.books
-        }, (error) => {
-          console.log(error)
-        })
-      },
-      createBook: function(){
-        if(!this.newBook) return;
-
-        axios.post('/api/books', { book: { title: this.newBook } })
-        .then((res) => {
-          this.fetchBooks();
-          this.newBook = ''
-        }, (error) => {
-          console.log(error)
-        })
-      },
-      updateBook: function(id){
-        if(!this.newBook) return;
-
-        axios.put("/api/books/"+id+".json", { book: { title: this.newBook } }).
-        then(res => {
-          this.fetchBooks();
-          this.toggleButton();
-        }, (error) => {
-          console.log(error)
-        })
-      },
-      deleteBook: function(id){
-        axios.delete("/api/books/"+id+".json")
-        .then(res =>{
-          alert("delete success!");
-          this.fetchBooks();
-        }, (error) => {
-          console.log(error)
-        })
-      }
-    }
-  }
-</script>
+<script src="./book.js"></script>
+<style scoped>
+.control {
+  width: 60%;
+  margin: 0 auto;
+}
+.bookButton {
+  border-radius: 100%;
+  background-color: #fff;
+}
+.material-icons {
+  background-color: #00b900;
+  border-radius: 100%;
+}
+</style>

@@ -14,10 +14,10 @@
 <script>
   export default {
     name: 'global_footer',
-    props: {
-      msg: "ページ1",
-      total: 0,
-      incrementTotal: 0
+    data: function(){
+      return{
+        msg: "This is the test page 1"
+      }
     }
   }
 </script>

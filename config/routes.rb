@@ -1,7 +1,19 @@
 Rails.application.routes.draw do
+  #get 'people/index'
+  devise_for :users, contorllers: {
+    sessions: 'users/sessions'
+  }
   root 'home#index'
-  resources :books
+
   namespace :api, format: 'json' do
     resources :books, only: [:index, :create, :update, :show, :destroy]
   end
+
+  resources :books
+
+  namespace :api, format: 'json' do
+    resources :people, only: [:index]
+  end
+
+  resources :people
 end

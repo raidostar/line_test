@@ -1,0 +1,82 @@
+<h4 class="h4 text-gray-900 mb-4 center">FullouT LogIn</h4>
+<div class="row justify-content-center">
+  <div class="col-xl-10 col-lg-12 col-md-9">
+    <div class="card o-hidden border-0 shadow-lg my-5">
+      <div class="card-body p-0">
+        <div class="row ">
+          <div class="col-lg-6 d-none d-lg-block bg-login-image"></div>
+          <div class="col-lg-6">
+            <div class="p-5">
+              <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+                <div class="field">
+                  <%= f.label :email %><br />
+                  <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
+                </div>
+                <div class="field">
+                  <%= f.label :password %><br />
+                  <%= f.password_field :password, autocomplete: "current-password" %>
+                </div>
+                <div class="actions">
+                  <button class="button" type="submit" name="commit" data-disable-with="Log in">ログイン</button>
+                </div>
+              <% end %>
+              <div class="text-center">
+                <a class="small" href="/users/password/new">パスワードを忘れました</a>
+              </div>
+              <div class="text-center">
+                <a class="small" href="/users/sign_up">会員登録</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<style>
+  .justify-content-center {
+    width: 50%;
+    margin: 0 auto;
+    height: 40em;
+    padding-top: 5%;
+  }
+  .row {
+    height: 30em;
+  }
+  .text-center{
+    text-align: left;
+    padding-left: 10%;
+  }
+  .new_user {
+    width: 80%;
+    margin: 0 auto;
+    padding-bottom: 10%;
+    padding-top: 8%;
+  }
+  html {
+    background-color: #4e73df;
+    height: 100%;
+  }
+  .button {
+    width: 100%;
+    cursor: pointer;
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+    border-radius: 10px;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    letter-spacing: 5px;
+    text-align: center;
+  }
+
+  .button:hover {
+    background-color: #039be5; /* Green */
+    color: white;
+  }
+  .small:hover {
+    color: blue;
+  }
+</style>

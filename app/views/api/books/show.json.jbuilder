@@ -1,3 +1,3 @@
 json.set! :book do
-  json.extract! @book, :id, :title, :author, :publisher, :genre
+  json.extract! @book, :title, :author, :publisher, :genre
 end
