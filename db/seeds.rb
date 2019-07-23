@@ -15,10 +15,11 @@
   )
 end
 
-10.times do
+100.times do
   Person.create(
     name: Faker::Name.last_name,
     gender: Faker::Gender.binary_type,
-    age: Faker::Number.between(20, 45)
+    age: Faker::Number.between(20, 45),
+    join_in: Faker::Date.between(1.year.ago, Date.today)
   )
 end

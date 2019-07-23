@@ -1,6 +1,6 @@
 <template>
   <div>
-    <personTable/>
+    <person-table/>
   </div>
 </template>
 <script>
@@ -11,6 +11,3 @@
     }
   }
 </script>
-<style>
-
-</style>

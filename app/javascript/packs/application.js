@@ -12,6 +12,7 @@ import Page7 from './pages/page7.vue'
 import Page8 from './pages/page8.vue'
 import Page9 from './pages/page9.vue'
 import Page10 from './pages/page10.vue'
+import Page11 from './pages/page11.vue'
 
 import axios from 'axios'
 import BootstrapVue from 'bootstrap-vue'
@@ -41,7 +42,8 @@ const routes = [
   { path: '/page7', component: Page7 },
   { path: '/page8', component: Page8 },
   { path: '/page9', component: Page9 },
-  { path: '/page10', component: Page10 }
+  { path: '/page10', component: Page10 },
+  { path: '/page11', component: Page11 }
 ];
 
 const router = new VueRouter({ routes });

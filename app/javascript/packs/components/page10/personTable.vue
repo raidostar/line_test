@@ -12,7 +12,12 @@
       AGE
       <div v-for="person in people" class="personName">{{ person.age }}</div>
     </div>
-    <column-chart :data="ageData" :stacked="true"></column-chart>
+    <div class="left join_in">
+      Join_In
+      <div v-for="person in people" class="personName">{{ person.join_in }}</div>
+    </div>
+
+    <join-date/>
   </div>
 </template>
 <script src="./person.js"></script>
@@ -31,10 +36,18 @@
   margin: 1px;
   border: 1px;
   border-color: black;
-  width: 25em;
+  width: 15em;
 }
 .age {
   background-color: #ffffcc;
+  padding: 1px;
+  margin: 1px;
+  border: 1px;
+  border-color: black;
+  width: 15em;
+}
+.join_in{
+  background-color: #ffccff;
   padding: 1px;
   margin: 1px;
   border: 1px;
