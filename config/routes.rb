@@ -1,5 +1,4 @@
 Rails.application.routes.draw do
-  #get 'people/index'
   devise_for :users, contorllers: {
     sessions: 'users/sessions'
   }

@@ -6,7 +6,7 @@
 </template>
 <script scoped>
   import axios from 'axios'
-  import qs from 'qs'
+  import qs from 'querystring'
   import request from 'request'
 
   export default {
@@ -32,7 +32,6 @@
         }, (error) => {
           console.log(error)
         })
-
       }
     }
   }
