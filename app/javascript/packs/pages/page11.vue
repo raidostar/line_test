@@ -6,7 +6,7 @@
 </template>
 <script scoped>
   import axios from 'axios'
-  import qs from 'querystring'
+  //import qs from 'querystring'
   import request from 'request'
 
   export default {
@@ -21,7 +21,7 @@
             Authorization: 'Bearer xmFj7d0G95unqtddMopRCLpeFwJ7iuso29LLXaH1q3n',
             'Content-Type': 'application/x-www-form-urlencoded'
           },
-          data: qs.stringify({message: 'hello'})
+          data: {message: 'hello'}
         }
       }
     },
