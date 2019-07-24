@@ -17,7 +17,6 @@
           <li><router-link to="/page8">Page8</router-link></li>
           <li><router-link to="/page9">Page9</router-link></li>
           <li><router-link to="/page10">Page10</router-link></li>
-          <li><router-link to="/page11">Page11</router-link></li>
         </ul>
       </div>
     </nav>

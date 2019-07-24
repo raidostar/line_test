@@ -1,4 +1,6 @@
 class Api::BooksController < ApplicationController
+  require 'net/http'
+  require 'uri'
 
   def index
     @books = Book.all
@@ -6,8 +8,11 @@ class Api::BooksController < ApplicationController
 
   def create
     @book = Book.new(book_params)
+    @notify = Notify.new
     if @book.save
       render :show, status: :created
+      @notify.send("#{@book.title}がリリースいたしました！")
+      @notify.send("http://fullout.jp")
     else
       render json: @book.errors, status: :unprocessable_entity
     end
@@ -29,8 +34,10 @@ class Api::BooksController < ApplicationController
 
   def destroy
     @book = Book.find(params[:id])
+    @notify = Notify.new
     if @book.destroy
       render :show, status: :ok
+      @notify.send("すみませんが、#{@book.title}はこれからサービスが終了されました。")
     else
       render json: @book.errors, status: :unprocessable_entity
     end
@@ -41,6 +48,6 @@ class Api::BooksController < ApplicationController
   def book_params
     params.fetch(:book, {}).permit(
       :id, :title, :author, :publisher, :genre
-    )
+      )
   end
 end
