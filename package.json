@@ -3,6 +3,7 @@
   "private": true,
   "dependencies": {
     "@rails/webpacker": "^4.0.7",
+    "animate.css": "^3.7.2",
     "axios": "^0.19.0",
     "bootstrap-vue": "^2.0.0-rc.25",
     "chart.js": "^2.8.0",

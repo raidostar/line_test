@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="page" id="page9">
     <pie-chart :data="genderData" :colors="['#ff0000', '#000077']"/>
     <column-chart :data="ageData"/>
   </div>

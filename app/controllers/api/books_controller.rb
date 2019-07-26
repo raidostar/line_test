@@ -1,6 +1,4 @@
 class Api::BooksController < ApplicationController
-  require 'net/http'
-  require 'uri'
 
   def index
     @books = Book.all
@@ -11,8 +9,7 @@ class Api::BooksController < ApplicationController
     @notify = Notify.new
     if @book.save
       render :show, status: :created
-      @notify.send("#{@book.title}がリリースいたしました！")
-      @notify.send("http://fullout.jp")
+      @notify.send("#{@book.title}がリリースいたしました")
     else
       render json: @book.errors, status: :unprocessable_entity
     end
@@ -37,7 +34,7 @@ class Api::BooksController < ApplicationController
     @notify = Notify.new
     if @book.destroy
       render :show, status: :ok
-      @notify.send("すみませんが、#{@book.title}はこれからサービスが終了されました。")
+      @notify.send("#{@book.title}のサービスが終了致しました")
     else
       render json: @book.errors, status: :unprocessable_entity
     end

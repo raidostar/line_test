@@ -1,5 +1,5 @@
 <template>
-  <div id="twice">
+  <div class="page" id="page5">
     <button @click="show = !show">Toggle Render</button>
     <transition name="slide-fade">
       <p id="twice" v-if="show">hello</p>
@@ -19,7 +19,7 @@
 </script>
 
 <style scoped lang="scss">
-#twice {
+#page5 {
   color: #009d00;
 }
 .slide-fade-enter-active {

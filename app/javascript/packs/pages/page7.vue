@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="page" id="page7">
     <p id="message">{{ message }}</p>
     <input v-model="message">
   </div>

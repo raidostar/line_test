@@ -1,5 +1,5 @@
 <template>
-  <div class="footer">
+  <div class="page">
     <h1>{{ msg }}</h1>
     <div class="message">
       <h3>app/javascript/packs/assetsのロゴ</h3>

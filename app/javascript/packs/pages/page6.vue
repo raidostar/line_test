@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="page" id="page6">
     <ul>
       <li v-for="item in items">
         {{ item.text }}
@@ -22,3 +22,4 @@ export default {
   }
 }
 </script>
+<style lang="scss"></style>

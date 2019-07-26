@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="page" id="page10">
     <person-table/>
   </div>
 </template>
@@ -11,3 +11,8 @@
     }
   }
 </script>
+<style lang="scss">
+  #page10 {
+    padding-top: 40px;
+  }
+</style>

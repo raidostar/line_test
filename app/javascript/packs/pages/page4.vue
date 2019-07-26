@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div class="page" id="page4">
     <p>{{ total }}</p>
     <button-counter v-on:increment="incrementTotal"></button-counter>
     <button-counter v-on:increment="incrementTotal"></button-counter>

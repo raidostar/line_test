@@ -1,5 +1,5 @@
 <template>
-  <div class="page1">
+  <div class="page">
     <h1>{{ msg }}</h1>
     <div class="message">
       <p class="page1_message_inner">これはページ1です。</p><br>
@@ -23,7 +23,7 @@
 </script>
 
 <style scoped lang="scss">
-  .page1{
+  .page{
     .message{
       margin: 1em;
       padding: 1em;

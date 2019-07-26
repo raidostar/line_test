@@ -1,0 +1,61 @@
+
+h3{
+  padding-top: 20px;
+}
+#app {
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  margin-top: 0px;
+}
+#page {
+  width: 85%;
+  float: right;
+}
+#sidebar {
+  width: 15%;
+  float: left;
+  height: 100%;
+  background-color: #464854;
+  position: fixed;
+  margin-top: 100px;
+  z-index: 3;
+  overflow: scroll;
+}
+#topbar {
+  height: 100px;
+  padding: 0px;
+  background-color: #00B900;
+  position: fixed;
+  z-index: 4;
+}
+ul {
+  padding-left: 0px;
+  overflow: scroll;
+}
+li {
+  width: 100%;
+  height: 2%;
+  margin: 0 auto;
+  padding: 0 auto;
+}
+.page {
+  margin-top: 100px;
+}
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .5s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
+}
+.sub-page {
+  background-color: #BCCCCF;
+}
+.flipInOut-enter-active{
+  animation: flipInX .5s;
+}
+.flipInOut-leave-active{
+  animation: flipInX .5s reverse;
+}

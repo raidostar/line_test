@@ -1,5 +1,5 @@
 <template>
-  <div id="page3">
+  <div class="page" id="page3">
     <h1>My Todo App!</h1>
     <TodoList/>
   </div>
@@ -22,7 +22,7 @@
     box-sizing: border-box;
   }
 
-  #page3 {
+  #page {
     max-width: 75%;
     margin: 0 auto;
     line-height: 1.4;
