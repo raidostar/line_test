@@ -16,4 +16,9 @@ Rails.application.routes.draw do
 
   resources :people
 
+  namespace :api, format: 'json' do
+    resources :messages, only: [:index, :create, :show]
+  end
+
+  resources :messages
 end

@@ -8,6 +8,8 @@ export default {
     return {
       people: [],
       ageData: [],
+      parPage: 10,
+      currentPage: 1,
     }
   },
   mounted: function(){
@@ -24,6 +26,19 @@ export default {
       }, (error)=>{
         console.log(error)
       });
+    },
+    clickCallback(pageNum){
+      this.currentPage = Number(pageNum);
+    },
+  },
+  computed: {
+    getPeople(){
+      let current = this.currentPage * this.parPage;
+      let start = current - this.parPage;
+      return this.people.slice(start, current);
+    },
+    getPageCount(){
+      return Math.ceil(this.people.length / this.parPage)
     }
   }
 }

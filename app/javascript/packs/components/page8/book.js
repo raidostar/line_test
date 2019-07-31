@@ -70,7 +70,8 @@ export default {
         console.log(error)
       })
     },
-    updateBook(id){
+    updateBook(id,title){
+      this.toggleButton(title);
       if(!this.newBook) return;
 
       axios.put("/api/books/"+id+".json", { book: { title: this.newBook } }).

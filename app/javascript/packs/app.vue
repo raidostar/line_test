@@ -1,37 +1,48 @@
 <template>
   <div id="app">
     <nav id="topbar" :class="{sticky: (position > 0)}">
-      <h3>LINE_TEST</h3>
-      <a rel="nofollow" data-method="delete" href="/users/sign_out">LOG_OUT</a>
+      <h3>LINE_MANAGER
+        <a class="loginOut" rel="nofollow" data-method="delete" href="/users/sign_out">
+          LOGOUT
+        </a>
+      </h3>
     </nav>
     <nav id="sidebar">
       <div class="side left nav-wrapper container">
         <ul class="hide-on-med-and-down">
-          <li><router-link to="/">ページの連結</router-link></li>
-          <li><router-link to="/page2">ページの連結</router-link></li>
-          <li><router-link to="/page3">入力テスト</router-link></li>
-          <li @click="show=!show" style="padding: 0px;"><router-link to="/page4">Component</router-link></li>
-          <transition name="flipInOut">
-          <li class="sub-page" v-if="show"><router-link to="/page5">Page5</router-link></li>
-          </transition>
-          <transition name="flipInOut">
-          <li class="sub-page" v-if="show"><router-link to="/page6">Page6</router-link></li>
-          </transition>
-          <transition name="flipInOut">
-          <li class="sub-page" v-if="show"><router-link to="/page7">Page7</router-link></li>
-          </transition>
-          <transition name="flipInOut">
-          <li class="sub-page" v-if="show"><router-link to="/page8">Page8</router-link></li>
-          </transition>
-          <transition name="flipInOut">
-          <li class="sub-page" v-if="show"><router-link to="/page9">Page9</router-link></li>
-          </transition>
-          <transition name="flipInOut">
-          <li class="sub-page" v-if="show"><router-link to="/page10">Page10</router-link></li>
-          </transition>
-          <transition name="flipInOut">
-          <li class="sub-page" v-if="show"><router-link to="/page11">Page11</router-link></li>
-          </transition>
+          <li><router-link class="pageLink home" to="/">
+            <i class="material-icons">home</i>
+            ホーム
+          </router-link></li>
+          <li class="category">
+            <i class="material-icons">format_align_justify</i>
+            1対1のトーク
+          </li>
+          <li><router-link class="pageLink" to="/page2">友達リスト</router-link></li>
+          <li><router-link class="pageLink" to="/page3">トーク一覧</router-link></li>
+          <li><router-link class="pageLink" to="/page4">個別トーク</router-link></li>
+          <li class="category">
+            <i class="material-icons">email</i>
+            メッセージ
+          </li>
+          <li><router-link class="pageLink" to="/page5">シナリオ配信</router-link></li>
+          <li><router-link class="pageLink" to="/page6">一斉配信</router-link></li>
+          <li><router-link class="pageLink" to="/page7">自動応答</router-link></li>
+          <li><router-link class="pageLink" to="/page8">テンプレート</router-link></li>
+          <li><router-link class="pageLink" to="/page9">回答フォーム</router-link></li>
+          <li><router-link class="pageLink" to="/page10">リマインダ配信</router-link></li>
+          <li><router-link class="pageLink" to="/page11">友だち追加時設定</router-link></li>
+          <li><router-link class="pageLink" to="/page12">アクション管理</router-link></li>
+          <li class="category">
+            <i class="material-icons">person</i>
+            マイページ
+          </li>
+          <li><router-link class="pageLink" to="/page12">個人情報設定</router-link></li>
+          <li>
+            <a class="pageLink" rel="nofollow" data-method="delete" href="/users/sign_out">
+              ログアウト
+            </a>
+          </li>
         </ul>
       </div>
     </nav>
@@ -43,4 +54,4 @@
 </template>
 
 <script src="./app.js"/>
-<style src="./whole.css"/>
+<style src="./app.css"/>

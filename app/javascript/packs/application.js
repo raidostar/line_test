@@ -13,6 +13,7 @@ import Page8 from './pages/page8.vue'
 import Page9 from './pages/page9.vue'
 import Page10 from './pages/page10.vue'
 import Page11 from './pages/page11.vue'
+import Page12 from './pages/page12.vue'
 
 import axios from 'axios'
 import BootstrapVue from 'bootstrap-vue'
@@ -21,6 +22,7 @@ import 'bootstrap-vue/dist/bootstrap-vue.css'
 import Chartkick from 'vue-chartkick'
 import Chart from 'chart.js'
 import animate from 'animate.css'
+import Paginate from 'vuejs-paginate'
 
 axios.defaults.headers.common = {
     'X-Requested-With': 'XMLHttpRequest',
@@ -33,6 +35,7 @@ Vue.use(VueRouter)
 Vue.config.productionTip = false
 Vue.use(Chartkick.use(Chart))
 Vue.use(animate)
+Vue.component('paginate', Paginate)
 
 const routes = [
   { path: '/', component: Page1 },
@@ -45,7 +48,8 @@ const routes = [
   { path: '/page8', component: Page8 },
   { path: '/page9', component: Page9 },
   { path: '/page10', component: Page10 },
-  { path: '/page11', component: Page11 }
+  { path: '/page11', component: Page11 },
+  { path: '/page12', component: Page12 },
 ];
 
 const router = new VueRouter({ routes });

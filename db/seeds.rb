@@ -12,6 +12,7 @@
     author: Faker::Book.author,
     publisher: Faker::Book.publisher,
     genre: Faker::Book.genre,
+    release_at: Faker::Date.between(1.year.ago, Date.today)
   )
 end
 
@@ -20,6 +21,8 @@ end
     name: Faker::Name.last_name,
     gender: Faker::Gender.binary_type,
     age: Faker::Number.between(20, 45),
-    join_in: Faker::Date.between(1.year.ago, Date.today)
+    join_in: Faker::Date.between(2.years.ago, 1.year.ago),
+    withdraw_at: Faker::Date.between(1.year.ago, Date.today),
+    block: Faker::Boolean.boolean(0.2)
   )
 end

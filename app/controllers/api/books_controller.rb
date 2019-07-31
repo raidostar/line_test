@@ -44,7 +44,7 @@ class Api::BooksController < ApplicationController
 
   def book_params
     params.fetch(:book, {}).permit(
-      :id, :title, :author, :publisher, :genre
+      :id, :title, :author, :publisher, :genre, :release_at
       )
   end
 end

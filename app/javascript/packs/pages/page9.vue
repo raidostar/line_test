@@ -1,7 +1,7 @@
 <template>
   <div class="page" id="page9">
     <pie-chart :data="genderData" :colors="['#ff0000', '#000077']"/>
-    <column-chart :data="ageData"/>
+    <column-chart :data="ageData" :animation="{easing: 'easeInQuad'}"/>
   </div>
 </template>
 
