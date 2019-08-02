@@ -10,7 +10,7 @@
     <nav id="sidebar">
       <div class="side left nav-wrapper container">
         <ul class="hide-on-med-and-down">
-          <li><router-link class="pageLink home" to="/">
+          <li><router-link class="pageLink home" to="/home">
             <i class="material-icons">home</i>
             ホーム
           </router-link></li>
@@ -18,7 +18,7 @@
             <i class="material-icons">format_align_justify</i>
             1対1のトーク
           </li>
-          <li><router-link class="pageLink" to="/page2">友達リスト</router-link></li>
+          <li><router-link class="pageLink" to="/friendslist">友達リスト</router-link></li>
           <li><router-link class="pageLink" to="/page3">トーク一覧</router-link></li>
           <li><router-link class="pageLink" to="/page4">個別トーク</router-link></li>
           <li class="category">

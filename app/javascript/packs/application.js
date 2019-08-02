@@ -38,8 +38,8 @@ Vue.use(animate)
 Vue.component('paginate', Paginate)
 
 const routes = [
-  { path: '/', component: Page1 },
-  { path: '/page2', component: Page2 },
+  { path: '/home', component: Page1 },
+  { path: '/friendslist', component: Page2 },
   { path: '/page3', component: Page3 },
   { path: '/page4', component: Page4 },
   { path: '/page5', component: Page5 },

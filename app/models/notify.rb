@@ -26,19 +26,23 @@ class Notify
     request
   end
 
-  def send(obj)
-    #puts (msg.include?('リリース'))
-    puts (obj.class)
-    if obj.class == Book
-      if msg.include?('リリース')
-        request = make_request1(msg)
-      elsif msg.include?('終了')
-        request = make_request2(msg)
-      end
-    else
-      request = make_request3(obj.sender)
-    end
+  def make_request4(msg, imageURL)
+    request = Net::HTTP::Post.new(URI)
+    request["Authorization"] = "Bearer #{TOKEN}"
+    request.set_form_data({message: msg, imageThumbnail: imageURL, imageFullsize: imageURL})
+    request
+  end
 
+  def send(msg, url)
+    puts "what is this?"
+    puts msg.class
+    if msg.include?('リリース')
+      request = make_request1(msg)
+    elsif msg.include?('終了')
+      request = make_request2(msg)
+    else
+      request = make_request4(msg, url)
+    end
     response = Net::HTTP.start(URI.hostname, URI.port, use_ssl: URI.scheme == "https") do |https|
       https.request(request)
     end
