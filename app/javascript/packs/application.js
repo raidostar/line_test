@@ -14,6 +14,7 @@ import Page9 from './pages/page9.vue'
 import Page10 from './pages/page10.vue'
 import Page11 from './pages/page11.vue'
 import Page12 from './pages/page12.vue'
+import personalPage from './pages/personalPage.vue'
 
 import axios from 'axios'
 import BootstrapVue from 'bootstrap-vue'
@@ -38,7 +39,7 @@ Vue.use(animate)
 Vue.component('paginate', Paginate)
 
 const routes = [
-  { path: '/home', component: Page1 },
+  { path: '/', component: Page1 },
   { path: '/friendslist', component: Page2 },
   { path: '/page3', component: Page3 },
   { path: '/page4', component: Page4 },
@@ -50,6 +51,7 @@ const routes = [
   { path: '/page10', component: Page10 },
   { path: '/page11', component: Page11 },
   { path: '/page12', component: Page12 },
+  { path: '/personalPage', component: personalPage },
 ];
 
 const router = new VueRouter({ routes });

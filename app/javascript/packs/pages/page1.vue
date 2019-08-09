@@ -10,11 +10,11 @@
         </tr>
         <tr>
           <td class="text-center">
-            <b>56789</b>
+            <b>{{ unblockList.length }}</b>
             <small>名</small>
           </td>
           <td class="text-center">
-            <b>12345</b>
+            <b>{{ blockList.length }}</b>
             <small>名</small>
           </td>
         </tr>
@@ -22,13 +22,14 @@
 
       <table class="status message">
         <tr>
-          <th>7月のメッセージ送信数</th>
+          <th>{{ month }} 月のメッセージ送信数</th>
           <td class="text-center">
             <b>113170</b>
             <small>通</small>
           </td>
         </tr>
       </table>
+
       <div>
         <div class="panel-left">
           <div class="panel-heading">現在のマーク別人数</div>
@@ -53,27 +54,24 @@
         <div >
           <div class="friend sub-title">友だち数遷移</div>
           <table class="friend">
-            <tr>
-              <th class="date text-center">日付</th>
-              <th class="change text-center">前日比</th>
-              <th class="joinNum text-center">登録数</th>
-              <th class="blockNum text-center">ブロックされた数</th>
-              <th class="text-center">有効友だち数</th>
-            </tr>
-            <tr>
-              <td class="date text-center">7月31日(水)</td>
-              <td class="change text-center">+100</td>
-              <td class="joinNum text-center">147 <button>リスト</button></td>
-              <td class="blockNum text-center">37</td>
-              <td class="text-center">12471</td>
-            </tr>
-            <tr>
-              <td class="date text-center">7月29日(火)</td>
-              <td class="change text-center">+110</td>
-              <td class="joinNum text-center">240 <button>リスト</button></td>
-              <td class="blockNum text-center">140</td>
-              <td class="text-center">12471</td>
-            </tr>
+            <thead>
+              <tr>
+                <th class="date text-center">日付</th>
+                <th class="change text-center">前日比</th>
+                <th class="joinNum text-center">登録数</th>
+                <th class="blockNum text-center">ブロックされた数</th>
+                <th class="text-center">有効友だち数</th>
+              </tr>
+            </thead>
+            <tbody v-for="time in times">
+              <tr>
+                <td class="date text-center">{{ time }}</td>
+                <td class="change text-center">+100</td>
+                <td class="joinNum text-center">147 <button>リスト</button></td>
+                <td class="blockNum text-center">37</td>
+                <td class="text-center">12471</td>
+              </tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -84,22 +82,37 @@
         <h2>最新情報</h2>
         <hr/>
         <div class="panel-right">
-          <div class="panel-heading">現在のマーク別人数</div>
+          <div class="panel-heading">LINE_MANAGERのお知らせ</div>
           <div class="list-group">
             <button>
-              <span class="label label-danger">お知らせ１</span>
+              <span class="label label-danger">お知らせ２</span>
             </button>
             <button>
-              <span class="label label-primary">お知らせ１</span>
+              <span class="label label-primary">お知らせ３</span>
             </button>
             <button>
-              <span class="label label-primary">お知らせ１</span>
+              <span class="label label-primary">お知らせ４</span>
             </button>
             <button>
-              <span class="label label-info">お知らせ１</span>
+              <span class="label label-info">お知らせ５</span>
             </button>
             <button>
-              <span class="label label-default">お知らせ１</span>
+              <span class="label label-default">お知らせ６</span>
+            </button>
+            <button>
+              <span class="label label-danger">お知らせ７</span>
+            </button>
+            <button>
+              <span class="label label-primary">お知らせ８</span>
+            </button>
+            <button>
+              <span class="label label-primary">お知らせ９</span>
+            </button>
+            <button>
+              <span class="label label-info">お知らせ１０</span>
+            </button>
+            <button>
+              <span class="label label-default">お知らせ１１</span>
             </button>
           </div>
         </div>
@@ -110,12 +123,40 @@
 </template>
 
 <script>
-
+  import axios from 'axios'
   export default {
     name: 'global_footer',
     data: function(){
       return{
-        title: "ホーム"
+        title: 'ホーム',
+        month: null,
+        times: [],
+        unblockList: [],
+        blockList: []
+      }
+    },
+    mounted: function(){
+      this.fetchFriends();
+      this.getTime();
+    },
+    methods: {
+      getTime(){
+        let date = new Date();
+        this.month = date.getMonth();
+      },
+      fetchFriends(){
+        axios.get('/api/friends').then((res) => {
+          console.log(res.data.friends)
+          for (let friend of res.data.friends){
+            if(friend.block==0){
+              this.unblockList.push(friend)
+            } else {
+              this.blockList.push(friend)
+            }
+          }
+        }, (error) => {
+          console.log(error)
+        })
       }
     }
   }
@@ -180,7 +221,7 @@ b {
 }
 .panel-heading {
   font-weight: 700;
-  height: 45px;
+  min-height: 100%;
   text-align: center;
   line-height: 3.5;
   background-color: #E0E0F8;
@@ -188,7 +229,8 @@ b {
 .list-group button {
   color: #00B900;
   background-color: white;
-  height: 45px;
+  height: 53px;
+  max-height: 100%;
   background-color: #EFF2FB;
   padding: 1px;
   margin: 1px;
@@ -223,15 +265,16 @@ b {
 .friend {
   float: right;
   width: 65%;
+  text-align: center;
 }
-.friend {
-    text-align: center;
+.friend td{
+  padding: 1px 5px;
 }
 .sub-title {
   font-weight: 700;
   border-top: 2px solid grey;
   background-color: #E0E0F8;
-  height: 45px;
+  min-height: 100%;
   line-height: 3.5;
 }
 .date {

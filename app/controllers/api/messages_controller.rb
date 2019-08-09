@@ -9,7 +9,7 @@ class Api::MessagesController < ApplicationController
   protect_from_forgery with: :null_session
 
   def index
-    @messages = Message.all
+    @messages = Message.all.order("created_at DESC")
   end
 
   def create
@@ -28,11 +28,21 @@ class Api::MessagesController < ApplicationController
     render :show, status: :ok
   end
 
+  def show_with_id
+    @message = Message.order("created_at DESC").find_by(fr_account: params[:fr_account])
+    render :show, status: :ok
+  end
+
+  def index_with_id
+    @messages = Message.where(fr_account:params[:fr_account]).order("created_at DESC")
+    render :index, status: :ok
+  end
+
   def client
     @client ||= Line::Bot::Client.new do |config|
       config.channel_id = ENV["LINE_CHANNEL_ID"]
       config.channel_secret = ENV["LINE_CHANNEL_SECRET"]
-      config.channel_token = ENV["LINE_CHANNEL_TOKEN1"]+ENV["LINE_CHANNEL_TOKEN2"]+ENV["LINE_CHANNEL_TOKEN3"]
+      config.channel_token = ENV["LINE_CHANNEL_TOKEN"]
       config.http_options = {
         open_timeout: 5,
         read_timeout: 5,
@@ -58,7 +68,6 @@ class Api::MessagesController < ApplicationController
 
   def callback
     body = request.body.read
-
     signature = request.env['HTTP_X_LINE_SIGNATURE']
     unless client.validate_signature(body, signature)
       #halt 400, {'Content-Type' => 'text/plain'}, 'Bad Request'
@@ -71,10 +80,23 @@ class Api::MessagesController < ApplicationController
         handle_message(event)
 
       when Line::Bot::Event::Follow
-        reply_text(event, "[FOLLOW]\nThank you for following")
+        profile = client.get_profile(event['source']['userId'])
+        profile = JSON.parse(profile.read_body)
+
+        reply_text(event, "[FullouT]\n友達登録いただき、ありがとうございます、#{profile['displayName']}様！")
+        fr_account = event['source']['userId']
+        friend = Friend.where(fr_account: fr_account)
+
+        if friend.blank?
+          add_friend(fr_account,profile['displayName'],profile['pictureUrl'],profile['statusMessage'])
+        else
+          unblock(fr_account)
+        end
 
       when Line::Bot::Event::Unfollow
         logger.info "[UNFOLLOW]\n#{body}"
+        fr_account = event['source']['userId']
+        block(fr_account)
 
       when Line::Bot::Event::Join
         reply_text(event, "[JOIN]\n#{event['source']['type']}")
@@ -105,6 +127,7 @@ class Api::MessagesController < ApplicationController
       message_id = event.message['id']
       response = client.get_message_content(message_id)
       tf = Tempfile.open("content")
+      puts tf
       tf.write(response.body)
       reply_text(event, "[MessageType::IMAGE]\nid:#{message_id}\nreceived #{tf.size} bytes data")
     when Line::Bot::Event::MessageType::Video
@@ -142,6 +165,12 @@ class Api::MessagesController < ApplicationController
         else
           reply_text(event, "Bot can't use profile API without user ID")
         end
+
+      when 'naruto'
+        reply_text(event, "sasuke")
+
+      when '이죽'
+        reply_text(event, "sasuke")
 
       when 'buttons'
         reply_content(event, {
@@ -514,24 +543,37 @@ class Api::MessagesController < ApplicationController
 
       else
         puts "#{event.message['text']}"
-        userInfo = client.get_number_of_followers('20190801')
+        date = Date.yesterday
+        date = date.to_s.delete"-"
+        userInfo = client.get_number_of_followers(date)
         userInfo = JSON.parse(userInfo.read_body)
-        puts userInfo
+        puts "userinfo"
+        puts userInfo['followers']
+        puts userInfo['targetedReaches']
+        puts userInfo['blocks']
+        messageNum = client.get_number_of_message_deliveries(date)
+        messageNum = JSON.parse(messageNum.read_body)
+        puts "messageNum"
+        puts messageNum
+        demo = client.get_friend_demographics
+        demo = JSON.parse(demo.read_body)
+        puts demo
+
         if event['source']['type'] == 'user'
           profile = client.get_profile(event['source']['userId'])
           profile = JSON.parse(profile.read_body)
+          puts "profile"
+          puts profile
+          puts event.message
           reply_text(event, [
             "Display name\n#{profile['displayName']}",
-            "Status message\n#{profile['statusMessage']}",
-            "ProfilePic\n#{profile['pictureUrl']}",
             "[Hello]\n#{event.message['text']}"
           ])
-
-          fromUser(profile['displayName'],event.message['text'], profile['pictureUrl'])
+          textFromUser(profile['displayName'],event.message['text'], event.message['id'], profile['userId'])
+          update_profile(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],)
         else
           reply_text(event, "Bot can't use profile API without user ID")
         end
-
       end
     else
       logger.info "Unknown message type: #{event.type}"
@@ -540,18 +582,22 @@ class Api::MessagesController < ApplicationController
   end
 
   def handle_sticker(event)
-    msgapi_available = event.message['packageId'].to_i <= 4
+    # msgapi_available = event.message['packageId'].to_i <= 4
+    # messages = []
+    profile = client.get_profile(event['source']['userId'])
+    profile = JSON.parse(profile.read_body)
     messages = [{
       type: 'text',
       text: "[STICKER]\npackageId: #{event.message['packageId']}\nstickerId: #{event.message['stickerId']}"
     }]
-    if msgapi_available
-      messages.push(
-        type: 'sticker',
-        packageId: event.message['packageId'],
-        stickerId: event.message['stickerId']
-        )
-    end
+    # if msgapi_available
+    messages.push(
+      type: 'sticker',
+      packageId: event.message['packageId'],
+      stickerId: event.message['stickerId']
+      )
+    stickerFromUser(profile['displayName'], event.message['stickerId'], event.message['stickerId'], event.message['packageId'], profile['userId'])
+    # end
     reply_content(event, messages)
   end
 
@@ -566,14 +612,80 @@ class Api::MessagesController < ApplicationController
     })
   end
 
-  def fromUser(sender, contents, url)
-    @message = Message.new({sender: sender, receiver: 'FullouT', contents: contents, image_url: url})
-    @notify = Notify.new
+  def textFromUser(sender,contents,message_id,fr_account)
+    @message = Message.new({
+      sender: sender,
+      receiver: 'FullouT',
+      contents: contents,
+      message_type: 'text',
+      message_id: message_id,
+      fr_account: fr_account
+    })
+    if @message.save
+      render json: 'api/messages', status: :created
+    else
+      render json: @message.errors, status: :unprocessable_entity
+    end
+  end
+
+  def stickerFromUser(sender,message_id,sticker_id,package_id,fr_account)
+    @message = Message.new({
+      sender: sender,
+      receiver: 'FullouT',
+      contents: "https://cdn.lineml.jp/api/media/sticker/#{package_id}_#{sticker_id}",
+      message_type: 'sticker',
+      message_id: message_id,
+      sticker_id: sticker_id,
+      package_id: package_id,
+      fr_account: fr_account
+    })
     if @message.save
       render :show, status: :created
-      puts "here?"
-      puts @message.contents
-      @notify.send(@message.contents, @message.image_url)
+    else
+      render json: @message.errors, status: :unprocessable_entity
+    end
+  end
+
+  def add_friend(fr_account,fr_name,profile_pic,profile_msg)
+    @friend = Friend.new({fr_account: fr_account, fr_name: fr_name, profile_pic: profile_pic, profile_msg: profile_msg})
+    if @friend.save
+      puts "save!"
+    else
+      render json: @message.errors, status: :unprocessable_entity
+    end
+  end
+
+  def block(fr_account)
+    friend = Friend.where(fr_account: fr_account)
+    if friend.update(block: 1)
+      render html: '/api/friends', status: :ok
+    else
+      render json: @message.errors, status: :unprocessable_entity
+    end
+  end
+
+  def unblock(fr_account)
+    friend = Friend.where(fr_account: fr_account)
+    if friend.update(block: 0)
+      render html: '/api/friends', status: :ok
+    else
+      render json: @message.errors, status: :unprocessable_entity
+    end
+  end
+
+  def update_profile(fr_account,fr_name,profile_pic,profile_msg)
+    @friend = Friend.find_by(fr_account: fr_account)
+    if @friend.update(fr_name: fr_name, profile_pic: profile_pic, profile_msg: profile_msg)
+      update_message_profile(fr_account,fr_name)
+    else
+      render json: @message.errors, status: :unprocessable_entity
+    end
+  end
+
+  def update_message_profile(fr_account,fr_name)
+    @messages = Message.where(fr_account: fr_account)
+    if @messages.update(sender: fr_name)
+      puts "profile updated"
     else
       render json: @message.errors, status: :unprocessable_entity
     end
@@ -583,7 +695,7 @@ class Api::MessagesController < ApplicationController
 
   def message_params
     params.fetch(:message, {}).permit(
-      :id, :sender, :receiver, :contents, :image_url
+      :id, :sender, :receiver, :contents, :created_at, :updated_at, :message_type, :message_id, :sticker_id, :package_id, :fr_account,
       )
   end
 end

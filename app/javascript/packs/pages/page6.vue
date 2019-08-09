@@ -29,7 +29,7 @@
         allMessages: [],
         result: '',
         newMessage: '',
-        uploadedImage: '',
+        uploadedImage: ''
       }
     },
     mounted: function(){
@@ -54,9 +54,21 @@
       },
       insertMessage(){
         if (!this.newMessage) return;
-
+        var now = new Date();
+        var time = now.getFullYear()+"-"+
+        ( "0"+( now.getMonth()+1 ) ).slice(-2)+"-"+
+        ( "0"+now.getDate() ).slice(-2)+" "+( "0"+( now.getHours()+1 ) ).slice(-2)+":"+
+        ( "0"+( now.getMinutes()+1 ) ).slice(-2)+":"+( "0"+( now.getSeconds()+1 ) ).slice(-2)
+        console.log(time)
         axios.post('/api/messages',
-          { message: { sender: 'FullouT', receiver: 'User', contents: this.newMessage, image_url: this.uploadedImage}})
+          { message: {
+            sender: 'FullouT',
+            receiver: 'User',
+            contents: this.newMessage,
+            message_type: 'notify',
+            time: time
+          }
+        })
         .then((res) => {
           this.newMessage = '';
           this.fetchMessages();

@@ -52,3 +52,8 @@ td {
   height: 8px;
   padding: 8px;
 }
+.page-item a {
+  outline-color: inherit;
+  outline-width: inherit;
+  outline-style: none;
+}

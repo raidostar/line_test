@@ -10,7 +10,7 @@
     <nav id="sidebar">
       <div class="side left nav-wrapper container">
         <ul class="hide-on-med-and-down">
-          <li><router-link class="pageLink home" to="/home">
+          <li><router-link class="pageLink home" to="/">
             <i class="material-icons">home</i>
             ホーム
           </router-link></li>

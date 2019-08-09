@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+
   devise_for :users, contorllers: {
     sessions: 'users/sessions'
   }
@@ -23,4 +24,13 @@ Rails.application.routes.draw do
   resources :messages
 
   post '/callback' => 'api/messages#callback'
+
+  namespace :api, format: 'json' do
+    resources :friends, only: [:index, :show]
+  end
+
+  resources :friends
+
+  post '/find_message' => 'api/messages#show_with_id'
+  post '/find_messages' => 'api/messages#index_with_id'
 end
