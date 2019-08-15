@@ -7,7 +7,7 @@
       </div>
       <ul class="friendsList">
         <li v-for="friend in friendsList">
-          <button @click="fetchMessages(friend.fr_account)">
+          <button @click="fetchMessages(friend.fr_account,friend.id)">
             <img :src="friend.profile_pic" class="profile_img">
             {{friend.fr_name}}
           </button>
@@ -43,7 +43,7 @@
         友達プロファイル
       </div>
 
-      <div style="text-align: center;"v-model="friend">
+      <div style="text-align: center;" v-model="friend">
         <div style="margin-top: 10px;">
           <img :src="friend.profile_pic" class="profile_img_for_one">
         </div>
@@ -58,14 +58,16 @@
         <div>
           <p>登録日時</p>{{friend.created_at}}
         </div>
+        <hr/>
+        <div>
+          <router-link class="personalPage" :to="personalLink">{{personalLinkBtn}}</router-link>
+        </div>
       </div>
 
     </div>
   </div>
 </template>
 <script>
-
-
   import axios from 'axios'
   export default {
     name: 'page4',
@@ -73,12 +75,14 @@
       return {
         friendsList: [],
         messages: [],
-        friend: {}
+        friend: {},
+        personalLink: '',
+        personalLinkBtn: null
       }
     },
     mounted: function(){
       this.fetchFriends();
-      setInterval(this.fetchFriends(), 1000);
+      //setInterval(this.fetchFriends(), 1000);
     },
     methods: {
       fetchFriends(){
@@ -89,7 +93,8 @@
           console.log(error)
         })
       },
-      fetchMessages(req){
+      fetchMessages(req,id){
+        this.personalLink = '/personalPage/'+id
         this.showFriend(req);
         axios.post('/find_messages', {
           fr_account: req
@@ -100,6 +105,7 @@
             message.created_at = time.substr(0,19).replace('T'," ")
           }
           this.messages = res.data.messages
+          this.personalLinkBtn = '詳細ページ'
         }, (error)=>{
           console.log(error)
         })

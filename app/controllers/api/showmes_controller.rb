@@ -1,4 +1,4 @@
-class Api::MessagesController < ApplicationController
+class Api::ShowmesController < ApplicationController
   require 'line/bot'  # gem 'line-bot-api'
 
   THUMBNAIL_URL = 'https://www.freepngimg.com/thumb/mario/20723-2-mario-image.png'
@@ -33,24 +33,18 @@ class Api::MessagesController < ApplicationController
     render :show, status: :ok
   end
 
-  def select_groups
-    group = current_user.group
-    @group = Group.select("group_id").where(group: group)
-    puts @group
-  end
-
   def index_with_id
-    group = current_user.group
-    @group = Group.select("group_id").where(group: group)
-    @messages = Message.where(fr_account:params[:fr_account], group_id: @group).order("created_at DESC")
+    puts "ok?"
+
+    @messages = Message.where(fr_account:params[:fr_account]).order("created_at DESC")
     render :index, status: :ok
   end
 
   def client
     @client ||= Line::Bot::Client.new do |config|
-      config.channel_id = ENV["LINE_CHANNEL_ID"]
-      config.channel_secret = ENV["LINE_CHANNEL_SECRET"]
-      config.channel_token = ENV["LINE_CHANNEL_TOKEN"]
+      config.channel_id = ENV["SHOW_ME_ID"]
+      config.channel_secret = ENV["SHOW_ME_SECRET"]
+      config.channel_token = ENV["SHOW_ME_TOKEN"]
       config.http_options = {
         open_timeout: 5,
         read_timeout: 5,
@@ -549,14 +543,19 @@ class Api::MessagesController < ApplicationController
         end
 
       else
+        puts "#{event.message['text']}"
         date = Date.yesterday
         date = date.to_s.delete"-"
         userInfo = client.get_number_of_followers(date)
         userInfo = JSON.parse(userInfo.read_body)
-
+        puts "userinfo"
+        puts userInfo['followers']
+        puts userInfo['targetedReaches']
+        puts userInfo['blocks']
         messageNum = client.get_number_of_message_deliveries(date)
         messageNum = JSON.parse(messageNum.read_body)
-
+        puts "messageNum"
+        puts messageNum
         demo = client.get_friend_demographics
         demo = JSON.parse(demo.read_body)
         puts demo
@@ -564,13 +563,15 @@ class Api::MessagesController < ApplicationController
         if event['source']['type'] == 'user'
           profile = client.get_profile(event['source']['userId'])
           profile = JSON.parse(profile.read_body)
-          group_id = @parsed_body['destination']
+          puts "profile"
+          puts profile
+          puts event.message
           reply_text(event, [
             "Display name\n#{profile['displayName']}",
-            "[FullouT]\n#{event.message['text']}"
+            "[ShowMeTheMoney]\n#{event.message['text']}"
           ])
 
-          textFromUser(profile['displayName'],event.message['text'], event.message['id'], profile['userId'], group_id)
+          textFromUser(profile['displayName'],event.message['text'], event.message['id'], profile['userId'])
           update_group_in_friends(profile['userId'],group_id)
           #update_profile(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],)
         else
@@ -614,15 +615,14 @@ class Api::MessagesController < ApplicationController
     })
   end
 
-  def textFromUser(sender,contents,message_id,fr_account,group_id)
+  def textFromUser(sender,contents,message_id,fr_account)
     @message = Message.new({
       sender: sender,
-      receiver: 'FullouT',
+      receiver: 'ShowMeTheMoney',
       contents: contents,
       message_type: 'text',
       message_id: message_id,
-      fr_account: fr_account,
-      group_id: group_id
+      fr_account: fr_account
     })
     if @message.save
       render json: 'api/messages', status: :created
@@ -643,13 +643,13 @@ class Api::MessagesController < ApplicationController
       fr_account: fr_account
     })
     if @message.save
-      render :show, status: :created
+      puts "save!"
     else
       render json: @message.errors, status: :unprocessable_entity
     end
   end
 
-  def add_friend(fr_account,fr_name,profile_pic,profile_msg,group_id)
+  def add_friend(fr_account,fr_name,profile_pic,profile_msg)
     @friend = Friend.new({fr_account: fr_account, fr_name: fr_name, profile_pic: profile_pic, profile_msg: profile_msg})
     if @friend.save
       puts "save!"
@@ -679,15 +679,6 @@ class Api::MessagesController < ApplicationController
   def update_group_in_friends(fr_account,group_id)
     @friend = Friend.find_by(fr_account: fr_account)
     @friend.update(group_id: group_id)
-  end
-
-  def update_profile(fr_account,fr_name,profile_pic,profile_msg)
-    @friend = Friend.find_by(fr_account: fr_account)
-    if @friend.update(fr_name: fr_name, profile_pic: profile_pic, profile_msg: profile_msg)
-      update_message_profile(fr_account,fr_name)
-    else
-      render json: @message.errors, status: :unprocessable_entity
-    end
   end
 
   def update_message_profile(fr_account,fr_name)

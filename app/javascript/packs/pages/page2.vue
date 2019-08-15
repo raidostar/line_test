@@ -3,10 +3,6 @@
     <div>
       <div>
         <h2 class="title">友達リスト<hr/></h2>
-
-      </div>
-      <div>
-
       </div>
     </div>
     <table class="fList">
@@ -30,16 +26,18 @@
           </td>
           <td>停止中</td>
           <td
-            v-for="msg in message"
-            v-if="msg.fr_account==friend.fr_account"
+          v-for="msg in message"
+          v-if="msg.fr_account==friend.fr_account"
           >
-            <span v-if="msg.message_type=='text'">
-              {{msg.contents}}
-            </span>
-            <span v-if="msg.message_type=='sticker'">
-              <img :src="msg.contents" class="sticker">
-            </span>
-          </td>
+          <span v-if="msg.message_type=='text'" class="last_msg">
+            {{msg.contents}}
+            <div class="msg_time">{{msg.created_at}}</div>
+          </span>
+          <span v-if="msg.message_type=='sticker'" class="last_msg">
+            <img :src="msg.contents" class="sticker">
+            <div class="msg_time">{{msg.created_at}}</div>
+          </span>
+        </td>
         <td>タグ・友だち情報</td>
       </tr>
     </tbody>
@@ -59,13 +57,10 @@
     },
     mounted: function(){
       this.fetchFriends();
-      console.log("this.message");
-      console.log(this.message);
     },
     methods: {
       fetchFriends(){
         axios.get('/api/friends').then((res) => {
-          console.log(res.data.friends)
           this.friendsList = res.data.friends
           for(let friend of res.data.friends){
             this.findMessage(friend.fr_account);
@@ -78,12 +73,17 @@
         axios.post('/find_message', {
           fr_account: req
         }).then((res) => {
-          console.log(res.data.message)
           let fr_account = res.data.message.fr_account
           let contents = res.data.message.contents
           let message_type = res.data.message.message_type
-          this.message.push({fr_account: fr_account, contents: contents, message_type: message_type})
-          console.log(this.message)
+          let created_at = res.data.message.created_at+""
+          created_at = created_at.substr(5,14).replace('T'," ")
+          this.message.push({
+            fr_account: fr_account,
+            contents: contents,
+            message_type: message_type,
+            created_at: created_at
+          })
         }, (error) => {
           console.log(error)
         })
@@ -137,5 +137,13 @@ hr {
   height: 50px;
   margin: 0px 0px;
   padding: 0px 0px;
+}
+.msg_time {
+  opacity: 0.6;
+  font-size: 13px;
+  padding-top: 7px;
+}
+.last_msg {
+  line-height: 0px;
 }
 </style>

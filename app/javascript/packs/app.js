@@ -1,5 +1,6 @@
 import Header from './components/main/header.vue'
 import Footer from './components/main/footer.vue'
+import axios from 'axios'
 
 export default {
   name: 'MyApp',
@@ -16,9 +17,6 @@ export default {
     }
   },
   mounted: function(){
-    document.onscroll = function(e){
-      this.position = document.documentElement.scrollTop || document.body.scrollTop;
-      //console.log(this.position)
-    }
+    Window.load(alert("hello!"))
   }
 }

@@ -34,6 +34,9 @@ Vue.use(BootstrapVue)
 Vue.prototype.$https = axios
 Vue.use(VueRouter)
 Vue.config.productionTip = false
+Chartkick.options = {
+  colors: ["#b00", "#666"]
+}
 Vue.use(Chartkick.use(Chart))
 Vue.use(animate)
 Vue.component('paginate', Paginate)
@@ -51,7 +54,7 @@ const routes = [
   { path: '/page10', component: Page10 },
   { path: '/page11', component: Page11 },
   { path: '/page12', component: Page12 },
-  { path: '/personalPage', component: personalPage },
+  { path: '/personalPage/:id', component: personalPage, props: true},
 ];
 
 const router = new VueRouter({ routes });

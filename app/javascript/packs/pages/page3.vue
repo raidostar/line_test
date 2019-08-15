@@ -5,7 +5,7 @@
         <h2 class="title">トーク一覧<hr/></h2>
         <i @click="fetchMessage" class="material-icons">loop</i><br/>
         <div class="setting">
-          <select v-model="parPage">
+          <select v-model="parPage" @change="resetPage">
             <option value=10>10ラインで表示</option>
             <option value=50>50ラインで表示</option>
             <option value=100>100ラインで表示</option>
@@ -82,6 +82,9 @@
       clickCallback(pageNum){
         this.currentPage = Number(pageNum);
       },
+      resetPage(){
+        this.currentPage = 1;
+      }
     },
     computed: {
       getMessage(){

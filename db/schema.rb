@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_08_07_004415) do
+ActiveRecord::Schema.define(version: 2019_08_15_025952) do
 
   create_table "books", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "title"
@@ -30,6 +30,14 @@ ActiveRecord::Schema.define(version: 2019_08_07_004415) do
     t.boolean "block", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "group_id"
+  end
+
+  create_table "groups", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
+    t.string "group"
+    t.string "group_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "messages", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
@@ -43,6 +51,7 @@ ActiveRecord::Schema.define(version: 2019_08_07_004415) do
     t.string "sticker_id"
     t.string "package_id"
     t.string "fr_account"
+    t.string "group_id"
   end
 
   create_table "people", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
