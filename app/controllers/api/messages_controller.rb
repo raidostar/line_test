@@ -199,7 +199,7 @@ class Api::MessagesController < ApplicationController
 
           textFromUser(profile['displayName'],event.message['text'], event.message['id'], profile['userId'], group_id)
           #client.get_quota
-          #update_friend_info(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],group_id)
+          update_friend_info(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],group_id)
         else
           reply_text(event, "Bot can't use profile API without user ID")
         end
@@ -309,7 +309,7 @@ class Api::MessagesController < ApplicationController
 
   def update_friend_info(fr_account,fr_name,profile_pic,profile_msg,group_id)
     @friend = Friend.find_by(fr_account: fr_account)
-    time = Time.new.to_s
+    time = Time.new
     puts time
     if @friend.update(
       fr_name: fr_name, profile_pic: profile_pic, profile_msg: profile_msg,group_id: group_id,
@@ -334,17 +334,21 @@ class Api::MessagesController < ApplicationController
     now = Time.new
     startTime = now.beginning_of_month
     endTime = now.end_of_month
-    group = current_user.group
+    group = get_current_user_group
     @messages = Message.where(created_at: startTime..endTime, receiver: group)
 
     render :index, status: :ok
+  end
+
+  def get_current_user_group
+    return current_user.group
   end
 
   def get_number_of_weekly_message
     now = Time.new
     startTime = now.beginning_of_week
     endTime = now.end_of_week
-    group = current_user.group
+    group = get_current_user_group
     @messages = Message.where(created_at: startTime..endTime, receiver: group)
 
     render :index,  status: :ok
@@ -354,7 +358,7 @@ class Api::MessagesController < ApplicationController
     now = Time.new
     startTime = now.beginning_of_day
     endTime = now.end_of_day
-    group = current_user.group
+    group = get_current_user_group
     @messages = Message.where(created_at: startTime..endTime, receiver: group)
 
     render :index,  status: :ok
@@ -363,7 +367,7 @@ class Api::MessagesController < ApplicationController
   def get_number_of_seven_days
     now = Time.new
     startTime = now.days_ago(6)
-    group = current_user.group
+    group = get_current_user_group
     @messages = Message.where(created_at: startTime..now, receiver: group)
 
     render :index,  status: :ok

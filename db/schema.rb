@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_08_16_062220) do
+ActiveRecord::Schema.define(version: 2019_08_19_083417) do
 
   create_table "books", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "title"
@@ -31,7 +31,8 @@ ActiveRecord::Schema.define(version: 2019_08_16_062220) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "group_id"
-    t.string "last_message_time"
+    t.datetime "last_message_time"
+    t.date "block_at"
   end
 
   create_table "groups", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
