@@ -13,10 +13,17 @@ export default {
   data: function(){
     return {
       position: undefined,
-      show: false
+      show: false,
+      userid: '',
+      group: ''
     }
   },
   mounted: function(){
-    Window.load(alert("hello!"))
+    axios.post('/show_current').then((res)=>{
+      this.userid = res.data.user.email
+      this.group = res.data.user.group
+    },(error)=>{
+      console.log(error)
+    })
   }
 }

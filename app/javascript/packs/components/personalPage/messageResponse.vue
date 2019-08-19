@@ -21,8 +21,7 @@
   import axios from 'axios'
   export default {
     mounted: function(){
-      axios.post('/show_current').then((res)=>{
-        console.log('current_user?')
+      axios.post('/number_of_monthly').then((res)=>{
         console.log(res.data)
       },(error)=>{
         console.log(error)

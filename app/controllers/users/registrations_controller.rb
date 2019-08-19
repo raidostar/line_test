@@ -1,12 +1,14 @@
 # frozen_string_literal: true
 
 class [scope]::RegistrationsController < Devise::RegistrationsController
+  clear_respond_to
+  respond_to :json
+  skip_before_action :verify_authenticity_token, only: [:destroy, :create]
   # before_action :configure_sign_up_params, only: [:create]
   # before_action :configure_account_update_params, only: [:update]
 
   # # GET /resource/sign_up
   # def new
-  #   super
   # end
 
   # # POST /resource
@@ -38,7 +40,13 @@ class [scope]::RegistrationsController < Devise::RegistrationsController
   #   super
   # end
 
-  # protected
+  def show_with_group_key
+    @group = Group.where(groups_params)
+    puts @group.present?
+    render :show, status: :ok
+  end
+
+  protected
 
   # If you have extra params to permit, append them to the sanitizer.
   # def configure_sign_up_params
@@ -59,4 +67,10 @@ class [scope]::RegistrationsController < Devise::RegistrationsController
   # def after_inactive_sign_up_path_for(resource)
   #   super(resource)
   # end
+
+  def groups_params
+    params.fetch(:groups, {}).permit(
+      :id, :group, :group_id, :created_at, :updated_at
+    )
+  end
 end

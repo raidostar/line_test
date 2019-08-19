@@ -12,7 +12,7 @@
     <div class="left-panel">
       <div>
         <button class="profile_menu" to="/friendslist" @click="baseNum=0">タイムライン</button>
-        <button class="profile_menu" to="/friendslist" @click="baseNum=1">メッセージ推移</button>
+        <button class="profile_menu" to="/friendslist" @click="baseNum=1">メッセージ遷移</button>
         <button class="profile_menu" to="/friendslist" @click="baseNum=2">メッセージタイプ別</button>
         <button class="profile_menu" to="/friendslist" @click="baseNum=3">友達リスト</button>
       </div>

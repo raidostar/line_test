@@ -65,7 +65,7 @@
     },
     mounted: function(){
       this.fetchMessage();
-      //setInterval(this.fetchMessage, 100000);
+      //setInterval(this.fetchMessage, 1000);
     },
     methods: {
       fetchMessage(){

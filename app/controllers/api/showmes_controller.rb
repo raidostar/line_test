@@ -34,9 +34,9 @@ class Api::ShowmesController < ApplicationController
   end
 
   def index_with_id
-    puts "ok?"
-
-    @messages = Message.where(fr_account:params[:fr_account]).order("created_at DESC")
+    group = current_user.group
+    @group = Group.select("group_id").where(group: group)
+    @messages = Message.where(fr_account:params[:fr_account], group_id: @group).order("created_at DESC")
     render :index, status: :ok
   end
 
@@ -543,29 +543,21 @@ class Api::ShowmesController < ApplicationController
         end
 
       else
-        puts "#{event.message['text']}"
+
         date = Date.yesterday
         date = date.to_s.delete"-"
         userInfo = client.get_number_of_followers(date)
         userInfo = JSON.parse(userInfo.read_body)
-        puts "userinfo"
-        puts userInfo['followers']
-        puts userInfo['targetedReaches']
-        puts userInfo['blocks']
         messageNum = client.get_number_of_message_deliveries(date)
         messageNum = JSON.parse(messageNum.read_body)
-        puts "messageNum"
-        puts messageNum
         demo = client.get_friend_demographics
         demo = JSON.parse(demo.read_body)
-        puts demo
+
 
         if event['source']['type'] == 'user'
           profile = client.get_profile(event['source']['userId'])
           profile = JSON.parse(profile.read_body)
-          puts "profile"
-          puts profile
-          puts event.message
+          group_id = @parsed_body['destination']
           reply_text(event, [
             "Display name\n#{profile['displayName']}",
             "[ShowMeTheMoney]\n#{event.message['text']}"

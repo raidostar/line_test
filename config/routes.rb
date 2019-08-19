@@ -38,7 +38,16 @@ Rails.application.routes.draw do
 
   resources :friends
 
+  namespace :api, format: 'json' do
+    resources :groups, only: [:index,:create]
+  end
+
   post '/find_message' => 'api/messages#show_with_id'
   post '/find_messages' => 'api/messages#index_with_id'
   post '/show_current' => 'api/users#show_current_user'
+  post '/find_group_key' => 'users/registrations#show_with_group_key'
+  post '/number_of_monthly' => 'api/messages#get_number_of_monthly_message'
+  post '/number_of_weekly' => 'api/messages#get_number_of_weekly_message'
+  post '/number_of_daily' => 'api/messages#get_number_of_daily_message'
+  post '/number_of_seven_days' => 'api/messages#get_number_of_seven_days'
 end

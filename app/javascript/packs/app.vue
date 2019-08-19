@@ -1,9 +1,9 @@
 <template>
   <div id="app">
     <nav id="topbar" :class="{sticky: (position > 0)}">
-      <h3>LINE_MANAGER
+      <h3>LINE_MANAGER_FOR_{{group}}
         <a class="loginOut" rel="nofollow" data-method="delete" href="/users/sign_out">
-          LOGOUT
+          {{userid}}
         </a>
       </h3>
     </nav>

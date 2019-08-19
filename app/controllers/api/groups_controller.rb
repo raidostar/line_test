@@ -1,15 +1,14 @@
 class Api::GroupsController < ApplicationController
   def index
-
   end
 
-  def show
-
+  def show_with_group_key
+    @group = Group.where(group_key: params[:group_key])
+    render :show, status: :ok
   end
 
   def create
-    @group = Group.new({group: 'FullouT',group_id: 'U4996f6a0f7a044453858ff6ed933f5cc'})
-
+    @group = Group.new(groups_params)
     if @group.save
       render :show, status: :created
     else

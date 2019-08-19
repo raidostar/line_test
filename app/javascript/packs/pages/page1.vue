@@ -23,8 +23,20 @@
       <table class="status message">
         <tr>
           <th>{{ month }} 月のメッセージ送信数</th>
-          <td class="text-center">
-            <b>113170</b>
+          <th>今週のメッセージ送信数</th>
+          <th>本日のメッセージ送信数</th>
+        </tr>
+        <tr>
+          <td class="text-center" style="width: auto;">
+            <b v-model="monthlyNum">{{monthlyNum}}</b>
+            <small>通</small>
+          </td>
+          <td class="text-center" style="width: auto;">
+            <b v-model="weeklyNum">{{weeklyNum}}</b>
+            <small>通</small>
+          </td>
+          <td class="text-center" style="width: auto;">
+            <b v-model="dailyNum">{{dailyNum}}</b>
             <small>通</small>
           </td>
         </tr>
@@ -63,8 +75,8 @@
                 <th class="text-center">有効友だち数</th>
               </tr>
             </thead>
-            <tbody v-for="time in times">
-              <tr>
+            <tbody>
+              <tr v-for="time in times">
                 <td class="date text-center">{{ time }}</td>
                 <td class="change text-center">+100</td>
                 <td class="joinNum text-center">147 <button>リスト</button></td>
@@ -132,21 +144,27 @@
         month: null,
         times: [],
         unblockList: [],
-        blockList: []
+        blockList: [],
+        monthlyNum: 0,
+        weeklyNum: 0,
+        dailyNum: 0,
       }
     },
     mounted: function(){
       this.fetchFriends();
       this.getTime();
+      this.getThisMonth();
+      this.getThisWeek();
+      this.getToday();
+      this.getSevenDays();
     },
     methods: {
       getTime(){
         let date = new Date();
-        this.month = date.getMonth();
+        this.month = date.getMonth()+1;
       },
       fetchFriends(){
         axios.get('/api/friends').then((res) => {
-          console.log(res.data.friends)
           for (let friend of res.data.friends){
             if(friend.block==0){
               this.unblockList.push(friend)
@@ -157,147 +175,41 @@
         }, (error) => {
           console.log(error)
         })
-      }
+      },
+      getThisMonth(){
+        axios.post('/number_of_monthly').then((res)=>{
+          this.monthlyNum = res.data.messages.length
+          //console.log(res.data.messages)
+          // for(let message of res.data.messages){
+          //   console.log(message.created_at)
+          // }
+        }, (error)=>{
+          console.log(error)
+        })
+      },
+      getThisWeek(){
+        axios.post('/number_of_weekly').then((res)=>{
+          this.weeklyNum = res.data.messages.length
+        },(error)=>{
+          console.log(error)
+        })
+      },
+      getToday(){
+        axios.post('/number_of_daily').then((res)=>{
+          this.dailyNum = res.data.messages.length
+        },(error)=>{
+          console.log(error)
+        })
+      },
+      getSevenDays(){
+        axios.post('/number_of_seven_days').then((res)=>{
+          console.log(res.data.messages)
+        },(error)=>{
+          console.log(error)
+        })
+      },
     }
   }
 </script>
 
-<style scoped>
-.title {
-  float: left;
-}
-hr {
-  margin: 10px;
-}
-.status {
-  border: 1px grey;
-  border-top: 2px solid grey;
-  margin-bottom: 3em;
-  background-color: #EFF2FB;
-}
-.status th {
-  padding: 5px;
-  margin: 0;
-  height: 10px;
-  width: auto;
-  background-color: #E0E0F8;
-}
-td {
-  border: 2px  grey;
-  width: 50%;
-}
-.message td {
-  padding: 5px;
-  margin: 0;
-  height: 10px;
-}
-b {
-  font-size: 30px;
-}
-.col-left {
-  width: 65%;
-  margin-left: 10px;
-  margin-right: 0px;
-  padding-right: 0px;
-  float: left;
-}
-.panel-left {
-  width: 33%;
-  border: 1px grey;
-  border-top: 2px solid grey;
-  padding: 1px;
-  margin: 1px;
-  float: left;
-}
-.panel-right {
-  width: 33%;
-  border: 1px grey;
-  border-top: 2px solid grey;
-  padding: 1px;
-  margin: 1px;
-  float: right;
-  margin-top: 8px;
-  margin-right: 4px;
-}
-.panel-heading {
-  font-weight: 700;
-  min-height: 100%;
-  text-align: center;
-  line-height: 3.5;
-  background-color: #E0E0F8;
-}
-.list-group button {
-  color: #00B900;
-  background-color: white;
-  height: 53px;
-  max-height: 100%;
-  background-color: #EFF2FB;
-  padding: 1px;
-  margin: 1px;
-  border: 1px grey;
-}
-.list-group button:hover {
-  background-color: #E9E9FB;
-}
-.label {
-  font-size: 10px;
-  font-weight: 600;
-  border-radius: 5px;
-  padding: 3px;
-  margin: 3px;
-}
-.label-danger {
-  background-color: #d9534f;
-  color: white;
-}
-.label-primary {
-  background-color: #337ab7;
-  color: white;
-}
-.label-info {
-  background-color: #5bc0de;
-  color: white;
-}
-.label-default {
-  background-color: #777;
-  color: white;
-}
-.friend {
-  float: right;
-  width: 65%;
-  text-align: center;
-}
-.friend td{
-  padding: 1px 5px;
-}
-.sub-title {
-  font-weight: 700;
-  border-top: 2px solid grey;
-  background-color: #E0E0F8;
-  min-height: 100%;
-  line-height: 3.5;
-}
-.date {
-  width: 20%;
-}
-.change {
-  width: 13%;
-}
-.joinNum {
-  width: 20%;
-}
-.joinNum button {
-  padding-left: 5px;
-  background-color: white;
-  border: 1px solid grey;
-  border-radius: 5%;
-  color: grey;
-  font-size: 10px;
-}
-.blockNum {
-  width: 26%;
-}
-.frNum {
-  text-align: center;
-}
-</style>
+<style scoped src="../components/page1/page1.css"/>

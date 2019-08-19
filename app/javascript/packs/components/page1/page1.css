@@ -1,0 +1,140 @@
+.title {
+  float: left;
+}
+hr {
+  margin: 10px;
+}
+.status {
+  border: 1px grey;
+  border-top: 2px solid grey;
+  margin-bottom: 3em;
+  background-color: #EFF2FB;
+}
+.status th {
+  padding: 5px;
+  margin: 0;
+  height: 10px;
+  width: auto;
+  background-color: #E0E0F8;
+}
+td {
+  border: 2px  grey;
+  width: auto;
+}
+.status td {
+  width: 50%;
+}
+.message td {
+  padding: 5px;
+  margin: 0;
+  height: 10px;
+}
+b {
+  font-size: 30px;
+}
+.col-left {
+  width: 65%;
+  margin-left: 10px;
+  margin-right: 0px;
+  padding-right: 0px;
+  float: left;
+}
+.panel-left {
+  width: 33%;
+  border: 1px grey;
+  border-top: 2px solid grey;
+  padding: 1px;
+  margin: 1px;
+  float: left;
+}
+.panel-right {
+  width: 33%;
+  border: 1px grey;
+  border-top: 2px solid grey;
+  padding: 1px;
+  margin: 1px;
+  float: right;
+  margin-top: 8px;
+  margin-right: 4px;
+}
+.panel-heading {
+  font-weight: 700;
+  min-height: 100%;
+  text-align: center;
+  line-height: 3.5;
+  background-color: #E0E0F8;
+}
+.list-group button {
+  color: #00B900;
+  background-color: white;
+  height: 53px;
+  max-height: 100%;
+  background-color: #EFF2FB;
+  padding: 1px;
+  margin: 1px;
+  border: 1px grey;
+}
+.list-group button:hover {
+  background-color: #E9E9FB;
+}
+.label {
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 5px;
+  padding: 3px;
+  margin: 3px;
+}
+.label-danger {
+  background-color: #d9534f;
+  color: white;
+}
+.label-primary {
+  background-color: #337ab7;
+  color: white;
+}
+.label-info {
+  background-color: #5bc0de;
+  color: white;
+}
+.label-default {
+  background-color: #777;
+  color: white;
+}
+.friend {
+  float: right;
+  width: 65%;
+  text-align: center;
+}
+.friend td{
+  padding: 1px 5px;
+}
+.sub-title {
+  font-weight: 700;
+  border-top: 2px solid grey;
+  background-color: #E0E0F8;
+  min-height: 100%;
+  line-height: 3.5;
+}
+.date {
+  width: 20%;
+}
+.change {
+  width: 13%;
+}
+.joinNum {
+  width: 20%;
+}
+.joinNum button {
+  padding-left: 5px;
+  background-color: white;
+  border: 1px solid grey;
+  border-radius: 5%;
+  color: grey;
+  font-size: 10px;
+}
+.blockNum {
+  width: 26%;
+}
+.frNum {
+  text-align: center;
+}
