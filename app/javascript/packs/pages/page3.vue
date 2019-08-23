@@ -6,6 +6,7 @@
         <i @click="fetchMessage" class="material-icons">loop</i><br/>
         <div class="setting">
           <select v-model="parPage" @change="resetPage">
+            <option value=5>5ラインで表示</option>
             <option value=10>10ラインで表示</option>
             <option value=50>50ラインで表示</option>
             <option value=100>100ラインで表示</option>
@@ -59,7 +60,7 @@
     data(){
       return {
         messageList: [],
-        parPage: 10,
+        parPage: 5,
         currentPage: 1,
       }
     },

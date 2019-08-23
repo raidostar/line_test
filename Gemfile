@@ -81,3 +81,4 @@ gem 'line-bot-api'
 gem 'omniauth'
 gem 'devise_token_auth'
 gem 'rack-cors'
+gem 'whenever', require: false

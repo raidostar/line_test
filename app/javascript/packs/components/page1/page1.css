@@ -22,7 +22,7 @@ td {
   width: auto;
 }
 .status td {
-  width: 50%;
+  width: auto;
 }
 .message td {
   padding: 5px;

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_08_19_083417) do
+ActiveRecord::Schema.define(version: 2019_08_21_040526) do
 
   create_table "books", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "title"
@@ -20,6 +20,15 @@ ActiveRecord::Schema.define(version: 2019_08_19_083417) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.date "release_at"
+  end
+
+  create_table "follows", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
+    t.string "group"
+    t.integer "follower"
+    t.integer "targetedReaches"
+    t.integer "blocks"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "friends", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
@@ -32,7 +41,8 @@ ActiveRecord::Schema.define(version: 2019_08_19_083417) do
     t.datetime "updated_at", null: false
     t.string "group_id"
     t.datetime "last_message_time"
-    t.date "block_at"
+    t.datetime "block_at"
+    t.datetime "follow_at"
   end
 
   create_table "groups", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|

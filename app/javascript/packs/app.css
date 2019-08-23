@@ -1,5 +1,6 @@
 html, body {
   height: 100%;
+  overflow: scroll;
 }
 h3{
   padding-top: 20px;
@@ -113,6 +114,9 @@ nav, nav .nav-wrapper i, nav a.sidenav-trigger, nav a.sidenav-trigger i {
     line-height: 45px;
 }
 button:focus {
+  outline: none;
+}
+button:active {
   outline: none;
 }
 a:focus {

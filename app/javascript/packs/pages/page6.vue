@@ -1,132 +1,63 @@
 <template>
   <div class="page" id="page6">
-    <p class="lineArea" v-for="message in allMessages">
-      <span>{{ message.contents }}</span>
-    </p>
-    <br/>
-    <div class="imageArea">
-      <img v-show="uploadedImage" :src="uploadedImage">
-      <label class="input-item__label">
-        <input type="file" v-on:change="onFileChange">
-      </label>
-    </div>
-    <div class="inputArea">
-      <textarea type="text" v-model="newMessage" placeholder="send a Line_Notify here" @keydown="keyListener"/>
-      <div class="send">
-        <button @click="insertMessage">SEND</button>
+    <div>
+      <div class="title area">
+        <h2 class="title">一斉配信<hr/></h2>
+      </div>
+      <div class="buttons">
+        <button class="allSend-button">詳細登録</button>
       </div>
     </div>
+    <table class="sc-list">
+      <tr>
+        <th>編集</th>
+        <th>配信先</th>
+        <th>内容</th>
+        <th>日時</th>
+        <th>配信数</th>
+        <th></th>
+      </tr>
+    </table>
   </div>
 </template>
-
 <script>
-  import axios from 'axios'
 
-  export default {
-    name: 'page6',
-    data(){
-      return {
-        allMessages: [],
-        result: '',
-        newMessage: '',
-        uploadedImage: ''
-      }
-    },
-    mounted: function(){
-      this.fetchMessages()
-    },
-    methods: {
-      fetchMessages(){
-        axios.get('/api/messages').then((res) => {
-          console.log(res.data.messages)
-          this.allMessages=res.data.messages
-        }, (error) => {
-          console.log(error)
-        })
-      },
-      keyListener(event){
-        if(event.keyCode==13){
-          if(!event.shiftKey){
-            event.preventDefault();
-            this.insertMessage();
-          }
-        }
-      },
-      insertMessage(){
-        if (!this.newMessage) return;
-        var now = new Date();
-        var time = now.getFullYear()+"-"+
-        ( "0"+( now.getMonth()+1 ) ).slice(-2)+"-"+
-        ( "0"+now.getDate() ).slice(-2)+" "+( "0"+( now.getHours()+1 ) ).slice(-2)+":"+
-        ( "0"+( now.getMinutes()+1 ) ).slice(-2)+":"+( "0"+( now.getSeconds()+1 ) ).slice(-2)
-        console.log(time)
-        axios.post('/api/messages',
-          { message: {
-            sender: 'FullouT',
-            receiver: 'User',
-            contents: this.newMessage,
-            message_type: 'notify',
-            time: time
-          }
-        })
-        .then((res) => {
-          this.newMessage = '';
-          this.fetchMessages();
-        }, (error) => {
-          console.log(error)
-        })
-      },
-      onFileChange(e){
-        let files = e.target.files || e.dataTransfer.files;
-        this.createImage(files[0]);
-      },
-      createImage(file){
-        let reader = new FileReader();
-
-        reader.onload = (e) => {
-          this.uploadedImage = e.target.result;
-          //console.log('uploadedImage'+this.uploadedImage)
-        }
-        reader.readAsDataURL(file);
-        console.log(typeof(this.uploadedImage))
-      }
-    }
-  }
 </script>
 <style scoped>
-.inputArea {
-  width: 100%;
+.title {
   float: left;
-  padding-left: 3em;
-}
-textarea {
-  width: 75%;
-  height: auto;
-}
-.lineArea {
-  white-space: pre-line;
-  background-color: rgba(255, 255, 128, .5);
-  height: 3em;
+  padding-left: 10px;
+  width: 100%;
   text-align: left;
-  padding-left: 15px;
 }
-.send {
-  float: right;
-  padding-right: 3em;
+hr {
+  margin: 5px;
+  width: 95%
 }
-label > input {
-  display: none;
+.allSend-button {
+  background-color: #C0C0C0;
+  color: #2C3250;
+  padding: 5px 5px;
+  border-radius: 10px;
+  border: 1px solid #C0C0C0;
+  box-shadow: 0 0 2px #666;
 }
-
-label {
-  border: solid 1px #888;
+.allSend-button:hover {
+  text-decoration: none;
+  background-color: #2C3250;
+  color: white;
 }
-
-label::after {
-  content: 'ファイル追加';
-  font-size: 1rem;
-  color: #888;
-  padding-left: 5px;
-  padding-right: 5px;
+.allSend-button:focus {
+  outline: none;
 }
+.allSend-button:active {
+  -webkit-transform: translateY(2px);
+  transform: translateY(2px);
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0.15);
+}
+.buttons {
+    padding-bottom: 10px;
+    padding-left: 40px;
+    text-align: left;
+  }
 </style>

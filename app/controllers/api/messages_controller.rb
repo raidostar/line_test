@@ -38,7 +38,7 @@ class Api::MessagesController < ApplicationController
   def index_with_id
     group = current_user.group
     @group = Group.select("group_id").where(group: group)
-    @messages = Message.where(fr_account:params[:fr_account], group_id: @group).order("created_at DESC")
+    @messages = Message.where(fr_account: params[:fr_account], group_id: @group).order("created_at DESC")
     render :index, status: :ok
   end
 
@@ -186,8 +186,6 @@ class Api::MessagesController < ApplicationController
         puts "userInfo"
         puts userInfo
 
-
-
         if event['source']['type'] == 'user'
           profile = client.get_profile(event['source']['userId'])
           profile = JSON.parse(profile.read_body)
@@ -221,11 +219,11 @@ class Api::MessagesController < ApplicationController
     }]
 
     # if msgapi_available
-    messages.push(
-      type: 'sticker',
-      packageId: event.message['packageId'],
-      stickerId: event.message['stickerId']
-      )
+    # messages.push(
+    #   type: 'sticker',
+    #   packageId: event.message['packageId'],
+    #   stickerId: event.message['stickerId']
+    #   )
     group_id = @parsed_body['destination']
     stickerFromUser(profile['displayName'], event.message['stickerId'], event.message['stickerId'], event.message['packageId'], profile['userId'],group_id)
     update_friend_info(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],group_id)
@@ -255,7 +253,7 @@ class Api::MessagesController < ApplicationController
       group_id: group_id
     })
     if @message.save
-      get_number_of_monthly_message
+      render :index, status: :ok
     else
       render json: @message.errors, status: :unprocessable_entity
     end
@@ -291,7 +289,8 @@ class Api::MessagesController < ApplicationController
 
   def block(fr_account)
     friend = Friend.where(fr_account: fr_account)
-    if friend.update(block: 1)
+    now = Time.new
+    if friend.update(block: 1, block_at: now)
       render html: '/api/friends', status: :ok
     else
       render json: @message.errors, status: :unprocessable_entity
@@ -300,7 +299,8 @@ class Api::MessagesController < ApplicationController
 
   def unblock(fr_account)
     friend = Friend.where(fr_account: fr_account)
-    if friend.update(block: 0)
+    now = Time.new
+    if friend.update(block: 0, follow_at: now)
       render html: '/api/friends', status: :ok
     else
       render json: @message.errors, status: :unprocessable_entity
@@ -334,21 +334,17 @@ class Api::MessagesController < ApplicationController
     now = Time.new
     startTime = now.beginning_of_month
     endTime = now.end_of_month
-    group = get_current_user_group
+    group = current_user.group
     @messages = Message.where(created_at: startTime..endTime, receiver: group)
 
     render :index, status: :ok
-  end
-
-  def get_current_user_group
-    return current_user.group
   end
 
   def get_number_of_weekly_message
     now = Time.new
     startTime = now.beginning_of_week
     endTime = now.end_of_week
-    group = get_current_user_group
+    group = current_user.group
     @messages = Message.where(created_at: startTime..endTime, receiver: group)
 
     render :index,  status: :ok
@@ -358,7 +354,7 @@ class Api::MessagesController < ApplicationController
     now = Time.new
     startTime = now.beginning_of_day
     endTime = now.end_of_day
-    group = get_current_user_group
+    group = current_user.group
     @messages = Message.where(created_at: startTime..endTime, receiver: group)
 
     render :index,  status: :ok
@@ -366,8 +362,8 @@ class Api::MessagesController < ApplicationController
 
   def get_number_of_seven_days
     now = Time.new
-    startTime = now.days_ago(6)
-    group = get_current_user_group
+    startTime = now.days_ago(6).beginning_of_day
+    group = current_user.group
     @messages = Message.where(created_at: startTime..now, receiver: group)
 
     render :index,  status: :ok
