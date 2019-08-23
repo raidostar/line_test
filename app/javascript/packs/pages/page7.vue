@@ -44,6 +44,7 @@
           <th>操作</th>
           <th>ヒット数</th>
           <th>フォルダ</th>
+          <th>secret</th>
         </tr>
       </table>
     </div>
