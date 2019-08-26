@@ -12,6 +12,7 @@
   <div class="field input-field">
     <%= f.label :グルプキー %>
     <input type="text" name="user[group_key]" id="user_group_key">
+    <a id="checkId">認証</a>
   </div>
 
   <div class="field input-field">
@@ -50,7 +51,19 @@
     sample += '<option value=\"Amazon Japan\"/>';
 
     $("#group").html(sample);
-
+    $('#checkId').on('click', function(){
+      var group_key = $('#user_group_key').val();
+      alert(group_key)
+      var data = {'group_key': group_key}
+      $.ajax({
+        method: 'post',
+        url: '/find_group_key',
+        data: JSON.stringify(data),
+        success: function(res){
+          alert(res.data);
+        }
+      })
+    })
   })
 </script>
 
@@ -74,9 +87,11 @@
     letter-spacing: 5px;
     text-align: center;
   }
-
   .button:hover {
     background-color: #039be5; /* Green */
     color: white;
+  }
+  #checkId:hover {
+    cursor: pointer;
   }
 </style>

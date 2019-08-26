@@ -1,94 +1,119 @@
 <template>
-  <div class="page" id="page12">
-    <input
-      class="line"
-      type="text"
-      placeholder="input the number of line you wanna see in a page"
-      v-model="line"
-      @click="changeLine"
-      @keydown.enter="changeLine"
-    >
-    <ul class="list">
-      <li v-for="item in getItems">
-        {{ item }}
-      </li>
-    </ul>
-    <paginate
-    :page-count="getPageCount"
-    :page-range="3"
-    :margin-pages="2"
-    :click-handler="clickCallback"
-    :prev-text="'Prev'"
-    :next-text="'Next'"
-    :container-class="'pagination'"
-    :page-class="'page-item'"
-    >
-    </paginate>
+  <div class="page" id="page8">
+    <div class="title area">
+      <h2 class="title">アクション管理<hr/></h2>
+    </div>
+    <div class="col col-left">
+      <div class="label">
+        <i class="material-icons folder">folder_open</i>
+        フォルダ
+        <button class="button" @click="addToggle">
+          <i class="material-icons btnMark">add_circle_outline</i>
+        </button>
+        <button class="button" @click="addToggle">
+          <i class="material-icons btnMark">remove_circle_outline</i>
+        </button>
+      </div>
+      <div v-if="addShow">
+        <i class="material-icons open-file">insert_drive_file</i>
+        <span>
+          <input type="text" v-model="newFolder" id="new-folder" class="new-folder" @keydown.enter="createFolder">
+        </span>
+      </div>
+      <div v-for="(item,index) in folders" class="added-folder">
+        <button style="width: 80%;" class="added-folderBtn" id="added-folderBtn" @click="firstGate(index)">
+          <i class="material-icons open-file-added">insert_drive_file</i>
+          <span>
+            {{item}}
+          </span>
+        </button>
+        <button class="delete" v-if="(selected%folders.length)==index" @click="panelToggle">
+          <i class="material-icons down">keyboard_arrow_down</i>
+        </button>
+        <div class="edit-panel" id="edit-panel" v-if="panelShow&&(selected%folders.length)==index">
+          <button class="folderEdit">rename</button>
+          <button class="folderEdit">remove</button>
+        </div>
+      </div>
+    </div>
+    <div class="col col-right">
+      <table>
+        <tr>
+          <th>
+            <input type="checkbox" class="checkbox" v-model="allCheck" @click="allChecker">
+          </th>
+          <th>テンプレート名</th>
+          <th></th>
+          <th>フォルダ</th>
+          <th></th>
+          <th></th>
+          <th>
+            <button>
+              追加
+            </button>
+          </th>
+        </tr>
+        <tr v-for="(check,index) in templateArray">
+          <td class="check">
+            <input type="checkbox" class="checkbox" :checked="check.bool" @click="oneChecker(index)">
+          </td>
+          <td class="title">
+            {{check.name}}
+          </td>
+          <td class="action">{{check.bool}}</td>
+          <td class="edit">샘플</td>
+          <td class="hitcount">샘플</td>
+          <td class="category-in">샘플</td>
+          <td></td>
+        </tr>
+      </table>
+    </div>
   </div>
 </template>
 <script>
+  import axios from 'axios'
   export default {
-    data(){
+    name: 'sendAll',
+    data: function(){
       return {
-        parPage: 30,
-        currentPage: 1,
-        items: [],
-        line: 1
+        addShow: false,
+        folders: [],
+        newFolder: '',
+        selected: null,
+        panelShow: false,
+        allCheck: false,
+        templateArray: [{name: 'kakasi', bool: false}, {name: 'obito', bool: false}]
       }
     },
     mounted: function(){
-      for(var i=1; i<=110; i++){
-        this.items.push('item-'+i);
-      }
-      console.log(this.viewChange)
+
     },
     methods: {
-      clickCallback(pageNum){
-        this.currentPage = Number(pageNum);
+      addToggle(){
+        this.addShow = !this.addShow;
+        this.$nextTick(() => document.getElementById('new-folder').focus());
       },
-      changeLine(){
-        console.log(typeof(this.line))
-        this.line *=1;
-        if (typeof(this.line)=='number')
-        this.parPage = this.line
-      }
-    },
-    computed: {
-      getItems(){
-        let current = this.currentPage * this.parPage;
-        let start = current - this.parPage;
-        return this.items.slice(start, current);
+      createFolder(){
+        this.folders.push(this.newFolder);
+        this.newFolder = '';
+        this.addShow = !this.addShow;
       },
-      getPageCount(){
-        return Math.ceil(this.items.length / this.parPage)
+      firstGate(index){
+        this.selected = index
+        this.panelShow = false;
+      },
+      panelToggle(){
+        this.panelShow = !this.panelShow
+      },
+      allChecker(){
+        for(let obj of this.templateArray){
+          obj.bool = !this.allCheck
+        }
+      },
+      oneChecker(index){
+        this.templateArray[index].bool = !this.templateArray[index].bool
       }
     }
   }
 </script>
-<style scoped>
-#page12 {
-  padding-top: 5em;
-  height: 20em;
-}
-li:active{
-  text-decoration: none;
-}
-a {
-  width: 10em;
-}
-a:active {
-  text-decoration: none;
-}
-a:hover {
-  text-decoration: none;
-}
-#selectArea {
-  padding-top: 100px;
-  height: 20em;
-  width: 20em;
-}
-input.line {
-  width: 40%;
-  text-align: center;
-}
-</style>
+<style scoped src="../components/common/common1.css"/>

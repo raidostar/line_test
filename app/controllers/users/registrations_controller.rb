@@ -1,6 +1,5 @@
 # frozen_string_literal: true
-
-class [scope]::RegistrationsController < Devise::RegistrationsController
+class RegistrationsController < Devise::RegistrationsController
   clear_respond_to
   respond_to :json
   skip_before_action :verify_authenticity_token, only: [:destroy, :create]
@@ -41,9 +40,9 @@ class [scope]::RegistrationsController < Devise::RegistrationsController
   # end
 
   def show_with_group_key
-    @group = Group.where(groups_params)
+    puts "here??"
+    puts groups_params
     puts @group.present?
-    render :show, status: :ok
   end
 
   protected
@@ -69,8 +68,6 @@ class [scope]::RegistrationsController < Devise::RegistrationsController
   # end
 
   def groups_params
-    params.fetch(:groups, {}).permit(
-      :id, :group, :group_id, :created_at, :updated_at
-    )
+    params.require(:group).permit(:group_id)
   end
 end

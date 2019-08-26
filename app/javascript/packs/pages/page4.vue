@@ -7,7 +7,7 @@
       </div>
       <ul class="friendsList">
         <li v-for="friend in friendsList">
-          <button @click="fetchMessages(friend.fr_account,friend.id)">
+          <button class="frBtn" @click="fetchMessages(friend.fr_account,friend.id)">
             <img :src="friend.profile_pic" class="profile_img">
             {{friend.fr_name}}
           </button>
@@ -234,5 +234,14 @@
   height: 50px;
   margin: 0px 0px;
   padding: 0px 0px;
+}
+.frBtn {
+  width: 100%;
+  height: 100%;
+  text-align: left;
+  -webkit-appearance: media-sliderthumb;
+}
+.frBtn:focus {
+  background-color: #CCFFFF;
 }
 </style>

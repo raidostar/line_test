@@ -37,8 +37,7 @@
     }
   }
 </script>
-<style lang="scss">
-
+<style lang="css">
 p {
   margin: 0;
   padding: 0;
@@ -59,19 +58,20 @@ p {
   transform: translate(-50%, -50%);
   color: #daf6ff;
   text-shadow: 0 0 20px rgba(10, 175, 230, 1),  0 0 20px rgba(10, 175, 230, 0);
-  .time {
-    letter-spacing: 0.05em;
-    font-size: 80px;
-    padding: 5px 0;
-  }
-  .date {
-    letter-spacing: 0.1em;
-    font-size: 24px;
-  }
-  .text {
-    letter-spacing: 0.1em;
-    font-size: 12px;
-    padding: 20px 0 0;
-  }
+
+}
+.time {
+  letter-spacing: 0.05em;
+  font-size: 80px;
+  padding: 5px 0;
+}
+.date {
+  letter-spacing: 0.1em;
+  font-size: 24px;
+}
+.text {
+  letter-spacing: 0.1em;
+  font-size: 12px;
+  padding: 20px 0 0;
 }
 </style>

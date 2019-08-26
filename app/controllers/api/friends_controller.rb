@@ -51,7 +51,7 @@ class Api::FriendsController < ApplicationController
 
   def get_weekly_friend_info
     @timeArray = []
-    for i in 0..6
+    for i in 1..7
       info = Hash.new
 
       time = Time.new

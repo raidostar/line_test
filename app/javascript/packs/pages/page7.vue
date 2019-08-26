@@ -1,7 +1,7 @@
 <template>
   <div class="page" id="page7">
     <div class="title area">
-      <h2 class="title">一斉配信<hr/></h2>
+      <h2 class="title">自動応答<hr/></h2>
     </div>
     <div class="col col-left">
       <div class="label">
@@ -11,7 +11,7 @@
           <i class="material-icons btnMark">add_circle_outline</i>
         </button>
         <button class="button" @click="addToggle">
-          <i class="material-icons btnMark">add_circle_outline</i>
+          <i class="material-icons btnMark">remove_circle_outline</i>
         </button>
       </div>
       <div v-if="addShow">
@@ -39,12 +39,32 @@
     <div class="col col-right">
       <table>
         <tr>
+          <th>
+            <input type="checkbox" class="checkbox" v-model="allCheck" @click="allChecker">
+          </th>
           <th>自動応答名</th>
           <th>アクション</th>
           <th>操作</th>
           <th>ヒット数</th>
           <th>フォルダ</th>
-          <th>secret</th>
+          <th>
+            <button class="button">
+              <i class="material-icons btnMark">add_circle_outline</i>
+            </button>
+          </th>
+        </tr>
+        <tr v-for="(check,index) in replyArray">
+          <td class="check">
+            <input type="checkbox" class="checkbox" :checked="check.bool" @click="oneChecker(index)">
+          </td>
+          <td class="title">
+            {{check.name}}
+          </td>
+          <td class="action">{{check.bool}}</td>
+          <td class="edit">샘플</td>
+          <td class="hitcount">샘플</td>
+          <td class="category-in">샘플</td>
+          <td></td>
         </tr>
       </table>
     </div>
@@ -61,6 +81,8 @@
         newFolder: '',
         selected: null,
         panelShow: false,
+        allCheck: false,
+        replyArray: [{name: 'kakasi', bool: false}, {name: 'obito', bool: false}]
       }
     },
     mounted: function(){
@@ -82,6 +104,14 @@
       },
       panelToggle(){
         this.panelShow = !this.panelShow
+      },
+      allChecker(){
+        for(let obj of this.replyArray){
+          obj.bool = !this.allCheck
+        }
+      },
+      oneChecker(index){
+        this.replyArray[index].bool = !this.replyArray[index].bool
       }
     }
   }
@@ -195,6 +225,7 @@ input[type=text] {
   background-color: white;
   color: black;
   width: 100%;
+  -webkit-appearance: media-sliderthumb;
 }
 .added-folderBtn:hover {
   cursor: pointer;
@@ -227,8 +258,8 @@ input[type=text] {
   position: relative;
   background-color: #17a2b8;
   padding: 0px;
-  left: 230px;
-  top: 0px;
+  left: 250px;
+  top: -10px;
   width: 130px;
   height: 80px;
   z-index: 100;
@@ -243,6 +274,16 @@ input[type=text] {
 .col-right {
   float: right;
   width: 70%;
-
+  margin-right: 50px;
+}
+table {
+  margin-top: -12px;
+}
+input[type=checkbox]{
+  position: relative;
+  opacity: 1;
+  pointer-events: visible;
+  border: 1px solid;
+  display: inherit;
 }
 </style>

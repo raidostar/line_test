@@ -2,7 +2,7 @@
   <div class="page" id="page5">
     <div>
       <div class="title area">
-        <h2 class="title">サービス管理<hr/></h2>
+        <h2 class="title">シナリオ配信<hr/></h2>
       </div>
       <div class="buttons">
         <button class="svc-button" @click="formToggle">サービス登録</button>
