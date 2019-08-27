@@ -3,8 +3,12 @@ class Api::GroupsController < ApplicationController
   end
 
   def show_with_group_key
-    @group = Group.where(group_key: params[:group_key])
-    render :show, status: :ok
+    @group = Group.find_by(group: params[:group],group_key: params[:group_key])
+    if @group.present?
+      render :show, status: :ok
+    else
+      puts "no data"
+    end
   end
 
   def create

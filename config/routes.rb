@@ -5,6 +5,7 @@ Rails.application.routes.draw do
   devise_for :users, contorllers: {
     sessions: 'users/sessions'
   }
+
   root 'home#index'
 
   namespace :api, format: 'json' do
@@ -45,14 +46,16 @@ Rails.application.routes.draw do
   post '/find_message' => 'api/messages#show_with_id'
   post '/find_messages' => 'api/messages#index_with_id'
   post '/show_current' => 'api/users#show_current_user'
-  post '/find_group_key' => 'users/registrations#show_with_group_key'
+
   post '/number_of_monthly' => 'api/messages#get_number_of_monthly_message'
   post '/number_of_weekly' => 'api/messages#get_number_of_weekly_message'
   post '/number_of_daily' => 'api/messages#get_number_of_daily_message'
   post '/number_of_seven_days' => 'api/messages#get_number_of_seven_days'
+  post '/find_group_key' => 'api/groups#show_with_group_key'
   # post '/add_number' => 'api/friends#number_of_add_by_date'
   # post '/block_number' => 'api/friends#number_of_block_by_date'
   # post '/week_date' => 'api/friends#get_date_info'
   post '/weekly_friend_info' => 'api/friends#get_weekly_friend_info'
+
 
 end

@@ -1,4 +1,4 @@
-FROM ruby:2.4.0
+FROM ruby:2.5.5
 
 ENV APP_ROOT /my_app
 RUN apt-get update -qq && \

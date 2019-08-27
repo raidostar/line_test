@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-class RegistrationsController < Devise::RegistrationsController
+class [scope]::RegistrationsController < Devise::RegistrationsController
   clear_respond_to
   respond_to :json
   skip_before_action :verify_authenticity_token, only: [:destroy, :create]
