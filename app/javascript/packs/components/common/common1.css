@@ -1,5 +1,5 @@
 .page {
-  height: 91vh;
+  height: auto;
 }
 .label{
   border-bottom: 2px solid grey;
@@ -30,7 +30,7 @@
   font-size: 20px;
   color: #00B900;
   line-height: 42px;
-  padding-left: 60px;
+  padding-left: 20px;
 }
 .title {
   float: left;
@@ -92,9 +92,11 @@ input[type=text] {
 .open-file-added {
   font-size: 20px;
   line-height: 39px;
-  padding-left: 40px;
+  padding-left: 4px;
 }
 .added-folder {
+  position: relative;
+  margin-top: 5px;
   height: 40px;
   line-height: 40px;
   text-align: center;
@@ -103,6 +105,8 @@ input[type=text] {
   font-size: 20px;
 }
 .added-folderBtn {
+  padding-top: 0px;
+  padding-bottom: 0px;
   background-color: white;
   color: black;
   width: 100%;
@@ -120,9 +124,10 @@ input[type=text] {
 }
 .added-folderBtn:focus {
   outline: none;
-  background-color: #CCFFFF;
+  background-color: #444;
+  color: white;
 }
-.delete {
+.detail {
   color: #333;
   background-color: #fff;
   border-color: #ccc;
@@ -137,9 +142,8 @@ input[type=text] {
 }
 .edit-panel {
   position: relative;
-  background-color: white;
+  background-color: #17a2b8;
   padding: 0px;
-  margin: 0px;
   left: 250px;
   top: -10px;
   width: 130px;
@@ -158,6 +162,9 @@ input[type=text] {
   width: 70%;
   margin-right: 50px;
 }
+table {
+  margin-top: -12px;
+}
 input[type=checkbox]{
   position: relative;
   opacity: 1;
@@ -165,9 +172,28 @@ input[type=checkbox]{
   border: 1px solid;
   display: inherit;
 }
-table {
-  margin-top: -12px;
+input[type=text] {
+  float: left;
+  margin-right: 0px;
 }
-.checkbox {
+.addFolderBtn {
+  float: right;
+  height: 40px;
+  width: 50px;
+  margin-top: 5px;
   margin-right: 20px;
+
+  background: #1AAB8A;
+  color:#fff;
+  border:none;
+  position:relative;
+  cursor:pointer;
+  transition:800ms ease all;
+  outline:none;
+}
+.addFolderBtn:hover {
+  opacity: 0.8;
+}
+.addFolderBtn:focus {
+  outline: none;
 }

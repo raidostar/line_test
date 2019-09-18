@@ -34,13 +34,31 @@ Rails.application.routes.draw do
   post '/callback' => 'api/showmes#callback'
 
   namespace :api, format: 'json' do
-    resources :friends, only: [:index, :show]
+    resources :friends
   end
-
-  resources :friends
 
   namespace :api, format: 'json' do
     resources :groups, only: [:index,:create]
+  end
+
+  namespace :api, format: 'json' do
+    resources :notifies, only: [:index,:show]
+  end
+
+  namespace :api, format: 'json' do
+    resources :emojis, only: [:index,:create]
+  end
+
+  namespace :api, format: 'json' do
+    resources :tags
+  end
+
+  namespace :api, format: 'json' do
+    resources :options
+  end
+
+  namespace :api, format: 'json' do
+    resources :reactions
   end
 
   post '/find_message' => 'api/messages#show_with_id'
@@ -56,6 +74,8 @@ Rails.application.routes.draw do
   # post '/block_number' => 'api/friends#number_of_block_by_date'
   # post '/week_date' => 'api/friends#get_date_info'
   post '/weekly_friend_info' => 'api/friends#get_weekly_friend_info'
-
-
+  post '/create_notify' => 'api/showmes#create_notify'
+  # get '/emojis' =>'api/showmes#index_emoji'
+  get 'api/cancel_reaction' => 'api/reactions#cancel_reaction'
+  get '*path', controller: 'application', action: 'render_404'
 end

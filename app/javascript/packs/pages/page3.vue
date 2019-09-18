@@ -56,7 +56,7 @@
 <script>
   import axios from 'axios'
   export default {
-    name: 'messageList',
+    name: 'MessageList',
     data(){
       return {
         messageList: [],
@@ -74,6 +74,9 @@
           for(let message of res.data.messages){
             let time = message.created_at+""
             message.created_at = time.substr(0,19).replace('T'," ")
+            if(message.message_type=='text'&&message.contents.length>30){
+              message.contents=message.contents.substr(0,30)+'...'
+            }
           }
           this.messageList = res.data.messages
         }, (error) => {

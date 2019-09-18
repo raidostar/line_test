@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  match_action: MyString
+  action_count: 1
+  tag: MyString
+
+two:
+  name: MyString
+  match_action: MyString
+  action_count: 1
+  tag: MyString

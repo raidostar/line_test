@@ -27,6 +27,19 @@ Rails.application.configure do
     config.cache_store = :null_store
   end
 
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.perform_deliveries = true
+  config.action_mailer.default_url_options = {host: 'localhost:3000'}
+  ActionMailer::Base.smtp_settings = {
+    :address              => 'smtp.gmail.com',
+    :domain               => 'mail.google.com',
+    :port                 => 587,
+    :user_name            => "k-joo@fullout.jp",
+    :password             => ENV["EMAIL_PASSWORD"],
+    :authentication       => 'login',
+    :enable_starttls_auto => true
+  }
+
   # Store uploaded files on the local file system (see config/storage.yml for options)
   config.active_storage.service = :local
 

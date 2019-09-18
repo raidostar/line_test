@@ -9,6 +9,27 @@ class Api::FriendsController < ApplicationController
     @friend = Friend.find(params[:id])
   end
 
+  def update
+    @friend = Friend.find(params[:id])
+    tags = params[:tags].split(",")
+    tags.each do |tag|
+      group = current_user.group
+      @tag = Tag.where(name: tag, user_group: group, tag_group: 'friend')
+      if !@tag.present?
+        @tag = Tag.new({name: tag, user_group: group, tag_group: 'friend'})
+        if @tag.save
+        else
+          render json: @tag.errors, status: :unprocessable_entity
+        end
+      end
+    end
+    if @friend.update(friends_params)
+      render :show, status: :ok
+    else
+      render json: @friend.errors, status: :unprocessable_entity
+    end
+  end
+
   def number_of_add_by_date
     time = Time.new
     startDay = time.days_ago(6).beginning_of_day
@@ -85,6 +106,14 @@ class Api::FriendsController < ApplicationController
     end
 
     render json: @timeArray, status: :ok
+  end
+
+  private
+
+  def friends_params
+    params.require(:friend).permit(
+      :id, :fr_account, :fr_name, :profile_pic, :profile_msg, :block, :created_at, :updated_at, :group_id, :last_message_time, :block_at, :follow_at, :tags
+    )
   end
 
 end

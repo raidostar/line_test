@@ -1,16 +1,81 @@
-<h2>Forgot your password?</h2>
+<div class="col left">side</div>
+<div class="col center">
+  <h2 class="title">パスワードを忘れましたか。</h2>
 
-<%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
+  <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
   <%= render "devise/shared/error_messages", resource: resource %>
 
   <div class="field">
-    <%= f.label :email %><br />
-    <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
+    <%= f.label :email %><br/>
+    <input class="email" autofocus="autofocus" autocomplete="email" type="email" value="" name="user[email]" id="user_email">
   </div>
 
   <div class="actions">
-    <%= f.submit "Send me reset password instructions" %>
+    <button class="submit" type="submit" name="commit" data-disable-with="Send me reset password instructions">
+      パスワード変更メール配信
+    </button>
   </div>
-<% end %>
+  <% end %>
 
-<%= render "devise/shared/links" %>
+  <br/><br/>
+  <div class="small join">
+    <a href="/users/sign_up">会員登録する</a>
+  </div>
+</div>
+<div class="col right">
+  <div class="small back">
+    <a href="/users/sign_in">ログイン画面に戻る</a>
+  </div>
+</div>
+
+<style scoped>
+  html {
+    background-color: white;
+  }
+  .center{
+    margin-top: 10em;
+  }
+  .col {
+    float: left;
+    background-color: white;
+    text-align: center;
+  }
+  .submit {
+    width: 100%;
+    cursor: pointer;
+    -webkit-transition-duration: 0.4s;
+    transition-duration: 0.4s;
+    border-radius: 10px;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    letter-spacing: 5px;
+    text-align: center;
+  }
+  .submit:hover {
+    color: #FFF;
+    cursor: pointer;
+    background-color: #009b00;
+  }
+  .left {
+    width: 27%;
+    color: white;
+    opacity: 0;
+  }
+  .btnContent {
+    color: white;
+    z-index: 100;
+  }
+  .email:focus {
+    border-bottom: 1px solid #009b00;
+    box-shadow: 0 1px 0 0 #009b00;
+  }
+  .small a{
+    color: #009b00;
+  }
+  .back {
+    margin: 20px 20px;
+  }
+</style>

@@ -14,6 +14,7 @@ import Page9 from './pages/page9.vue'
 import Page10 from './pages/page10.vue'
 import Page11 from './pages/page11.vue'
 import Page12 from './pages/page12.vue'
+import Page13 from './pages/page13.vue'
 import personalPage from './pages/personalPage.vue'
 
 import axios from 'axios'
@@ -24,6 +25,7 @@ import Chartkick from 'vue-chartkick'
 import Chart from 'chart.js'
 import animate from 'animate.css'
 import Paginate from 'vuejs-paginate'
+import * as VueGoogleMaps from 'vue2-google-maps'
 
 axios.defaults.headers.common = {
     'X-Requested-With': 'XMLHttpRequest',
@@ -40,6 +42,13 @@ Chartkick.options = {
 Vue.use(Chartkick.use(Chart))
 Vue.use(animate)
 Vue.component('paginate', Paginate)
+Vue.use(VueGoogleMaps, {
+  load: {
+    key: 'AIzaSyDveRX7Bi5rvU26eCLTyB2bGVbsq5Cg4pQ',
+    libraries: 'places',
+    language: 'ja'
+  }
+})
 
 const routes = [
   { path: '/', component: Page1 },
@@ -54,6 +63,7 @@ const routes = [
   { path: '/page10', component: Page10 },
   { path: '/page11', component: Page11 },
   { path: '/page12', component: Page12 },
+  { path: '/page13', component: Page13 },
   { path: '/personalPage/:id', component: personalPage, props: true},
 ];
 

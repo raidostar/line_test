@@ -15,7 +15,8 @@ export default {
       position: undefined,
       show: false,
       userid: '',
-      group: ''
+      group: '',
+      loading: true,
     }
   },
   mounted: function(){
@@ -25,5 +26,5 @@ export default {
     },(error)=>{
       console.log(error)
     })
-  }
+  },
 }

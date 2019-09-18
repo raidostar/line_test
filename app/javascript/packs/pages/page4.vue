@@ -33,7 +33,7 @@
       </ul>
       <div class="message chatting-text" v-model="friend">
         <button class="refresh" @click="fetchMessages(friend.fr_account)">
-          <i class="material-icons" style="color: white; padding-left: 7em;">loop</i>
+          <i class="material-icons animated fadeIn infinite duration-5s" style="color: white; padding-left: 7em;">loop</i>
         </button>
       </div>
     </div>
@@ -70,7 +70,7 @@
 <script>
   import axios from 'axios'
   export default {
-    name: 'page4',
+    name: 'personalMessages',
     data(){
       return {
         friendsList: [],
@@ -243,5 +243,9 @@
 }
 .frBtn:focus {
   background-color: #CCFFFF;
+}
+.rotate {
+  z-index: 1000;
+  animation: flip infinite;
 }
 </style>

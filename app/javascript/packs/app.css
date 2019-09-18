@@ -123,3 +123,21 @@ button:active {
 a:focus {
   outline: none;
 }
+.keywordsTag {
+  color: #007FFF;
+  margin-right: 10px;
+  margin-top: 3px;
+  padding: 0px 8px;
+  border-radius: 8px;
+  font-size: 17px;
+}
+.keywordsTag:focus {
+  outline: none;
+}
+.keywordsTag:active {
+  background-color: #007FFF;
+  color: white;
+}
+.hide-on-med-and-down {
+  height: 100%;
+}

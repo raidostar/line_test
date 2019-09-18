@@ -91,7 +91,7 @@
     methods: {
       addToggle(){
         this.addShow = !this.addShow;
-        this.$nextTick(() => document.getElementById('new-folder').focus());
+        //this.$nextTick(() => document.getElementById('new-folder').focus());
       },
       createFolder(){
         this.folders.push(this.newFolder);

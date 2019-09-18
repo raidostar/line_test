@@ -1,0 +1,19 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  contents: MyText
+  reaction_type: MyString
+  user_group: MyString
+  target_tag: MyString
+  target_number: 1
+  image: MyString
+
+two:
+  name: MyString
+  contents: MyText
+  reaction_type: MyString
+  user_group: MyString
+  target_tag: MyString
+  target_number: 1
+  image: MyString
