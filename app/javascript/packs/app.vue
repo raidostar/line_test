@@ -25,7 +25,7 @@
             <i class="material-icons">email</i>
             メッセージ
           </li>
-          <li><router-link class="pageLink" to="/page5">サービス管理</router-link></li>
+          <li><router-link class="pageLink" to="/page5">シナリオ配信</router-link></li>
           <li><router-link class="pageLink" to="/page6">一斉配信</router-link></li>
           <li><router-link class="pageLink" to="/page7">自動応答</router-link></li>
           <li><router-link class="pageLink" to="/page8">テンプレート</router-link></li>
@@ -37,7 +37,7 @@
             <i class="material-icons">person</i>
             マイページ
           </li>
-          <li><router-link class="pageLink" to="/page12">個人情報設定</router-link></li>
+          <li><router-link class="pageLink" to="/page13">個人情報設定</router-link></li>
           <li>
             <a class="pageLink" rel="nofollow" data-method="delete" href="/users/sign_out">
               ログアウト
@@ -49,7 +49,7 @@
     <div id="page">
       <router-view/>
     </div>
-    <Footer msg="This is common footer rendered by vue's single file components"></Footer>
+    <Footer msg="This is common footer rendered by vue's single file components"/>
   </div>
 </template>
 

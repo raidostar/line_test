@@ -18,10 +18,8 @@
     </div>
   </div>
 </template>
-
 <script>
   import axios from 'axios'
-
   export default {
     name: 'page6',
     data(){
@@ -121,7 +119,9 @@ label > input {
 label {
   border: solid 1px #888;
 }
-
+label:hover {
+  cursor: pointer;
+}
 label::after {
   content: 'ファイル追加';
   font-size: 1rem;

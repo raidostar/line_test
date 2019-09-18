@@ -5,10 +5,47 @@
         <img :src="friend.profile_pic" class="profile_img">
         <span>{{friend.fr_name}}</span>
         <div style="float: right;" class="settings">
-          <i class="material-icons">settings</i>
+          <i class="material-icons" @click="detailToggle">settings</i>
         </div>
       </h2>
     </div>
+    <transition name="fadeInOut">
+      <div class="personDetails" v-if="detailShow">
+        <div class="detail panel-left">
+          <div class="detailLine">
+            <span class="detailTitle">登録日時</span>
+            <span class="detailInfo">{{friend.created_at}}</span>
+          </div>
+          <div class="detailLine">
+            <span class="detailTitle">応答率</span>
+            <span class="detailInfo">15%(sample)</span>
+          </div>
+          <div class="detailLine">
+            <span class="detailTitle">メッセージ値</span>
+            <span class="detailInfo">10000件(sample)</span>
+          </div>
+        </div>
+        <div class="detail panel-right">
+          <div style="line-height: 42px;">
+            <span class="settingTag" style="float: left;">タグ設定</span>
+            <input type="text" name="option[target_keyword]" v-model="tag" class="tagInput" @keydown.enter="createTag">
+            <a @click="clearTagInput" v-if="tag">
+              <i class="material-icons tag_cancel">cancel</i>
+            </a>
+          </div>
+          <div style="margin-top: 60px;">
+            <span style="font-size: 14px;">タグ : </span>
+            <span v-for="(tag,index) in tags" v-model="tags" style="margin-top: 10px;">
+              <button class="keywordsTag" @click="removeTag(index)">{{tag}}</button>
+            </span>
+          </div>
+          <div style="margin-top: 10px; float: right;">
+            <button @click="updateTag">設定</button>
+            <button>キャンセル</button>
+          </div>
+        </div>
+      </div>
+    </transition>
     <div class="left-panel">
       <div>
         <button class="profile_menu" to="/friendslist" @click="baseNum=0">タイムライン</button>
@@ -59,18 +96,25 @@
         time : [],
         zero: 0, one: 0, two: 0, three: 0, four: 0, five: 0, six: 0, seven: 0, eight: 0, nine: 0, ten: 0,
         eleven: 0,twelve: 0, thirteen: 0, fourteen: 0, fifteen: 0, sixteen: 0, seventeen: 0, eighteen: 0,
-        nineteen: 0, twenty: 0, t_one: 0, t_two: 0, t_three: 0
+        nineteen: 0, twenty: 0, t_one: 0, t_two: 0, t_three: 0,
+        detailShow: false,
+        tag: '',
+        tags: [],
       }
     },
     mounted: function(){
-      this.showProfile();
+      this.fetchFriend();
     },
     methods: {
-      showProfile(){
+      fetchFriend(){
         const url = '/api/friends/'+this.id
         axios.get(url).then((res)=>{
           this.friend = res.data.friend
           let fr_account = this.friend.fr_account
+          this.friend.created_at = this.friend.created_at.substr(0,16).replace('T',' ');
+          if(this.friend.tags.length>0){
+            this.tags = this.friend.tags.split(",")
+          }
           this.fetchMessages(fr_account)
         },(error)=>{
           console.log(error)
@@ -191,10 +235,10 @@
         for(let msg of messages){
           switch(msg.message_type){
             case 'text':
-              this.text++;
+            this.text++;
             break;
             case 'sticker':
-              this.sticker++;
+            this.sticker++;
             break;
           }
         }
@@ -202,6 +246,46 @@
         this.messageType.push(['スタンプ', this.sticker]);
         console.log(this.messageType)
       },
+      detailToggle(){
+        this.detailShow = !this.detailShow
+      },
+      createTag(){
+        if(!this.tag) return;
+        if(this.tag.search(",")>-1||this.tag.search("、")>-1) {
+          alert("タグはキーワードになれません。")
+          return;
+        }
+        if(this.tags.length>=10){
+          alert("タグは最大10個まで登録できます。")
+          return;
+        }
+        this.tags.push(this.tag)
+        this.tag = '';
+      },
+      clearTagInput(){
+        this.tag = ""
+      },
+      removeTag(index){
+        var start = index;
+        if (index != this.tags.length-1){
+          for(var i=start;i<this.tags.length-1;i++){
+            this.tags[i] = this.tags[i+1]
+          }
+        }
+        this.tags.pop();
+      },
+      updateTag(){
+        axios.put('api/friends/'+this.friend.id,{
+          tags: this.tags.toString()
+        }).then((res)=>{
+          alert("タグ修正完了")
+          this.tag = '';
+          this.fetchFriend();
+        },(error)=>{
+          console.log(error)
+        })
+        this.friend.id
+      }
     }
   }
 </script>
@@ -209,6 +293,7 @@
 .box {
   margin: 10px 10px;
   padding: 10px 10px;
+  margin-bottom: 0px;
   text-align: left;
   width: 98%;
   height: 6em;
@@ -247,6 +332,7 @@
   padding: 0px 10px;
 }
 .profile_menu {
+  font-weight: 600;
   background-color: #C0C0C0;
   color: #2C3250;
   padding: 5px 5px;
@@ -273,5 +359,60 @@ button:focus {
   outline: none;
   background-color: #2C3250;
   color: white;
+}
+.personDetails {
+  margin: 10px 10px;
+  padding: 10px 10px;
+  text-align: left;
+  width: 98%;
+  height: 13em;
+  border: 1px solid #FFF;
+  border-radius: 8px;
+  box-shadow: 0 0 10px #666;
+}
+.fadeInOut-enter-active {
+  animation: fadeInDown .5s;
+}
+.fadeInOut-leave-active {
+  animation: fadeInDown .5s reverse;
+}
+.detail {
+  width: 49%;
+  height: 100%;
+  border-radius: 8px;
+}
+.panel-left {
+  border: 1px solid #FFF;
+  box-shadow: 0 0 10px #666;
+  float: left;
+  padding: 15px 15px;
+}
+.panel-right {
+  border: 1px solid #FFF;
+  box-shadow: 0 0 10px #666;
+  float: right;
+  padding: 15px 15px;
+}
+.detailTitle {
+  font-size: 20px;
+  font-weight: 500;
+  float: left;
+}
+.detailInfo {
+  margin-left: 40px;
+}
+.detailLine {
+  width: 100%;
+  margin: 15px 0px;
+}
+input.tagInput {
+  float: left;
+  width: 60%;
+  margin-left: 30px;
+}
+.settingTag {
+  font-size: 20px;
+  font-weight: 500;
+  float: left;
 }
 </style>

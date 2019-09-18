@@ -21,6 +21,6 @@
 
 <style scoped>
   .footer{
-    background: aliceblue;
+    height: auto;
   }
 </style>

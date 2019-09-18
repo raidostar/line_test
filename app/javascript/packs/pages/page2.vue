@@ -22,7 +22,7 @@
           <td><span>確認済み</span></td>
           <td style="text-align: left; padding-left: 100px;">
             <img :src="friend.profile_pic" class="profile_img">
-            {{friend.fr_name}}
+            <router-link class="personalPage" :to="'/personalPage/'+friend.id">{{friend.fr_name}}</router-link>
           </td>
           <td>停止中</td>
           <td
@@ -48,7 +48,7 @@
 <script>
   import axios from 'axios'
   export default {
-    name: 'friendslist',
+    name: 'friendsList',
     data: function(){
       return {
         friendsList: [],

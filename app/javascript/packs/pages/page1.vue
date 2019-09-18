@@ -139,7 +139,7 @@
 <script>
   import axios from 'axios'
   export default {
-    name: 'global_footer',
+    name: 'MainPage',
     data: function(){
       return{
         month: null,

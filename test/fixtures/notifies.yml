@@ -1,0 +1,19 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  sender: MyString
+  receiver: MyString
+  contents: MyString
+  notify_type: MyString
+  fr_account: MyString
+  group_id: MyString
+  target_tag: MyString
+
+two:
+  sender: MyString
+  receiver: MyString
+  contents: MyString
+  notify_type: MyString
+  fr_account: MyString
+  group_id: MyString
+  target_tag: MyString
