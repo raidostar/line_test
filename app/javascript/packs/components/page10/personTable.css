@@ -1,0 +1,59 @@
+.status {
+  background-color: #B06EBA;
+  padding: 0.5px;
+  margin: 0px;
+  border: 1;
+  border-color: black;
+  width: 10%;
+}
+.name {
+  background-color: #B06EBA;
+  padding: 0.5px;
+  margin: 0px;
+  border: 1;
+  border-color: black;
+  width: 16%;
+}
+.gender {
+  background-color: #B06EBA;
+  padding: 0.5px;
+  margin: 0px;
+  border: 1px;
+  border-color: black;
+  width: 16%;
+}
+.age {
+  background-color: #B06EBA;
+  padding: 0.5px;
+  margin: 0px;
+  border: 1px;
+  border-color: black;
+  width: 14%;
+}
+.join_in{
+  background-color: #B06EBA;
+  padding: 0.5px;
+  margin: 0px;
+  border: 1px;
+  border-color: black;
+  width: 20%;
+}
+.personInfo {
+  background-color: #fff;
+  border: 1;
+  border-color: black;
+}
+.material-icons {
+  font-size: 15.5px;
+  border-radius: 100%;
+}
+td {
+  text-align: center;
+  height: 8px;
+  padding: 8px;
+}
+.page-item a {
+  outline-color: inherit;
+  outline-width: inherit;
+  outline-style: none;
+}

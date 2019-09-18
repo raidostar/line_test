@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  group: MyString
+  follower: 1
+  targetedReaches: 1
+  blocks: 1
+
+two:
+  group: MyString
+  follower: 1
+  targetedReaches: 1
+  blocks: 1

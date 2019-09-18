@@ -1,0 +1,166 @@
+<h2 class="center">会員登録</h2>
+<div class="bigBox">
+  <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+  <%= render "devise/shared/error_messages", resource: resource %>
+
+  <div class="field input-field">
+    <%= f.label :グルプ名 %>
+    <input autofocus="autofocus" type="text" name="user[group]" id="user_group">
+    <!--<%= f.text_field :group, autofocus: true %> -->
+  </div>
+
+  <div class="field input-field">
+    <%= f.label :グルプキー %>
+    <input type="password" name="user[group_key]" id="user_group_key">
+    <div>
+      <i class="material-icons" id="invisible" >
+        visibility_off
+      </i>
+      <i class="material-icons" id="visible" >
+        visibility
+      </i>
+    </div>
+    <span id="checker"></span>
+    <a id="checkId">認証</a>
+  </div>
+
+  <div class="field input-field">
+    <%= f.label :email %>
+    <%= f.email_field :email, autocomplete: "email" %>
+  </div>
+
+  <div class="field input-field">
+    <%= f.label :パスワード %>
+    <%= f.password_field :password, autocomplete: "new-password" %>
+  </div>
+
+  <div class="field input-field">
+    <%= f.label :パスワード確認 %>
+    <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
+  </div>
+
+  <div class="field input-field">
+    <%= f.label :代表番号 %>
+    <input type="text" name="user[group_phone_number]" id="user_group_phone">
+  </div>
+
+  <div class="actions">
+    <button id="joinBtn" class="button" type="button" name="commit" data-disable-with="Sign up">登録する</button>
+  </div>
+  <% end %>
+
+  <a class="right" href="/users/sign_in">ログイン画面に戻る</a>
+</div>
+<script>
+  $(function(){
+    $.ajaxSetup({
+      headers: {
+        'X-CSRF-TOKEN': $('input[name="authenticity_token"]').val()
+      }
+    });
+    let validation = false;
+    let visible = false;
+    var sample = ''
+    sample += '<option value=\"Rakuten\"/>';
+    sample += '<option value=\"Softbank\"/>';
+    sample += '<option value=\"Google Japan\"/>';
+    sample += '<option value=\"Amazon Japan\"/>';
+
+    $("#group").html(sample);
+
+    $('#checkId').on('click', function(){
+      var group = $('#user_group').val();
+      var group_key = $('#user_group_key').val();
+
+      var data = {"group": group, "group_key": group_key}
+      $.ajax({
+        method: 'post',
+        url: '/find_group_key',
+        data: data,
+        success: function(res){
+          if (res!=null){
+            $('#checker').html("認証完了");
+            $('#checker').css({"color": "green"});
+            validation = true;
+          } else {
+            $('#checker').html("認証できません。認証キーがなければ発給の後で登録ができます。");
+            $('#checker').css({"color": "red"});
+          }
+        }
+      })
+    })
+
+    $('#joinBtn').on('click', function(){
+      if (validation ==false){
+        alert("認証してから登録できます。");
+        return false;
+      }
+    })
+    var toggle = 1
+    $('.material-icons').on('click',function(){
+      if(toggle > 0){
+        $('#invisible').css({"opacity": 0});
+        $('#visible').css({"opacity": 1});
+        $('#user_group_key').val('');
+        $('#user_group_key').attr("type", "text");
+        toggle = toggle*(-1)
+      } else {
+        $('#invisible').css({"opacity": 1});
+        $('#visible').css({"opacity": 0});
+        $('#user_group_key').val('');
+        $('#user_group_key').attr("type", "password");
+        toggle = toggle*(-1)
+      }
+
+    })
+  })
+</script>
+
+<style>
+  .bigBox {
+    width: 60%;
+    margin: 0 auto;
+  }
+  .button {
+    width: 100%;
+    cursor: pointer;
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+    border-radius: 10px;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    letter-spacing: 5px;
+    text-align: center;
+  }
+  .button:hover {
+    background-color: #039be5; /* Green */
+    color: white;
+  }
+  #checkId {
+    float: right;
+    width: 50px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    z-index: 200;
+    position: absolute;
+    top: 12px;
+    left: 850px;
+  }
+  #checkId:hover {
+    cursor: pointer;
+  }
+  .material-icons {
+    z-index: 100;
+    position: absolute;
+    top: 12px;
+    left: 800px;
+  }
+  .material-icons:hover {
+    cursor: pointer;
+    box-shadow: 0 0 1px rgba(0, 0, 0, 0.15);
+  }
+</style>

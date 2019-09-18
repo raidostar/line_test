@@ -6,8 +6,10 @@ class Api::BooksController < ApplicationController
 
   def create
     @book = Book.new(book_params)
+    @notify = Notify.new
     if @book.save
       render :show, status: :created
+      @notify.send("#{@book.title}がリリースいたしました")
     else
       render json: @book.errors, status: :unprocessable_entity
     end
@@ -15,7 +17,7 @@ class Api::BooksController < ApplicationController
 
   def show
     @book = Book.find(params[:id])
-    render :show
+    render :show, status: :ok
   end
 
   def update
@@ -27,11 +29,22 @@ class Api::BooksController < ApplicationController
     end
   end
 
+  def destroy
+    @book = Book.find(params[:id])
+    @notify = Notify.new
+    if @book.destroy
+      render :show, status: :ok
+      @notify.send("#{@book.title}のサービスが終了致しました")
+    else
+      render json: @book.errors, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def book_params
     params.fetch(:book, {}).permit(
-      :title, :author, :publisher, :genre
-    )
+      :id, :title, :author, :publisher, :genre, :release_at
+      )
   end
 end

@@ -1,10 +1,17 @@
+<meta name="csrf-token" content="F6dek0xG3Kl/8fc8wlAdAdwWNgBhJ/O8da3ziVQG5y9yOxO7QUS8QVbro9+pLYF9/+qkHXQtrSwIcUteffGd1A==" />
+
 <div class="container js-booksIndex">
-  <input type="" name="">
+
+    <input v-model="newBook" class="form-control" placeholder="add your book">
+    <button @click="createBook">ADD</button>
+
   <hr/>
-  <div class="row">
-    <p v-for="book in allBooks" :id="'row_book_'+book.id" @click="setBookInfo(book.id)">
+  <div v-for="book in allBooks" :id="'row_book_'+book.id" class="row">
+    <span @click="setBookInfo(book.id)" :id="'title_of_book_'+book.id">
       {{ book.title }}
-    </p>
+    </span>
+    <button>UPDATE</button>
+    <button>🆑</button>
   </div>
   <hr/>
   <div class="row" v-show="bookInfoBool">

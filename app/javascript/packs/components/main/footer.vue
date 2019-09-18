@@ -20,8 +20,7 @@
 </script>
 
 <style scoped>
-  #header{
+  .footer{
     background: aliceblue;
   }
-
 </style>
