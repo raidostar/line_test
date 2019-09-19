@@ -301,12 +301,12 @@ input[type=text] {
   text-align: center;
 }
 .sticker-panel {
-  width: 830px;
-  height: 160px;
+  width: 89.5%;
+  height: 22.7%;
   position: absolute;
   z-index: 3000;
   top: 57vh;
-  right: 2%;
+  right: 3%;
   background-color: white;
   border-radius: 8px;
   opacity: 0.9;
@@ -340,7 +340,7 @@ input[type=text] {
   border-radius: 8px;
   background-color: #EEFFFF;
   position: absolute;
-  top: 9vh;
+  top: 11%;
   right: 8%;
   text-align: center;
   margin: 0 auto;
@@ -470,11 +470,11 @@ label.stampBtn:focus {
 }
 .googleMap {
   width: 45%;
-  height: 62vh;
+  height: 72%;
   border-radius: 8px;
   background-color: white;
   position: absolute;
-  top: 13vh;
+  top: 17%;
   right: 2%;
   text-align: center;
   margin: 0 auto;
@@ -617,6 +617,7 @@ input.countSet {
   height: 33.4em;
   z-index: 300;
   background-color: white;
+  overflow: scroll;
 }
 .right-panel-small {
   margin: 16px 10px;
@@ -624,7 +625,9 @@ input.countSet {
   text-align: left;
   width: 98%;
   height: 95%;
-  box-shadow: 0 0 2px #666;
   border-radius: 8px;
   float: right;
+}
+table.actionList tbody tr{
+  height: 12vh;
 }

@@ -161,59 +161,63 @@
               </div>
               <div class="right-panel" style="border: none;">
                 <table class="actionList">
-                  <tr>
-                    <th>
-                      <input type="checkbox" class="checkbox" v-model="reactionAllCheck" @click="reactionAllChecker">
-                    </th>
-                    <th>アクション名</th>
-                    <th>アクション内容</th>
-                    <th>操作</th>
-                    <th>ヒット数</th>
-                    <th>タイプ</th>
-                    <th>連動</th>
-                  </tr>
-                  <tr v-for="(reaction,index) in reactions" v-model="reactions">
-                    <td class="check">
-                      <input type="checkbox" class="checkbox" :checked="reaction.bool" @click="reactionChecker(index)">
-                    </td>
-                    <td>
-                      {{reaction.name}}
-                    </td>
+                  <thead>
+                    <tr>
+                      <th>
+                        <input type="checkbox" class="checkbox" v-model="reactionAllCheck" @click="reactionAllChecker">
+                      </th>
+                      <th>アクション名</th>
+                      <th>アクション内容</th>
+                      <th>操作</th>
+                      <th>ヒット数</th>
+                      <th>タイプ</th>
+                      <th>連動</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(reaction,index) in reactions" v-model="reactions">
+                      <td class="check">
+                        <input type="checkbox" class="checkbox" :checked="reaction.bool" @click="reactionChecker(index)">
+                      </td>
+                      <td>
+                        {{reaction.name}}
+                      </td>
 
-                    <td v-if="reaction.reaction_type=='stamp'">
-                      <a @click="detailImage(getImgUrl(reaction.contents))">
-                        <img class="stampBtnImg" :src="getImgUrl(reaction.contents)"/>
-                      </a>
-                    </td>
-                    <td v-else-if="reaction.reaction_type=='image'">
-                      <a @click="detailImage(reaction.image.url)">
-                        <img class="imageResult" :src="reaction.image.url"/>
-                      </a>
-                    </td>
-                    <td v-else>
-                      <a v-if="reaction.contents.search('<img src=')>=0"
-                        @click="showFullContents(reaction.contents)"
-                        v-html="reaction.contents.substr(0,100)"
-                        >
-                      </a>
-                      <a v-else @click="showFullContents(reaction.contents)" >
-                        <span v-if="reaction.contents.length>19" v-html="reaction.contents.substr(0,20)+'...'"></span>
-                        <span v-else v-html="reaction.contents.substr(0,20)"></span>
-                      </a>
-                    </td>
-                    <td>
-                      <button class="edit-button" @click="editAction(reaction.id)">
-                        編集
-                      </button>
-                    </td>
-                    <td class="hitcount">{{reaction.target_number}}</td>
-                    <td>{{reaction.reaction_type}}</td>
-                    <td>
-                      <button class="edit-button" v-show="reaction.bool" @click="reactionCancel(reaction.id)">
-                        解除
-                      </button>
-                    </td>
-                  </tr>
+                      <td v-if="reaction.reaction_type=='stamp'">
+                        <a @click="detailImage(getImgUrl(reaction.contents))">
+                          <img class="stampBtnImg" :src="getImgUrl(reaction.contents)"/>
+                        </a>
+                      </td>
+                      <td v-else-if="reaction.reaction_type=='image'">
+                        <a @click="detailImage(reaction.image.url)">
+                          <img class="imageResult" :src="reaction.image.url"/>
+                        </a>
+                      </td>
+                      <td v-else>
+                        <a v-if="reaction.contents.search('<img src=')>=0"
+                          @click="showFullContents(reaction.contents)"
+                          v-html="reaction.contents.substr(0,100)"
+                          >
+                        </a>
+                        <a v-else @click="showFullContents(reaction.contents)" >
+                          <span v-if="reaction.contents.length>19" v-html="reaction.contents.substr(0,20)+'...'"></span>
+                          <span v-else v-html="reaction.contents.substr(0,20)"></span>
+                        </a>
+                      </td>
+                      <td>
+                        <button class="edit-button" @click="editAction(reaction.id)">
+                          編集
+                        </button>
+                      </td>
+                      <td class="hitcount">{{reaction.target_number}}</td>
+                      <td>{{reaction.reaction_type}}</td>
+                      <td>
+                        <button class="edit-button" v-show="reaction.bool" @click="reactionCancel(reaction.id)">
+                          解除
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
                 </table>
               </div>
             </div>
@@ -327,8 +331,9 @@
               </GmapMap>
             </div>
             <!-- submit button -->
-            <button class="sendBtn okBtn" @click="createReaction" v-if="!editMode">セーブ</button>
-            <button class="sendBtn okBtn" @click="updateReaction" v-else>修正</button>
+            <button class="sendBtn okBtn" @click="createReaction" v-if="!editMode&&!insiteMode">セーブ</button>
+            <button class="sendBtn okBtn" @click="linkOptionReaction" v-if="insiteMode">セーブ</button>
+            <button class="sendBtn okBtn" @click="updateReaction" v-if="editMode">修正</button>
             <button class="sendBtn cancelBtn" @click="resetReaction" style="float: right;">再作成</button>
           </div>
         </div>
@@ -823,11 +828,12 @@
           })
         } else if(!this.contents&&this.uploadedImage){//only image
           var data = new FormData();
-          var file = this.$refs.fileInput.files[0];
+          //var file = this.$refs.fileInput.files[0];
+
           data.append('name', this.reactionName);
           data.append('reaction_type','image');
           data.append('contents','[ NO TEXT ]');
-          data.append('image',file);
+          data.append('image',this.imageFile);
           data.append('match_option', this.selectedId)
           axios.post('/api/reactions',data)
           .then((res)=>{
@@ -1054,7 +1060,6 @@
         this.$refs.chatting.innerHTML = "";
       },
       reactionToggle(){
-
         this.stampShow= false;
         this.stampAreaShow= false;
         this.emojiShow= false;
@@ -1123,9 +1128,11 @@
           }
           if(this.reactionListShow == true){
             this.reactionListShow = false
-            this.insiteMode = true;
             this.editMode = false;
+            this.insiteMode = true;
+            this.reactions = []
           } else {
+            this.insiteMode = false;
             this.editMode = true;
           }
         },(error)=>{
@@ -1184,11 +1191,11 @@
           return;
         } else if(!this.contents&&this.uploadedImage){//only image
           var data = new FormData();
-          var file = this.$refs.fileInput.files[0];
+          //var file = this.$refs.fileInput.files[0];
           data.append('name', this.reactionName);
           data.append('reaction_type','image');
           data.append('contents','[ NO TEXT ]');
-          data.append('image',file);
+          data.append('image',this.imageFile);
           data.append('match_option', this.selectedId)
           axios.put('/api/reactions/'+this.selectedReaction.id,data)
           .then((res)=>{
@@ -1314,16 +1321,35 @@
       },
       reactionListToggle(){
         this.reactionListShow = !this.reactionListShow
-        this.fetchAllReactions();
+        if(this.reactionListShow==true){
+          this.fetchAllReactions();
+        } else {
+          this.reactions = []
+        }
       },
       fetchAllReactions(){
-        axios.post('api/reactions_all').then((res)=>{
-          console.log(res.data.reactions)
-          this.reactions = res.data.reactions
+        axios.post('api/reactions_all',{
+          option_id: this.selectedId
+        }).then((res)=>{
+          console.log(res.data)
+          this.reactions = res.data
+          this.reactionAllChecker();
         },(error)=>{
           console.log(error)
         })
       },
+      linkOptionReaction(){
+        axios.post('api/link_option_reaction',{
+          reaction_id: this.selectedReaction.id,
+          option_id: this.selectedId
+        }).then((res)=>{
+          alert("アクションセーブ完了");
+          this.reactionToggle();
+          this.fetchReactions();
+        },(error)=>{
+          console.log(error)
+        })
+      }
     },
     computed: {
       getOption(){

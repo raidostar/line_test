@@ -78,5 +78,6 @@ Rails.application.routes.draw do
   # get '/emojis' =>'api/showmes#index_emoji'
   get 'api/cancel_reaction' => 'api/reactions#cancel_reaction'
   get '*path', controller: 'application', action: 'render_404'
-  post 'api/reactions_all' => 'api/reactions#index_all'
+  post 'api/reactions_all' => 'api/reactions#index_all_except'
+  post 'api/link_option_reaction' => 'api/reactions#link_option_reaction'
 end

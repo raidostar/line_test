@@ -12,9 +12,12 @@ class Api::ReactionsController < ApplicationController
     end
   end
 
-  def index_all
-    @reactions = Reaction.all
-    render :index, status: :ok
+  def index_all_except
+    @option = Option.find(params[:option_id])
+    temp = @option.attributes['match_reaction'].split(",")
+    @reactions = Reaction.where.not(id: temp)
+
+    render json: @reactions, status: :ok
   end
 
   def show
@@ -50,6 +53,39 @@ class Api::ReactionsController < ApplicationController
       render :show, status: :ok
     else
       render json: @reaction.errors, status: :unprocessable_entity
+    end
+  end
+
+  def link_option_reaction
+    @reaction = Reaction.find(params[:reaction_id])
+    @option = Option.find(params[:option_id])
+    puts "1번"
+    if @option.attributes["match_reaction"].present?
+      puts "2번"
+      match_reaction = @option.attributes["match_reaction"] + params[:reaction_id].to_s + ","
+    else
+      puts "3번"
+      match_reaction = params[:reaction_id] + ","
+    end
+    puts "a번"
+    if @option.update({match_reaction: match_reaction})
+      if @reaction.attributes["match_option"].present?
+        puts "4번"
+        match_option = @reaction.attributes["match_option"] + "," + params[:option_id].to_s
+      else
+        puts "5번"
+        match_option = reaction.attributes["id"].to_s
+      end
+      if @reaction.update({match_option: match_option})
+        puts "6번"
+        render json: @reaction, status: :ok
+      else
+        puts "7번"
+        render json: @reaction.errors, status: :unprocessable_entity
+      end
+    else
+      puts "8번"
+      render json: @option.errors, status: :unprocessable_entity
     end
   end
 

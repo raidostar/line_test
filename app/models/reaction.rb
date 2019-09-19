@@ -7,4 +7,5 @@ class Reaction < ApplicationRecord
     self.image.remove! if self.image
     self.save!
   end
+
 end
