@@ -39,7 +39,8 @@
                   </span>
                 </button>
                 <button class="detail-panel" @click="panelToggle">
-                  <i class="material-icons down">keyboard_arrow_down</i>
+                  <i class="material-icons down" v-if="!panelShow">keyboard_arrow_down</i>
+                  <i class="material-icons down" v-if="panelShow">keyboard_arrow_up</i>
                 </button>
                 <transition name="slideUpDown">
                   <div class="edit-panel" id="edit-panel" v-if="panelShow">
@@ -66,7 +67,7 @@
                       <input type="radio" class="settingRadio" id="setReceiver" value="setReceiver" v-model="setReceiver">
                       <label class="setting" >送信対象選択</label>
                     </div>
-                    <div style="margin-top: 60px;">
+                    <div>
                       <p class="settingMenu">曜日設定</p>
                       <input type="radio" class="settingRadio" id="unsetDay" value="unsetDay" v-model="setDay"@click="clearDay">
                       <label class="setting" for="two">毎日</label>
@@ -246,8 +247,8 @@
           <div v-show="reactionShow">
             <div>
               <input type="text" ref="reactionName" v-model="reactionName" placeholder="アクション名を入力してください。">
-              <button v-show="reactionShow" @click="allReaction" class="allSend-button">全アクション中選択</button>
-              <button v-show="reactionShow" @click="reactionToggle" class="allSend-button">アクションリスト</button>
+              <button v-show="reactionShow" @click="reactionListToggle" class="allSend-button">全アクション中選択</button>
+              <button v-show="reactionShow" @click="reactionToggle" class="allSend-button">戻り</button>
             </div>
             <div class="right-panel" >
               <!-- side buttons -->
@@ -333,6 +334,67 @@
         </div>
       </transition>
 
+      <!-- 여기는 전체 액션을 보여주는 곳 -->
+      <transition name="slideUpDown">
+        <div class="reactionAll" v-if="reactionListShow">
+          <div class="right-panel-small" style="border: none;">
+            <table class="actionList">
+              <thead>
+                <tr>
+                  <th>
+                    <input type="checkbox" class="checkbox" v-model="reactionAllCheck" @click="reactionAllChecker">
+                  </th>
+                  <th>アクション名</th>
+                  <th>アクション内容</th>
+                  <th>ヒット数</th>
+                  <th>タイプ</th>
+                  <th>連動</th>
+                </tr>
+              </thead>
+              <tbody style="overflow:scroll;">
+                <tr v-for="(reaction,index) in reactions" v-model="reactions">
+                  <td class="check">
+                    <input type="checkbox" class="checkbox" :checked="reaction.bool" @click="reactionChecker(index)">
+                  </td>
+                  <td>
+                    {{reaction.name}}
+                  </td>
+                  <td v-if="reaction.reaction_type=='stamp'">
+                    <a @click="detailImage(getImgUrl(reaction.contents))">
+                      <img class="stampBtnImg" :src="getImgUrl(reaction.contents)"/>
+                    </a>
+                  </td>
+                  <td v-else-if="reaction.reaction_type=='image'">
+                    <a @click="detailImage(reaction.image.url)">
+                      <img class="imageResult" :src="reaction.image.url"/>
+                    </a>
+                  </td>
+                  <td v-else>
+                    <a v-if="reaction.contents.search('<img src=')>=0"
+                      @click="showFullContents(reaction.contents)"
+                      v-html="reaction.contents.substr(0,100)"
+                      >
+                    </a>
+                    <a v-else @click="showFullContents(reaction.contents)" >
+                      <span v-if="reaction.contents.length>19" v-html="reaction.contents.substr(0,20)+'...'"></span>
+                      <span v-else v-html="reaction.contents.substr(0,20)"></span>
+                    </a>
+                  </td>
+                  <td class="hitcount">{{reaction.target_number}}</td>
+                  <td>{{reaction.reaction_type}}</td>
+                  <td>
+                    <button class="edit-button" v-show="reaction.bool" @click="editAction(reaction.id)">
+                      選択
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </transition>
+
+
     </div>
   </div>
 </transition>
@@ -381,7 +443,8 @@
         </span>
 
         <button class="detail-panel" v-if="(selected%folders.length)==index" @click="panelToggle">
-          <i class="material-icons down">keyboard_arrow_down</i>
+          <i class="material-icons down" v-if="!panelShow">keyboard_arrow_down</i>
+          <i class="material-icons down" v-if="panelShow">keyboard_arrow_up</i>
         </button>
         <transition name="fadeUpDown">
           <div class="edit-panel" id="edit-panel" v-if="panelShow&&(selected%folders.length)==index">
@@ -496,6 +559,8 @@
         startTime: '00:00',
         endTime: '00:00',
         actionCount: null,
+        reactionListShow: false,
+        insiteMode: false,
       }
     },
     mounted: function(){
@@ -536,6 +601,8 @@
         this.formShow = !this.formShow;
         this.selected = null
         this.selectedId = null
+        this.reactionListShow = false;
+        this.reactions = []
       },
       addToggle(){
         this.selectedId = null
@@ -999,7 +1066,11 @@
         this.reactionName = "";
         this.selectedReaction = null
         this.editMode = false;
+        this.reactionListShow = false;
         this.reactionShow = !this.reactionShow
+        if(this.reactionShow!=true){
+          this.fetchReactions();
+        }
       },
       detailImage(url){
         let imageHTML = '<img class="fullSizeImage" src='+url+' style="width: 21em;height: 26em;">'
@@ -1023,7 +1094,8 @@
       editAction(id){
         axios.get('/api/reactions/'+id).then((res)=>{
           this.selectedReaction = res.data.reaction
-          this.reactionShow = !this.reactionShow
+          this.reactionShow = true
+
           this.reactionName = this.selectedReaction.name
           switch(this.selectedReaction.reaction_type){
             case "text":
@@ -1049,8 +1121,13 @@
             default:
             console.log(this.selectedReaction.reaction_type);
           }
-
-          this.editMode = true;
+          if(this.reactionListShow == true){
+            this.reactionListShow = false
+            this.insiteMode = true;
+            this.editMode = false;
+          } else {
+            this.editMode = true;
+          }
         },(error)=>{
           console.log(error)
         })
@@ -1151,9 +1228,6 @@
           return;
         }
       },
-      allReaction(){
-
-      },
       clearDay(){
         this.targetDay = [0,1,2,3,4,5,6]
       },
@@ -1237,7 +1311,19 @@
             this.setCount = 'unsetCount'
           }
         }
-      }
+      },
+      reactionListToggle(){
+        this.reactionListShow = !this.reactionListShow
+        this.fetchAllReactions();
+      },
+      fetchAllReactions(){
+        axios.post('api/reactions_all').then((res)=>{
+          console.log(res.data.reactions)
+          this.reactions = res.data.reactions
+        },(error)=>{
+          console.log(error)
+        })
+      },
     },
     computed: {
       getOption(){

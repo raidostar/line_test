@@ -12,6 +12,11 @@ class Api::ReactionsController < ApplicationController
     end
   end
 
+  def index_all
+    @reactions = Reaction.all
+    render :index, status: :ok
+  end
+
   def show
     @reaction = Reaction.find(params[:id])
   end
