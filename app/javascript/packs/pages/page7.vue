@@ -158,8 +158,9 @@
             <div v-show="!reactionShow">
               <div>
                 <button v-show="selectedId" @click="reactionToggle" class="allSend-button">新規アクション作成</button>
+                <button v-show="selectedId" @click="reactionListToggle" class="allSend-button">既存アクション中選択</button>
               </div>
-              <div class="right-panel" style="border: none;">
+              <div class="right-panel" style="border: none;" v-show="!reactionListShow">
                 <table class="actionList">
                   <thead>
                     <tr>
@@ -251,7 +252,6 @@
           <div v-show="reactionShow">
             <div>
               <input type="text" ref="reactionName" v-model="reactionName" placeholder="アクション名を入力してください。">
-              <button v-show="reactionShow" @click="reactionListToggle" class="allSend-button">全アクション中選択</button>
               <button v-show="reactionShow" @click="reactionToggle" class="allSend-button">戻り</button>
             </div>
             <div class="right-panel" >
@@ -331,9 +331,8 @@
               </GmapMap>
             </div>
             <!-- submit button -->
-            <button class="sendBtn okBtn" @click="createReaction" v-if="!editMode&&!insiteMode">セーブ</button>
-            <button class="sendBtn okBtn" @click="linkOptionReaction" v-if="insiteMode">セーブ</button>
-            <button class="sendBtn okBtn" @click="updateReaction" v-if="editMode">修正</button>
+            <button class="sendBtn okBtn" @click="createReaction" v-if="!editMode">セーブ</button>
+            <button class="sendBtn okBtn" @click="updateReaction" v-else>修正</button>
             <button class="sendBtn cancelBtn" @click="resetReaction" style="float: right;">再作成</button>
           </div>
         </div>
@@ -388,7 +387,7 @@
                   <td class="hitcount">{{reaction.target_number}}</td>
                   <td>{{reaction.reaction_type}}</td>
                   <td>
-                    <button class="edit-button" v-show="reaction.bool" @click="editAction(reaction.id)">
+                    <button class="edit-button" v-if="reaction.bool" @click="linkOptionReaction(reaction.id)">
                       選択
                     </button>
                   </td>
@@ -566,6 +565,7 @@
         actionCount: null,
         reactionListShow: false,
         insiteMode: false,
+        selectedOption: null,
       }
     },
     mounted: function(){
@@ -754,7 +754,7 @@
       },
       createReaction(){
         if (this.reactions.length>=5){
-          alert("この以上アクションを登録できません。");
+          alert("最大アクション値は５つです。");
           return;
         }
         if(!this.reactionName){
@@ -799,7 +799,7 @@
           })
         } else if(this.stampAreaShow&&this.contents){//text+stamp
           if(this.reactions.length>=4){
-            alert("最大アクションは五つです。");
+            alert("最大アクション値は５つです。");
             return;
           }
           axios.post('/api/reactions',{
@@ -1288,22 +1288,22 @@
       },
       fetchOption(){
         if(this.selected != null){
-          let option = this.options[this.selected]
-          if(option.target_keyword != null){
-            if(option.target_keyword.length != 0){
+          this.selectedOption = this.options[this.selected]
+          if(this.selectedOption.target_keyword != null){
+            if(this.selectedOption.target_keyword.length != 0){
               this.keywords = []
-              this.keywords = option.target_keyword.split(",");
+              this.keywords = this.selectedOption.target_keyword.split(",");
             }
           }
           this.targetDay = []
-          this.targetDay = option.target_day.split(",")
+          this.targetDay = this.selectedOption.target_day.split(",")
           if(this.targetDay.length==7){
             this.setDay = 'unsetDay'
           } else {
             this.setDay = 'setDay'
           }
 
-          var targetTime = option.target_time.split(",")
+          var targetTime = this.selectedOption.target_time.split(",")
           this.startTime = targetTime[0]
           this.endTime = targetTime[1]
           if(this.startTime==this.endTime){
@@ -1311,8 +1311,8 @@
           } else {
             this.setTime = 'setTime'
           }
-          if(option.action_count != null){
-            this.actionCount = option.action_count
+          if(this.selectedOption.action_count != null){
+            this.actionCount = this.selectedOption.action_count
             this.setCount = 'setCount'
           } else {
             this.setCount = 'unsetCount'
@@ -1320,32 +1320,43 @@
         }
       },
       reactionListToggle(){
-        this.reactionListShow = !this.reactionListShow
-        if(this.reactionListShow==true){
+        if(this.reactionListShow!=true){
           this.fetchAllReactions();
         } else {
-          this.reactions = []
+          this.fetchReactions();
         }
+        this.reactionListShow = !this.reactionListShow
       },
       fetchAllReactions(){
         axios.post('api/reactions_all',{
           option_id: this.selectedId
         }).then((res)=>{
-          console.log(res.data)
           this.reactions = res.data
-          this.reactionAllChecker();
+          if(this.reactions.length==0){
+            alert("登録できるアクションがありません。")
+            this.fetchReactions();
+            this.reactionListShow = false;
+          }
         },(error)=>{
           console.log(error)
         })
       },
-      linkOptionReaction(){
+      linkOptionReaction(id){
+        this.fetchOptions();
+        var reactions = this.selectedOption.match_reaction.split(",")
+        console.log(reactions)
+        console.log(reactions.length)
+        if(reactions.length>=5){
+          alert("最大アクション値は５つです。")
+          this.fetchReactions();
+          this.reactionListShow = false;
+          return;
+        }
         axios.post('api/link_option_reaction',{
-          reaction_id: this.selectedReaction.id,
+          reaction_id: id,
           option_id: this.selectedId
         }).then((res)=>{
-          alert("アクションセーブ完了");
-          this.reactionToggle();
-          this.fetchReactions();
+          this.fetchAllReactions();
         },(error)=>{
           console.log(error)
         })

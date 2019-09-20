@@ -65,7 +65,7 @@ class Api::ReactionsController < ApplicationController
       match_reaction = @option.attributes["match_reaction"] + params[:reaction_id].to_s + ","
     else
       puts "3번"
-      match_reaction = params[:reaction_id] + ","
+      match_reaction = params[:reaction_id].to_s + ","
     end
     puts "a번"
     if @option.update({match_reaction: match_reaction})
@@ -74,7 +74,7 @@ class Api::ReactionsController < ApplicationController
         match_option = @reaction.attributes["match_option"] + "," + params[:option_id].to_s
       else
         puts "5번"
-        match_option = reaction.attributes["id"].to_s
+        match_option = @reaction.attributes["id"].to_s
       end
       if @reaction.update({match_option: match_option})
         puts "6번"
