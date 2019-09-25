@@ -1,15 +1,30 @@
 class Api::ReactionsController < ApplicationController
-
   def index
     option = Option.find(params[:option_id])
-    @reactions=[]
+    @reactions = []
     if option.attributes["match_reaction"].present?
-      action_ids = option.attributes["match_reaction"].split(",")
-      action_ids.each do |id|
-        reaction = Reaction.find(id)
-        @reactions.push(reaction)
+      reaction_ids = option.attributes["match_reaction"].split(",")
+      reaction_ids.each do |id|
+        @reactions.push(Reaction.find_by(id: id))
       end
     end
+  end
+
+  def index_by_tag
+    tag = Tag.find_by(id: params[:tag_id])
+    @reactions = []
+    reactions = Reaction.where(user_group: current_user.group)
+    reactions.each do |reaction|
+      if reaction.tag.present?
+        temp = reaction.tag.split(",")
+        if tag.present?
+          if temp.include? tag.attributes['name']
+            @reactions.push(reaction)
+          end
+        end
+      end
+    end
+    render json: @reactions, status: :ok
   end
 
   def index_all_except
@@ -26,24 +41,44 @@ class Api::ReactionsController < ApplicationController
 
   def create
     @reaction = Reaction.new(reaction_params)
-
     option_id = params[:match_option]
-    @option = Option.find(option_id)
-
+    tags = params[:tag].split(",")
+    @option = Option.find_by(id: option_id)
     if @reaction.save
-      reaction = Reaction.last
-      if @option.attributes["match_reaction"].present?
-        match_reaction = @option.attributes["match_reaction"] + reaction.attributes["id"].to_s + ","
+      option_update(@option)
+      tag_create(tags)
+      render json: @reaction, status: :ok
+    else
+      render json: @reaction.errors, status: :unprocessable_entity
+    end
+  end
+
+  def tag_create(tags)
+    tags.each do |tag|
+      tagCheck = Tag.where(name: tag, tag_group: 'reaction', user_group: current_user.group)
+      if !tagCheck.present?
+        @tag = Tag.new(name: tag, tag_group: 'reaction', user_group: current_user.group)
+        if @tag.save
+        else
+          render json: @reaction.errors, status: :unprocessable_entity
+        end
+      end
+    end
+  end
+
+  def option_update(option)
+    reaction = Reaction.last
+    match_reaction = nil
+    if option.present?
+      if option.attributes["match_reaction"].present?
+        match_reaction = option.attributes["match_reaction"] + reaction.attributes["id"].to_s + ","
       else
         match_reaction = reaction.attributes["id"].to_s + ","
       end
-      if @option.update({match_reaction: match_reaction})
-        render json: @reaction, status: :ok
+      if option.update({match_reaction: match_reaction})
       else
         render json: @option.errors, status: :unprocessable_entity
       end
-    else
-      render json: @reaction.errors, status: :unprocessable_entity
     end
   end
 
@@ -59,37 +94,31 @@ class Api::ReactionsController < ApplicationController
   def link_option_reaction
     @reaction = Reaction.find(params[:reaction_id])
     @option = Option.find(params[:option_id])
-    puts "1번"
+
     if @option.attributes["match_reaction"].present?
-      puts "2번"
       match_reaction = @option.attributes["match_reaction"] + params[:reaction_id].to_s + ","
     else
-      puts "3번"
       match_reaction = params[:reaction_id].to_s + ","
     end
-    puts "a번"
     if @option.update({match_reaction: match_reaction})
       if @reaction.attributes["match_option"].present?
-        puts "4번"
         match_option = @reaction.attributes["match_option"] + "," + params[:option_id].to_s
       else
-        puts "5번"
         match_option = @reaction.attributes["id"].to_s
       end
       if @reaction.update({match_option: match_option})
-        puts "6번"
         render json: @reaction, status: :ok
       else
-        puts "7번"
         render json: @reaction.errors, status: :unprocessable_entity
       end
     else
-      puts "8번"
       render json: @option.errors, status: :unprocessable_entity
     end
   end
 
   def destroy
+    @reaction = Reaction.find(params[:id])
+    @reaction.destroy
   end
 
   def cancel_reaction
@@ -138,14 +167,14 @@ class Api::ReactionsController < ApplicationController
       params[:reaction][:user_group] = current_user.group
       params[:reaction][:target_number] = 0
       params.require(:reaction).permit(
-        :id, :name, :contents, :reaction_type ,:user_group, :target_tag, :target_number,
+        :id, :name, :contents, :reaction_type ,:user_group, :tag, :target_number,
         :image, :created_at, :updated_at, :match_option
         )
     else
       params[:user_group] = current_user.group
       params[:target_number] = 0
       params.permit(
-        :id, :name, :contents, :reaction_type ,:user_group, :target_tag, :target_number, :created_at, :updated_at, :match_option, :image
+        :id, :name, :contents, :reaction_type ,:user_group, :tag, :target_number, :created_at, :updated_at, :match_option, :image
         )
     end
   end

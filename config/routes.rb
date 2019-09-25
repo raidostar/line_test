@@ -42,7 +42,7 @@ Rails.application.routes.draw do
   end
 
   namespace :api, format: 'json' do
-    resources :notifies, only: [:index,:show]
+    resources :notifies
   end
 
   namespace :api, format: 'json' do
@@ -80,4 +80,5 @@ Rails.application.routes.draw do
   get '*path', controller: 'application', action: 'render_404'
   post 'api/reactions_all' => 'api/reactions#index_all_except'
   post 'api/link_option_reaction' => 'api/reactions#link_option_reaction'
+  post 'api/reactions_by_tag' => 'api/reactions#index_by_tag'
 end

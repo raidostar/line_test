@@ -14,18 +14,26 @@
       <div class="col col-left" v-show="formShow">
         <div class="left-panel">
           <div class="top-panel">
-            <button class="allSend-button innerBtn innerBtnLeft">送信先選択</button>
-            <button class="allSend-button innerBtn innerBtnRight">テンプレート配信</button>
+            <!-- <button class="allSend-button innerBtn innerBtnLeft"></button>
+            <button class="allSend-button innerBtn innerBtnRight"></button> -->
           </div>
           <div class="bottom-panel">
-            <div v-for="(item,index) in folders" class="added-folder">
-              <button class="added-folderBtn" id="added-folderBtn">
-                <i class="material-icons open-file-added">insert_drive_file</i>
+
+            <div v-for="(tag,index) in tags" class="added-folder">
+              <button class="added-folderBtn" id="added-folderBtn" v-if="tag==selectedTag" :style="selectedCSS" @click="selectTag(index)">
+                <i class="material-icons open-file-added">people</i>
                 <span>
-                  {{item}}
+                  {{tag}}
+                </span>
+              </button>
+              <button class="added-folderBtn" id="added-folderBtn" v-else @click="selectTag(index)">
+                <i class="material-icons open-file-added">people</i>
+                <span>
+                  {{tag}}
                 </span>
               </button>
             </div>
+
           </div>
         </div>
 
@@ -120,7 +128,7 @@
           <th>再送信</th>
           <th>配信先</th>
           <th>内容</th>
-          <th>添付イメージ</th>
+
           <th>日時</th>
           <th>配信数</th>
           <th>タイプ</th>
@@ -129,14 +137,23 @@
           <td>
             <button>コピー</button>
           </td>
+
           <td v-if="notify.target_tag==null">
             {{notify.receiver}}
           </td>
           <td v-else>
             {{notify.target_tag}}
           </td>
+
           <td v-if="notify.notify_type=='stamp'">
-            <img class="stampBtnImg" :src="getImgUrl(notify.contents)"/>
+            <a @click="detailImage(getImgUrl(notify.contents))">
+              <img class="stampBtnImg" :src="getImgUrl(notify.contents)"/>
+            </a>
+          </td>
+          <td v-else-if="notify.notify_type=='image'">
+            <a @click="detailImage(notify.image.url)">
+              <img class="imageResult" :src="notify.image.url"/>
+            </a>
           </td>
           <td v-else>
             <a v-if="notify.contents.search('<img src=')>=0"
@@ -144,11 +161,10 @@
               v-html="notify.contents.substr(0,100)"
               >
             </a>
-            <a v-else @click="showFullContents(notify.contents)" v-html="notify.contents.substr(0,50)">
+            <a v-else @click="showFullContents(notify.contents)" >
+              <span v-if="notify.contents.length>19" v-html="notify.contents.substr(0,20)+'...'"></span>
+              <span v-else v-html="notify.contents.substr(0,20)"></span>
             </a>
-          </td>
-          <td>
-            <img :src="notify.image.url" class="imageResult" alt="no_image">
           </td>
           <td>{{notify.created_at}}</td>
           <td>{{notify.target_number}}</td>
@@ -173,12 +189,25 @@
     <div class="detailPanel">
       <a class="closeDetail" @click="closeDetail">X</a>
       <div class="detailContents">
-        <div class="detail" v-html="fullContents" readonly="readonly">
-          {{fullContents}}
-        </div>
+        <div class="detail" readonly="readonly">
+          <span v-html="fullContents" v-if="fullContents.search('@map')<0"></span>
+          <GmapMap
+          v-else
+          :center="selected_center"
+          :zoom="12"
+          map-type-id="terrain"
+          style="width: 100%; height: 95%;"
+          >
+          <GmapMarker
+          :position="selected_center"
+          :clickable="true"
+          :draggable="false"
+          />
+        </GmapMap>
       </div>
     </div>
   </div>
+</div>
 </transition>
 </div>
 </template>
@@ -190,7 +219,7 @@
     data: function(){
       return {
         formShow: false,
-        folders: ["folder1", "folder2", "folder3"],
+        tags: ['ALL'],
         contents: '',
         innerContent:'',
         notifies: [],
@@ -218,15 +247,27 @@
         },
         text_address: '',
         google: gmapApi,
+        selectedTag: '',
+        selectedCSS: {'background-color': '#444','color': 'white'}
       }
     },
     mounted: function(){
       this.fetchNotifies();
       this.setStampNum();
       this.fetchEmojis();
+      this.fetchTags();
       this.innerContent = this.contents
     },
     methods: {
+      fetchTags(){
+        axios.get('api/tags?tag_group=friend').then((res)=>{
+          for(var t of res.data.tags){
+            this.tags.push(t.name)
+          }
+        },(error)=>{
+          console.log(error)
+        })
+      },
       fetchEmojis(){
         axios.get('api/emojis').then((res)=>{
           // console.log("emojis")
@@ -481,6 +522,14 @@
       },
       setPlace(place){
         this.info.center = place.geometry.location
+      },
+      detailImage(url){
+        let imageHTML = '<img class="fullSizeImage" src='+url+' style="width: 21em;height: 26em;">'
+        this.fullContents = imageHTML;
+        this.showDetail = true;
+      },
+      selectTag(index){
+        this.selectedTag = this.tags[index]
       }
     },
     computed: {

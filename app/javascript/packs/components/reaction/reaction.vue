@@ -1,347 +1,13 @@
 <template>
-  <div class="page" id="page7">
-    <div class="title area">
-      <h2 class="title">
-        <span>自動応答</span>
-        <button class="allSend-button" @click="formToggle" v-show="!formShow">新規配信</button>
-        <button class="allSend-button" @click="formToggle" v-show="formShow">リスト見る</button>
-        <hr/>
-      </h2>
-    </div>
-    <transition name="slideInOut">
-      <div v-show="formShow" :style="flexableHeight">
-        <div class="col col-left">
-          <div class="label">
-            <i class="material-icons folder">sms</i>
-            条件リスト
-            <button class="button" @click="addToggle">
-              <i class="material-icons btnMark">add_circle_outline</i>
-            </button>
-            <button class="button" v-if="deleteShow" @click="deleteOption" rel="nofollow" data-method="delete">
-              <i class="material-icons btnMark">remove_circle_outline</i>
-            </button>
+  <div>
+    <div class="col col-right">
+      <transition name="fadeInOut">
+        <div v-show="!reactionShow">
+          <div>
+            <button v-show="selectedId" @click="reactionToggle" class="allSend-button">新規アクション作成</button>
+            <button v-show="selectedId" @click="reactionListToggle" class="allSend-button">既存アクション中選択</button>
           </div>
-          <transition name="slideUpDown">
-            <div v-if="addShow">
-              <!--components--><option-detail
-              :newOption="newOption"
-              :createOptions="createOptions"
-              />
-            </div>
-          </transition>
-          <div class="options-panel">
-            <div v-for="(item,index) in options" class="added-folder">
-              <span v-if="index==selected">
-                <button class="added-folderBtn" id="added-folderBtn" @click="firstGate(index,item.id)" :style="selectedCSS">
-                  <i style="float: left;" class="material-icons open-file-added">flash_on</i>
-                  <span>
-                    {{item.name}}
-                  </span>
-                </button>
-                <button class="detail-panel" @click="panelToggle">
-                  <i class="material-icons down" v-if="!panelShow">keyboard_arrow_down</i>
-                  <i class="material-icons down" v-if="panelShow">keyboard_arrow_up</i>
-                </button>
-                <transition name="slideUpDown">
-                  <div class="edit-panel" id="edit-panel" v-if="panelShow">
-                    <div>
-                      <div>
-                        <p class="settingMenu">キーワード設定</p>
-                        <input type="text" name="option[target_keyword]" v-model="keyword" class="keywordInput" @keydown.enter="createKeyword">
-                        <a @click="clearKeyInput" v-if="keyword">
-                          <i class="material-icons keyword_cancel">cancel</i>
-                        </a>
-                      </div>
-                      <hr style="margin-top: 60px;" />
-                      <div>
-                        <span style="font-size: 14px;">キーワード : </span>
-                        <span v-for="(key,index) in keywords" v-model="keywords" style="margin-top: 10px;">
-                          <button class="keywordsTag" @click="removeKeyword(index)">{{key}}</button>
-                        </span>
-                      </div>
-                    </div>
-                    <div>
-                      <p class="settingMenu" style="margin-top: 4px;">送信対象設定</p>
-                      <input type="radio" class="settingRadio" id="unsetReceiver" value="unsetReceiver" v-model="setReceiver">
-                      <label class="setting" >全ユーザー</label>
-                      <input type="radio" class="settingRadio" id="setReceiver" value="setReceiver" v-model="setReceiver">
-                      <label class="setting" >送信対象選択</label>
-                    </div>
-                    <div>
-                      <p class="settingMenu">曜日設定</p>
-                      <input type="radio" class="settingRadio" id="unsetDay" value="unsetDay" v-model="setDay"@click="clearDay">
-                      <label class="setting" for="two">毎日</label>
-                      <input type="radio" class="settingRadio" id="setDay" value="setDay" v-model="setDay">
-                      <label class="setting" for="one">曜日選択</label>
-                      <div v-if="setDay=='setDay'">
-                        <p class="timeSet">
-                          <label>
-                            <input class="with-gap" type="checkbox" name="option[target_day]" value="1" v-model="targetDay"/>
-                            <span class="optCheck">月</span>
-                          </label>
-                          <label>
-                            <input class="with-gap" type="checkbox" name="option[target_day]" value="2" v-model="targetDay"/>
-                            <span class="optCheck">火</span>
-                          </label>
-                          <label>
-                            <input class="with-gap" type="checkbox" name="option[target_day]" value="3" v-model="targetDay"/>
-                            <span class="optCheck">水</span>
-                          </label>
-                          <label>
-                            <input class="with-gap" type="checkbox" name="option[target_day]" value="4" v-model="targetDay"/>
-                            <span class="optCheck">木</span>
-                          </label>
-                          <label>
-                            <input class="with-gap" type="checkbox" name="option[target_day]" value="5" v-model="targetDay"/>
-                            <span class="optCheck">金</span>
-                          </label>
-                          <label>
-                            <input class="with-gap" type="checkbox" name="option[target_day]" value="6" v-model="targetDay"/>
-                            <span class="optCheck">土</span>
-                          </label>
-                          <label>
-                            <input class="with-gap" type="checkbox" name="option[target_day]" value="0" v-model="targetDay"/>
-                            <span class="optCheck">日</span>
-                          </label>
-                        </p>
-                      </div>
-                    </div>
-                    <div>
-                      <p class="settingMenu">時間設定</p>
-                      <input type="radio" class="settingRadio" id="unsetTime" value="unsetTime" v-model="setTime" @click="clearTime">
-                      <label class="setting" for="unsetTime">未指定</label>
-                      <input type="radio" class="settingRadio" id="setTime" value="setTime" v-model="setTime">
-                      <label class="setting" for="setTime">時間選択</label>
-                      <div v-if="setTime=='setTime'">
-                        <p class="timeSet">
-                          <input type="time" class="timeRange" v-model="startTime">
-                          ~
-                          <input type="time" class="timeRange" v-model="endTime">
-                        </p>
-                      </div>
-                    </div>
-                    <div>
-                      <p class="settingMenu">回数設定</p>
-                      <input type="radio" class="settingRadio" id="unsetTime" value="unsetCount" v-model="setCount">
-                      <label class="setting" for="unsetCount">未指定</label>
-                      <input type="radio" class="settingRadio" id="setTime" value="setCount" v-model="setCount">
-                      <label class="setting" for="setCount">回数選択</label>
-                      <div v-if="setCount=='setCount'">
-                        <p class="timeSet">
-                          <input class="countSet" type="number" name="option[action_count]" v-model="actionCount">回
-                        </p>
-                      </div>
-                    </div>
-                    <div>
-                      <button class="allSend-button">キャンセル</button>
-                      <button class="allSend-button" @click="updateOption">設定</button>
-                    </div>
-                  </div>
-                </transition>
-              </span>
-              <span v-if="index!=selected&&!reactionShow">
-                <button class="added-folderBtn" id="added-folderBtn" @click="firstGate(index,item.id)">
-                  <i style="float: left;" class="material-icons open-file-added">flash_on</i>
-                  <span>
-                    {{item.name}}
-                  </span>
-                </button>
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!--Action部分-->
-
-        <div class="col col-right">
-          <transition name="fadeInOut">
-            <div v-show="!reactionShow">
-              <div>
-                <button v-show="selectedId" @click="reactionToggle" class="allSend-button">新規アクション作成</button>
-                <button v-show="selectedId" @click="reactionListToggle" class="allSend-button">既存アクション中選択</button>
-              </div>
-              <div class="right-panel" style="border: none;" v-show="!reactionListShow">
-                <table class="actionList">
-                  <thead>
-                    <tr>
-                      <th>
-                        <input type="checkbox" class="checkbox" v-model="reactionAllCheck" @click="reactionAllChecker">
-                      </th>
-                      <th>アクション名</th>
-                      <th>アクション内容</th>
-                      <th>操作</th>
-                      <th>ヒット数</th>
-                      <th>タイプ</th>
-                      <th>連動</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="(reaction,index) in reactions" v-model="reactions">
-                      <td class="check">
-                        <input type="checkbox" class="checkbox" :checked="reaction.bool" @click="reactionChecker(index)">
-                      </td>
-                      <td>
-                        {{reaction.name}}
-                      </td>
-
-                      <td v-if="reaction.reaction_type=='stamp'">
-                        <a @click="detailImage(getImgUrl(reaction.contents))">
-                          <img class="stampBtnImg" :src="getImgUrl(reaction.contents)"/>
-                        </a>
-                      </td>
-                      <td v-else-if="reaction.reaction_type=='image'">
-                        <a @click="detailImage(reaction.image.url)">
-                          <img class="imageResult" :src="reaction.image.url"/>
-                        </a>
-                      </td>
-                      <td v-else>
-                        <a v-if="reaction.contents.search('<img src=')>=0"
-                          @click="showFullContents(reaction.contents)"
-                          v-html="reaction.contents.substr(0,100)"
-                          >
-                        </a>
-                        <a v-else @click="showFullContents(reaction.contents)" >
-                          <span v-if="reaction.contents.length>19" v-html="reaction.contents.substr(0,20)+'...'"></span>
-                          <span v-else v-html="reaction.contents.substr(0,20)"></span>
-                        </a>
-                      </td>
-                      <td>
-                        <button class="edit-button" @click="editAction(reaction.id)">
-                          編集
-                        </button>
-                      </td>
-                      <td class="hitcount">{{reaction.target_number}}</td>
-                      <td>{{reaction.reaction_type}}</td>
-                      <td>
-                        <button class="edit-button" v-show="reaction.bool" @click="reactionCancel(reaction.id)">
-                          解除
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </transition>
-          <transition name="tadaInOut">
-            <div class="detailWindow" v-show="showDetail">
-              <div class="detailPanel">
-                <a class="closeDetail" @click="closeDetail">X</a>
-                <div class="detailContents">
-                  <div class="detail" readonly="readonly">
-                    <span v-html="fullContents" v-if="fullContents.search('@map')<0"></span>
-                    <GmapMap
-                    v-else
-                    :center="selected_center"
-                    :zoom="12"
-                    map-type-id="terrain"
-                    style="width: 100%; height: 95%;"
-                    >
-                    <GmapMarker
-                    :position="selected_center"
-                    :clickable="true"
-                    :draggable="false"
-                    />
-                  </GmapMap>
-                </div>
-              </div>
-            </div>
-          </div>
-        </transition>
-        <transition name="fadeInOut">
-          <div v-show="reactionShow">
-            <div>
-              <input type="text" ref="reactionName" v-model="reactionName" placeholder="アクション名を入力してください。">
-              <button v-show="reactionShow" @click="reactionToggle" class="allSend-button">戻り</button>
-            </div>
-            <div class="right-panel" >
-              <!-- side buttons -->
-              <div class="contentBtns">
-                <button class="stampBtn" @click="toggleStamp" title="スタンプ追加">
-                  <i class="material-icons stamp">child_care</i>
-                </button>
-                <button class="stampBtn" @click="toggleEmoji" title="emoji追加">
-                  <i class="material-icons stamp">sentiment_satisfied_alt</i>
-                </button>
-                <label class="stampBtn" title="イメージ追加">
-                  <i class="material-icons stamp">gif</i>
-                  <input type="file" @change="onFileChange" class="imageBtn" ref="fileInput" accept="img/*">
-                </label>
-                <button class="stampBtn"><i class="material-icons stamp">border_color</i></button>
-                <button class="stampBtn" @click="mapToggle" title="マップ追加">
-                  <i class="material-icons stamp">location_on</i>
-                </button>
-                <button class="stampBtn" title="アクションプレビュー">
-                  <i class="material-icons stamp">remove_red_eye</i>
-                </button>
-              </div>
-
-              <div class="chattingArea">
-                <div v-show="uploadedImage"  class="attachedImgPanel">
-                  <a class="closeStamp" @click="closeImage">X</a>
-                  <p>[イメージ]</p>
-                  <img class="attachedImg" :src="uploadedImage">
-                </div>
-
-                <div id="chattingContents" class="chattingContents" contenteditable="true" :style="flexablePadding" @input="sync" v-html="innerContent" v-model="innerContent" ref="chatting" autofocus="autofocus"></div>
-                <input type="text" v-model="contents" style="display: none;">
-
-                <!-- stamp list bottom -->
-                <div class="sticker-panel" v-show="stampShow">
-                  <button class="stampBtn" v-for="num in stampNums" @click="selectStamp(num)">
-                    <img class="stampBtnImg" :src="getImgUrl(num)"/>
-                  </button>
-                </div>
-
-                <!-- emoji list bottom -->
-                <div class="sticker-panel" v-show="emojiShow">
-                  <button class="emojiBtn stampBtn" v-for="emoji in emojis" @click="addEmoji(emoji.img_url)">
-                    <img class="stampBtnImg" :src="emoji.img_url">
-                  </button>
-                </div>
-              </div>
-
-              <!-- stamp image area -->
-              <div class="stampArea" v-show="stampAreaShow">
-                <a class="closeStamp" @click="closeStamp">X</a>
-                <p>[スタンプ]</p>
-                <img class="selectStamp" :src="selectStampUrl">
-              </div>
-
-              <!--GoogleMap-->
-              <div class="googleMap" v-show="mapShow">
-                <div class="placeSearch">
-                  <GmapAutocomplete @place_changed="setPlace"/>
-                </div>
-                <button style="width: 100%; height: 5%;" id="location" @click="getAddress">
-                  住所取得
-                </button>
-                <GmapMap
-                :center="default_center"
-                :zoom="12"
-                map-type-id="terrain"
-                style="width: 100%; height: 95%;"
-                @center_changed="onCenterChanged"
-                >
-                <GmapMarker
-                :position="marker_center"
-                :clickable="true"
-                :draggable="false"
-                />
-              </GmapMap>
-            </div>
-            <!-- submit button -->
-            <button class="sendBtn okBtn" @click="createReaction" v-if="!editMode">セーブ</button>
-            <button class="sendBtn okBtn" @click="updateReaction" v-else>修正</button>
-            <button class="sendBtn cancelBtn" @click="resetReaction" style="float: right;">再作成</button>
-          </div>
-        </div>
-      </transition>
-
-      <!-- 여기는 전체 액션을 보여주는 곳 -->
-      <transition name="slideUpDown">
-        <div class="reactionAll" v-if="reactionListShow">
-          <div class="right-panel-small" style="border: none;">
+          <div class="right-panel" style="border: none;" v-show="!reactionListShow">
             <table class="actionList">
               <thead>
                 <tr>
@@ -350,12 +16,13 @@
                   </th>
                   <th>アクション名</th>
                   <th>アクション内容</th>
+                  <th>操作</th>
                   <th>ヒット数</th>
                   <th>タイプ</th>
                   <th>連動</th>
                 </tr>
               </thead>
-              <tbody style="overflow:scroll;">
+              <tbody>
                 <tr v-for="(reaction,index) in reactions" v-model="reactions">
                   <td class="check">
                     <input type="checkbox" class="checkbox" :checked="reaction.bool" @click="reactionChecker(index)">
@@ -363,6 +30,7 @@
                   <td>
                     {{reaction.name}}
                   </td>
+
                   <td v-if="reaction.reaction_type=='stamp'">
                     <a @click="detailImage(getImgUrl(reaction.contents))">
                       <img class="stampBtnImg" :src="getImgUrl(reaction.contents)"/>
@@ -384,11 +52,16 @@
                       <span v-else v-html="reaction.contents.substr(0,20)"></span>
                     </a>
                   </td>
+                  <td>
+                    <button class="edit-button" @click="editAction(reaction.id)">
+                      編集
+                    </button>
+                  </td>
                   <td class="hitcount">{{reaction.target_number}}</td>
                   <td>{{reaction.reaction_type}}</td>
                   <td>
-                    <button class="edit-button" v-if="reaction.bool" @click="linkOptionReaction(reaction.id)">
-                      選択
+                    <button class="edit-button" v-show="reaction.bool" @click="reactionCancel(reaction.id)">
+                      解除
                     </button>
                   </td>
                 </tr>
@@ -397,111 +70,188 @@
           </div>
         </div>
       </transition>
-    </div>
-  </div>
-</transition>
-<transition name="slideInOut">
-  <div v-show="!formShow" :style="flexableHeight">
-    <div class="col col-left">
-      <div class="label">
-        <i class="material-icons folder">folder_open</i>
-        条件タグ
-        <button class="button" @click="addToggle">
-          <i class="material-icons btnMark">add_circle_outline</i>
-        </button>
-        <button class="button" v-if="deleteShow" @click="deleteFolder" rel="nofollow" data-method="delete">
-          <i class="material-icons btnMark">remove_circle_outline</i>
-        </button>
-      </div>
-      <div v-if="addShow">
-        <i class="material-icons open-file">insert_drive_file</i>
-        <div>
-          <input type="text" v-model="newFolder" id="new-folder" class="new-folder">
-          <button v-if="newFolder" class="addFolderBtn" @click="createFolder">追加</button>
+      <transition name="tadaInOut">
+        <div class="detailWindow" v-show="showDetail">
+          <div class="detailPanel">
+            <a class="closeDetail" @click="closeDetail">X</a>
+            <div class="detailContents">
+              <div class="detail" readonly="readonly">
+                <span v-html="fullContents" v-if="fullContents.search('@map')<0"></span>
+                <GmapMap
+                v-else
+                :center="selected_center"
+                :zoom="12"
+                map-type-id="terrain"
+                style="width: 100%; height: 95%;"
+                >
+                <GmapMarker
+                :position="selected_center"
+                :clickable="true"
+                :draggable="false"
+                />
+              </GmapMap>
+            </div>
+          </div>
         </div>
       </div>
-      <div :style="flexableMargin">
-        <div v-for="(item,index) in folders" class="added-folder">
-          <span v-if="index==selected">
-            <button
-            class="added-folderBtn"
-            id="added-folderBtn"
-            @click="firstGate(index,item.id)"
-            :style="selectedCSS"
-            >
-            <i style="float: left;" class="material-icons open-file-added">insert_drive_file</i>
-            <span>
-              {{item.name}}
-            </span>
-          </button>
-        </span>
-        <span v-else>
-          <button class="added-folderBtn" id="added-folderBtn" @click="firstGate(index,item.id)">
-            <i style="float: left;" class="material-icons open-file-added">insert_drive_file</i>
-            <span>
-              {{item.name}}
-            </span>
-          </button>
-        </span>
-
-        <button class="detail-panel" v-if="(selected%folders.length)==index" @click="panelToggle">
-          <i class="material-icons down" v-if="!panelShow">keyboard_arrow_down</i>
-          <i class="material-icons down" v-if="panelShow">keyboard_arrow_up</i>
-        </button>
-        <transition name="fadeUpDown">
-          <div class="edit-panel" id="edit-panel" v-if="panelShow&&(selected%folders.length)==index">
-
+    </transition>
+    <transition name="fadeInOut">
+      <div v-show="reactionShow">
+        <div>
+          <input type="text" ref="reactionName" v-model="reactionName" placeholder="アクション名を入力してください。">
+          <button v-show="reactionShow" @click="reactionToggle" class="allSend-button">戻り</button>
+        </div>
+        <div class="right-panel" >
+          <!-- side buttons -->
+          <div class="contentBtns">
+            <button class="stampBtn" @click="toggleStamp" title="スタンプ追加">
+              <i class="material-icons stamp">child_care</i>
+            </button>
+            <button class="stampBtn" @click="toggleEmoji" title="emoji追加">
+              <i class="material-icons stamp">sentiment_satisfied_alt</i>
+            </button>
+            <label class="stampBtn" title="イメージ追加">
+              <i class="material-icons stamp">gif</i>
+              <input type="file" @change="onFileChange" class="imageBtn" ref="fileInput" accept="img/*">
+            </label>
+            <button class="stampBtn"><i class="material-icons stamp">border_color</i></button>
+            <button class="stampBtn" @click="mapToggle" title="マップ追加">
+              <i class="material-icons stamp">location_on</i>
+            </button>
+            <button class="stampBtn" title="アクションプレビュー">
+              <i class="material-icons stamp">remove_red_eye</i>
+            </button>
           </div>
-        </transition>
+
+          <div class="chattingArea">
+            <div v-show="uploadedImage"  class="attachedImgPanel">
+              <a class="closeStamp" @click="closeImage">X</a>
+              <p>[イメージ]</p>
+              <img class="attachedImg" :src="uploadedImage">
+            </div>
+
+            <div id="chattingContents" class="chattingContents" contenteditable="true" :style="flexablePadding" @input="sync" v-html="innerContent" v-model="innerContent" ref="chatting" autofocus="autofocus"></div>
+            <input type="text" v-model="contents" style="display: none;">
+
+            <!-- stamp list bottom -->
+            <div class="sticker-panel" v-show="stampShow">
+              <button class="stampBtn" v-for="num in stampNums" @click="selectStamp(num)">
+                <img class="stampBtnImg" :src="getImgUrl(num)"/>
+              </button>
+            </div>
+
+            <!-- emoji list bottom -->
+            <div class="sticker-panel" v-show="emojiShow">
+              <button class="emojiBtn stampBtn" v-for="emoji in emojis" @click="addEmoji(emoji.img_url)">
+                <img class="stampBtnImg" :src="emoji.img_url">
+              </button>
+            </div>
+          </div>
+
+          <!-- stamp image area -->
+          <div class="stampArea" v-show="stampAreaShow">
+            <a class="closeStamp" @click="closeStamp">X</a>
+            <p>[スタンプ]</p>
+            <img class="selectStamp" :src="selectStampUrl">
+          </div>
+
+          <!--GoogleMap-->
+          <div class="googleMap" v-show="mapShow">
+            <div class="placeSearch">
+              <GmapAutocomplete @place_changed="setPlace"/>
+            </div>
+            <button style="width: 100%; height: 5%;" id="location" @click="getAddress">
+              住所取得
+            </button>
+            <GmapMap
+            :center="default_center"
+            :zoom="12"
+            map-type-id="terrain"
+            style="width: 100%; height: 95%;"
+            @center_changed="onCenterChanged"
+            >
+            <GmapMarker
+            :position="marker_center"
+            :clickable="true"
+            :draggable="false"
+            />
+          </GmapMap>
+        </div>
+        <!-- submit button -->
+        <button class="sendBtn okBtn" @click="createReaction" v-if="!editMode">セーブ</button>
+        <button class="sendBtn okBtn" @click="updateReaction" v-else>修正</button>
+        <button class="sendBtn cancelBtn" @click="resetReaction" style="float: right;">再作成</button>
       </div>
     </div>
-  </div>
+  </transition>
 
-  <div class="col col-right">
-    <table>
-      <tr>
-        <th>
-          <input type="checkbox" class="checkbox" v-model="allCheck" @click="allChecker">
-        </th>
-        <th>自動応答名</th>
-        <th>アクション</th>
-        <th>操作</th>
-        <th>ヒット数</th>
-        <th>フォルダ</th>
-        <th>
-          <button class="button">
-            <i class="material-icons btnMark">add_circle_outline</i>
-          </button>
-        </th>
-      </tr>
-      <tr v-for="(check,index) in replyArray">
-        <td class="check">
-          <input type="checkbox" class="checkbox" :checked="check.bool" @click="oneChecker(index)">
-        </td>
-        <td class="title">
-          {{check.name}}
-        </td>
-        <td class="action">{{check.bool}}</td>
-        <td>샘플</td>
-        <td class="hitcount">샘플</td>
-        <td class="category-in">샘플</td>
-        <td></td>
-      </tr>
-    </table>
-  </div>
+  <!-- 여기는 전체 액션을 보여주는 곳 -->
+  <transition name="slideUpDown">
+    <div class="reactionAll" v-if="reactionListShow">
+      <div class="right-panel-small" style="border: none;">
+        <table class="actionList">
+          <thead>
+            <tr>
+              <th>
+                <input type="checkbox" class="checkbox" v-model="reactionAllCheck" @click="reactionAllChecker">
+              </th>
+              <th>アクション名</th>
+              <th>アクション内容</th>
+              <th>ヒット数</th>
+              <th>タイプ</th>
+              <th>連動</th>
+            </tr>
+          </thead>
+          <tbody style="overflow:scroll;">
+            <tr v-for="(reaction,index) in reactions" v-model="reactions">
+              <td class="check">
+                <input type="checkbox" class="checkbox" :checked="reaction.bool" @click="reactionChecker(index)">
+              </td>
+              <td>
+                {{reaction.name}}
+              </td>
+              <td v-if="reaction.reaction_type=='stamp'">
+                <a @click="detailImage(getImgUrl(reaction.contents))">
+                  <img class="stampBtnImg" :src="getImgUrl(reaction.contents)"/>
+                </a>
+              </td>
+              <td v-else-if="reaction.reaction_type=='image'">
+                <a @click="detailImage(reaction.image.url)">
+                  <img class="imageResult" :src="reaction.image.url"/>
+                </a>
+              </td>
+              <td v-else>
+                <a v-if="reaction.contents.search('<img src=')>=0"
+                  @click="showFullContents(reaction.contents)"
+                  v-html="reaction.contents.substr(0,100)"
+                  >
+                </a>
+                <a v-else @click="showFullContents(reaction.contents)" >
+                  <span v-if="reaction.contents.length>19" v-html="reaction.contents.substr(0,20)+'...'"></span>
+                  <span v-else v-html="reaction.contents.substr(0,20)"></span>
+                </a>
+              </td>
+              <td class="hitcount">{{reaction.target_number}}</td>
+              <td>{{reaction.reaction_type}}</td>
+              <td>
+                <button class="edit-button" v-if="reaction.bool" @click="linkOptionReaction(reaction.id)">
+                  選択
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </transition>
 </div>
-</transition>
 </div>
 </template>
 <script>
   import axios from 'axios'
   import {gmapApi} from 'vue2-google-maps'
-  import optionDetail from '../components/page7/optionDetail.vue'
   export default {
     name: 'autoReply',
-    components: {
-      optionDetail
-    },
     data: function(){
       return {
         formShow: false,
@@ -575,7 +325,7 @@
     },
     methods: {
       fetchFolders(){
-        axios.get('/api/tags?tag_group=option').then((res)=>{
+        axios.get('/api/tags?tag_group=autoreply').then((res)=>{
           this.folders = res.data.tags
         },(error)=>{
           console.log(error)
@@ -623,7 +373,7 @@
       },
       createFolder(){
         if (!this.newFolder) return;
-        axios.post('/api/tags',{name: this.newFolder, tag_group: 'option'}).then((res)=>{
+        axios.post('/api/tags',{name: this.newFolder, tag_group: 'autoreply'}).then((res)=>{
           alert("新しいファイルが追加されました。")
           this.newFolder = '';
           this.addShow = !this.addShow;
@@ -1371,4 +1121,4 @@
     }
   }
 </script>
-<style scoped src="../components/page7/page7.css"/>
+<style scoped src="../page7/page7.css"></style>

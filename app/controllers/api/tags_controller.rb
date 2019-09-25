@@ -8,7 +8,6 @@ class Api::TagsController < ApplicationController
 
   def create
     @tag = Tag.new(tag_params)
-
     if @tag.save
       render :show, status: :ok
     else
@@ -22,8 +21,11 @@ class Api::TagsController < ApplicationController
 
   def destroy
     @tag = Tag.find(params[:id])
-    @tag.destroy
-    render :index, status: :ok
+    if @tag.destroy
+      render :index, status: :ok
+    else
+      render json: @tag.errors, status: :unprocessable_entity
+    end
   end
 
   private

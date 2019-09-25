@@ -17,8 +17,8 @@
             <span class="detailInfo">{{friend.created_at}}</span>
           </div>
           <div class="detailLine">
-            <span class="detailTitle">応答率</span>
-            <span class="detailInfo">15%(sample)</span>
+            <span class="detailTitle">平均応答時間</span>
+            <span class="detailInfo">15分(sample)</span>
           </div>
           <div class="detailLine">
             <span class="detailTitle">メッセージ値</span>

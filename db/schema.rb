@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_09_18_064929) do
+ActiveRecord::Schema.define(version: 2019_09_24_020002) do
 
   create_table "books", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "title"
@@ -86,7 +86,7 @@ ActiveRecord::Schema.define(version: 2019_09_18_064929) do
     t.string "target_tag"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "target_number"
+    t.integer "hit_count"
     t.string "image"
   end
 
@@ -120,7 +120,7 @@ ActiveRecord::Schema.define(version: 2019_09_18_064929) do
     t.text "contents"
     t.string "reaction_type"
     t.string "user_group"
-    t.string "target_tag"
+    t.string "tag"
     t.integer "target_number"
     t.string "image"
     t.datetime "created_at", null: false
