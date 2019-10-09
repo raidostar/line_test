@@ -2,11 +2,9 @@ class Api::ReactionsController < ApplicationController
   def index
     option = Option.find(params[:option_id])
     @reactions = []
-    if option.attributes["match_reaction"].present?
-      reaction_ids = option.attributes["match_reaction"].split(",")
-      reaction_ids.each do |id|
-        @reactions.push(Reaction.find_by(id: id))
-      end
+    if option.match_reaction.present?
+      reaction_ids = option.match_reaction.split(",")
+      @reactions = Reaction.where(id: reaction_ids)
     end
   end
 
@@ -29,8 +27,8 @@ class Api::ReactionsController < ApplicationController
 
   def index_all_except
     @option = Option.find(params[:option_id])
-    temp = @option.attributes['match_reaction'].split(",")
-    @reactions = Reaction.where.not(id: temp)
+    temp = @option.match_reaction.split(",")
+    @reactions = Reaction.where(user_group: current_user.group).where.not(id: temp)
 
     render json: @reactions, status: :ok
   end
@@ -41,9 +39,13 @@ class Api::ReactionsController < ApplicationController
 
   def create
     @reaction = Reaction.new(reaction_params)
+    puts "1번"
     option_id = params[:match_option]
+    puts "2번"
     tags = params[:tag].split(",")
+    puts "3번"
     @option = Option.find_by(id: option_id)
+    puts "4번"
     if @reaction.save
       option_update(@option)
       tag_create(tags)
@@ -70,10 +72,10 @@ class Api::ReactionsController < ApplicationController
     reaction = Reaction.last
     match_reaction = nil
     if option.present?
-      if option.attributes["match_reaction"].present?
-        match_reaction = option.attributes["match_reaction"] + reaction.attributes["id"].to_s + ","
+      if option.match_reaction.present?
+        match_reaction = option.match_reaction + reaction.id.to_s + ","
       else
-        match_reaction = reaction.attributes["id"].to_s + ","
+        match_reaction = reaction.id.to_s + ","
       end
       if option.update({match_reaction: match_reaction})
       else
@@ -95,16 +97,16 @@ class Api::ReactionsController < ApplicationController
     @reaction = Reaction.find(params[:reaction_id])
     @option = Option.find(params[:option_id])
 
-    if @option.attributes["match_reaction"].present?
-      match_reaction = @option.attributes["match_reaction"] + params[:reaction_id].to_s + ","
+    if @option.match_reaction.present?
+      match_reaction = @option.match_reaction + params[:reaction_id].to_s + ","
     else
       match_reaction = params[:reaction_id].to_s + ","
     end
     if @option.update({match_reaction: match_reaction})
-      if @reaction.attributes["match_option"].present?
-        match_option = @reaction.attributes["match_option"] + "," + params[:option_id].to_s
+      if @reaction.match_option.present?
+        match_option = @reaction.match_option + params[:option_id].to_s + ","
       else
-        match_option = @reaction.attributes["id"].to_s
+        match_option = @reaction.id.to_s + ","
       end
       if @reaction.update({match_option: match_option})
         render json: @reaction, status: :ok
@@ -117,38 +119,33 @@ class Api::ReactionsController < ApplicationController
   end
 
   def destroy
-    @reaction = Reaction.find(params[:id])
+    id = params[:id]
+    @reaction = Reaction.find(id)
+    id = id+','
+    @options = Option.where("match_reaction like '%"+id+"%'")
+    if @options.present?
+      @options.each do |option|
+        match_reaction = option.match_reaction.gsub(id,'')
+        if option.update(match_reaction: match_reaction)
+        else
+          render json: option.errors, status: :unprocessable_entity
+        end
+      end
+    end
     @reaction.destroy
   end
 
   def cancel_reaction
-    selected_reaction_id = params[:id] # integer
-    selected_option_id = params[:match_option] # integer
+    reaction_id = params[:id] # integer
+    option_id = params[:match_option] # integer
 
-    @reaction = Reaction.find(selected_reaction_id)
-    option_ids = @reaction.attributes["match_option"].split(",") #string_array
-    option_ids.delete(selected_option_id.to_s)
-    match_option = ''
-    if option_ids.present?
-      option_ids.each do |id|
-        match_option = match_option + id + ','
-      end
-    else
-      match_option = nil
-    end
+    @reaction = Reaction.find(reaction_id)
+    match_option = @reaction.match_option.gsub(option_id+',','') #string_array
+
     if @reaction.update(match_option: match_option)
-      @option = Option.find_by(id: selected_option_id)
+      @option = Option.find_by(id: option_id)
       if @option.present?
-        reaction_ids = @option.attributes["match_reaction"].split(",") #string_array
-        reaction_ids.delete(selected_reaction_id.to_s)
-        match_reaction = ''
-        if reaction_ids.present?
-          reaction_ids.each do |id|
-            match_reaction = match_reaction + id + ','
-          end
-        else
-          match_reaction = nil
-        end
+        match_reaction = @option.match_reaction.gsub(reaction_id+',','')
         if @option.update(match_reaction: match_reaction)
           render :index, status: :ok
         else

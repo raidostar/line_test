@@ -2,9 +2,9 @@
   <div class="page" id="page5">
     <div>
       <div class="title area">
-        <h2 class="title">シナリオ配信<hr/></h2>
+        <h2 class="title">統計情報<hr/></h2>
       </div>
-      <div class="buttons">
+      <div class="buttons" style="float: right; margin-right: 50px;">
         <button class="svc-button" @click="formToggle">サービス登録</button>
       </div>
     </div>

@@ -354,6 +354,7 @@
   border: 1px solid #FFF;
   border-radius: 8px;
   box-shadow: 0 0 2px #666;
+  background-color: #EEECFF
 }
 button:focus {
   outline: none;

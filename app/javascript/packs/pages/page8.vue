@@ -11,26 +11,27 @@
           <i class="material-icons btnMark">remove_circle_outline</i>
         </button>
       </div>
-      <div v-if="addShow">
-        <i class="material-icons open-file">insert_drive_file</i>
-        <span>
-          <input type="text" v-model="newFolder" id="new-folder" class="new-folder" @keydown.enter="createFolder">
-        </span>
-      </div>
+
       <div v-for="(tag,index) in tags" class="added-folder">
-        <button style="width: 80%;" class="added-folderBtn" id="added-folderBtn" @click="firstGate(index,tag.id)">
+        <button v-if="index==selected" :style="selectedCSS" class="added-folderBtn" id="added-folderBtn" @click="firstGate(index,tag.id)">
           <i class="material-icons open-file-added">insert_drive_file</i>
           <span>
             {{tag.name}}
           </span>
         </button>
-        <button class="delete" v-if="(selected%tags.length)==index" @click="panelToggle">
+        <button v-else style="width: 100%;" class="added-folderBtn" id="added-folderBtn" @click="firstGate(index,tag.id)">
+          <i class="material-icons open-file-added">insert_drive_file</i>
+          <span>
+            {{tag.name}}
+          </span>
+        </button>
+        <!-- <button class="delete" v-if="(selected%tags.length)==index" @click="panelToggle">
           <i class="material-icons down">keyboard_arrow_down</i>
         </button>
         <div class="edit-panel" id="edit-panel" v-if="panelShow&&(selected%tags.length)==index">
           <button class="folderEdit">rename</button>
           <button class="folderEdit">remove</button>
-        </div>
+        </div> -->
       </div>
     </div>
     <div class="col col-right">
@@ -246,7 +247,7 @@
     data: function(){
       return {
         formShow: false,
-        addShow: false,
+
         folders: [],
         newFolder: '',
         selected: null,
@@ -336,39 +337,11 @@
         this.selectedReaction = null
         this.formShow = !this.formShow;
         this.selected = null
-        this.selectedId = null
+        //this.selectedId = null
         this.reactionListShow = false;
         this.reactions = []
       },
-      addToggle(){
-        this.selectedId = null
-        this.deleteShow = false;
-        this.addShow = !this.addShow;
-        this.selected = null
-        if(this.addShow){
-          this.flexableMargin = {'margin-top': '50px'}
-
-        } else {
-          this.flexableMargin = {'margin-top': '0px'}
-          this.newOption = {name: '', match_reaction: '', action_count: '', target_keyword: '', target_day: '', target_time: ''}
-        }
-        //this.$nextTick(() => document.getElementById('new-folder').focus());
-      },
-      createFolder(){
-        if (!this.newFolder) return;
-        axios.post('/api/tags',{name: this.newFolder, tag_group: 'reaction'}).then((res)=>{
-          alert("新しいファイルが追加されました。")
-          this.newFolder = '';
-          this.addShow = !this.addShow;
-          this.flexableMargin = {'margin-top': '0px'}
-          this.fetchTags();
-        },(error)=>{
-          console.log(error);
-        })
-      },
       firstGate(index,id){
-        this.addShow = true;
-        this.addToggle();
         this.deleteShow = true;
         this.selected = index
         this.selectedId = id
@@ -453,7 +426,7 @@
             name: this.reactionName,
             reaction_type: 'text',
             contents: this.contents,
-            tag: this.tagtext.toString()
+            tag: this.tagtext.toString()+','
           })
           .then((res)=>{
             this.afterAxios();
@@ -467,7 +440,7 @@
             name: this.reactionName,
             reaction_type: 'stamp',
             contents: target.substr(26,10),
-            tag: this.tagtext.toString()
+            tag: this.tagtext.toString()+','
           })
           .then((res)=>{
             this.afterAxios();
@@ -483,7 +456,7 @@
             name: this.reactionName,
             reaction_type: 'text',
             contents: this.contents,
-            tag: this.tagtext.toString()
+            tag: this.tagtext.toString()+','
           }).then((res)=>{
             let arr = this.selectStampUrl.split('-')
             let target = arr[0]
@@ -491,7 +464,7 @@
               name: this.reactionName,
               reaction_type: 'stamp',
               contents: target.substr(26,10),
-              tag: this.tagtext.toString()
+              tag: this.tagtext.toString()+','
             }).then((res)=>{
               this.afterAxios();
             },(error)=>{
@@ -506,7 +479,7 @@
           data.append('name', this.reactionName);
           data.append('reaction_type','image');
           data.append('contents','[ NO TEXT ]');
-          data.append('tag',this.tagtext.toString());
+          data.append('tag',this.tagtext.toString()+',');
           data.append('image',this.imageFile);
           axios.post('/api/reactions',data)
           .then((res)=>{
@@ -523,14 +496,14 @@
             name: this.reactionName,
             reaction_type: 'text',
             contents: this.contents,
-            tag: this.tagtext.toString(),
+            tag: this.tagtext.toString()+',',
           }).then((res)=>{
             var data = new FormData();
             var file = this.$refs.fileInput.files[0];
             data.append('name', this.reactionName);
             data.append('reaction_type','image');
             data.append('contents','[ IMAGE ]');
-            data.append('tag',this.tagtext.toString());
+            data.append('tag',this.tagtext.toString()+',');
             data.append('image',file);
             axios.post('/api/reactions',data)
             .then((res)=>{
@@ -553,7 +526,7 @@
                 name: this.reactionName,
                 reaction_type: 'map',
                 contents: data,
-                tag: this.tagtext.toString(),
+                tag: this.tagtext.toString()+',',
               }).then((res)=>{
                 this.afterAxios();
               },(error)=>{
@@ -570,7 +543,7 @@
             name: this.reactionName,
             reaction_type: 'text',
             contents: this.contents,
-            tag: this.tagtext.toString(),
+            tag: this.tagtext.toString()+',',
           }).then((res)=>{
             let geocoder = new google.maps.Geocoder();
             const latlng = this.marker_center
@@ -582,7 +555,7 @@
                   name: this.reactionName,
                   reaction_type: 'map',
                   contents: data,
-                  tag: this.tagtext.toString(),
+                  tag: this.tagtext.toString()+',',
                 }).then((res)=>{
                   this.afterAxios();
                 },(error)=>{
@@ -818,7 +791,7 @@
             reaction_type: 'text',
             contents: this.contents,
             image: null,
-            tag: this.tagtext.toString(),
+            tag: this.tagtext.toString()+',',
           })
           .then((res)=>{
             this.afterAxios();
@@ -833,7 +806,7 @@
             reaction_type: 'stamp',
             contents: target.substr(26,10),
             image: null,
-            tag: this.tagtext.toString(),
+            tag: this.tagtext.toString()+',',
           })
           .then((res)=>{
             this.afterAxios();
@@ -850,7 +823,7 @@
           data.append('reaction_type','image');
           data.append('contents','[ NO TEXT ]');
           data.append('image',this.imageFile);
-          data.append('tag',this.tagtext.toString());
+          data.append('tag',this.tagtext.toString()+',');
           axios.put('/api/reactions/'+this.selectedReaction.id,data)
           .then((res)=>{
             this.afterAxios();
@@ -871,7 +844,7 @@
                 reaction_type: 'map',
                 contents: data,
                 image: null,
-                tag: this.tagtext.toString(),
+                tag: this.tagtext.toString()+',',
               }).then((res)=>{
                 this.afterAxios();
               },(error)=>{
@@ -900,9 +873,11 @@
           alert("コンマはキーワードになれません。")
           return;
         }
-        if (this.tagtext.toString().search(this.tag)>-1){
-          alert("もうあるタグです。");
-          return;
+        for(var t of this.tagtext){
+          if(t==this.tag){
+            alert("もうあるタグです。");
+            return;
+          }
         }
         this.tagtext.push(this.tag)
         this.tag = '';

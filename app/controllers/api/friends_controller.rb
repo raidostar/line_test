@@ -9,6 +9,11 @@ class Api::FriendsController < ApplicationController
     @friend = Friend.find(params[:id])
   end
 
+  def find_by_fr_account
+    @friend = Friend.find_by(fr_account: params[:fr_account])
+    render json: @friend, status: :ok
+  end
+
   def update
     @friend = Friend.find(params[:id])
     tags = params[:tags].split(",")

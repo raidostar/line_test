@@ -3,7 +3,9 @@
     <div class="title area">
       <h2 class="title">
         <span>自動応答</span>
-        <button class="allSend-button" @click="formToggle" v-show="!formShow">新規配信</button>
+        <button class="allSend-button" @click="formToggle" v-show="(!formShow&&selectedTagId)||tags.length==0">
+          新規配信
+        </button>
         <button class="allSend-button" @click="formToggle" v-show="formShow">リスト見る</button>
         <hr/>
       </h2>
@@ -13,7 +15,7 @@
         <div class="col col-left">
           <div class="label">
             <i class="material-icons folder">sms</i>
-            条件リスト
+              条件リスト
             <button class="button" @click="addToggle">
               <i class="material-icons btnMark">add_circle_outline</i>
             </button>
@@ -23,16 +25,18 @@
           </div>
           <transition name="slideUpDown">
             <div v-if="addShow">
-              <!--components--><option-detail
+              <option-detail
               :newOption="newOption"
               :createOptions="createOptions"
+              :autoReply="autoReply"
+              :remindReply="remindReply"
               />
             </div>
           </transition>
           <div class="options-panel">
             <div v-for="(item,index) in options" class="added-folder">
               <span v-if="index==selected">
-                <button class="added-folderBtn" id="added-folderBtn" @click="firstGate(index,item.id)" :style="selectedCSS">
+                <button class="added-folderBtn" id="added-folderBtn" @click="clickOption(index,item.id)" :style="selectedCSS">
                   <i style="float: left;" class="material-icons open-file-added">flash_on</i>
                   <span>
                     {{item.name}}
@@ -46,7 +50,7 @@
                   <div class="edit-panel" id="edit-panel" v-if="panelShow">
                     <div>
                       <div>
-                        <p class="settingMenu">キーワード設定</p>
+                        <p class="settingMenu">条件語設定</p>
                         <input type="text" name="option[target_keyword]" v-model="keyword" class="keywordInput" @keydown.enter="createKeyword">
                         <a @click="clearKeyInput" v-if="keyword">
                           <i class="material-icons keyword_cancel">cancel</i>
@@ -54,7 +58,7 @@
                       </div>
                       <hr style="margin-top: 60px;" />
                       <div>
-                        <span style="font-size: 14px;">キーワード : </span>
+                        <span style="font-size: 14px;">条件語</span>
                         <span v-for="(key,index) in keywords" v-model="keywords" style="margin-top: 10px;">
                           <button class="keywordsTag" @click="removeKeyword(index)">{{key}}</button>
                         </span>
@@ -133,6 +137,23 @@
                       </div>
                     </div>
                     <div>
+                      <div>
+                        <p class="settingMenu">タグ設定</p>
+                        <input type="text" name="option[target_keyword]" v-model="tag" class="keywordInput" @keydown.enter="createTag">
+                        <a @click="clearTag" v-if="tag">
+                          <i class="material-icons keyword_cancel">cancel</i>
+                        </a>
+                      </div>
+                      <hr style="margin-top: 60px;" />
+                      <div>
+                        <span style="font-size: 14px;">タグリスト</span>
+                        <span v-for="(tag,index) in tagtext" v-model="tagtext" style="margin-top: 10px;">
+                          <button class="keywordsTag" @click="removeTag(index)">{{tag}}</button>
+                        </span>
+                      </div>
+                    </div>
+                    <hr style="margin-top: 10px;" />
+                    <div>
                       <button class="allSend-button">キャンセル</button>
                       <button class="allSend-button" @click="updateOption">設定</button>
                     </div>
@@ -140,7 +161,7 @@
                 </transition>
               </span>
               <span v-if="index!=selected&&!reactionShow">
-                <button class="added-folderBtn" id="added-folderBtn" @click="firstGate(index,item.id)">
+                <button class="added-folderBtn" id="added-folderBtn" @click="clickOption(index,item.id)">
                   <i style="float: left;" class="material-icons open-file-added">flash_on</i>
                   <span>
                     {{item.name}}
@@ -286,6 +307,24 @@
                 <div id="chattingContents" class="chattingContents" contenteditable="true" :style="flexablePadding" @input="sync" v-html="innerContent" v-model="innerContent" ref="chatting" autofocus="autofocus"></div>
                 <input type="text" v-model="contents" style="display: none;">
 
+                <!--tag input area-->
+                <div class="tags">
+                  <div class="tags-top">
+                    <span style="margin-left: 10px; float: left;">タグ</span>
+                    <input type="text" name="option[target_keyword]" v-model="tag" class="tagInput" @keydown.enter="createTag">
+                    <a @click="clearTagInput" v-if="tag" style="line-height: 0px; float: left;">
+                      <i class="material-icons keyword_cancel">cancel</i>
+                    </a>
+                  </div>
+                  <br>
+                  <div class="tags-bottom">
+                    <span style="font-size: 14px;">タグリスト</span>
+                    <span v-for="(tag,index) in tagtext" v-model="tagtext" style="margin-top: 10px; line-height: 0px;">
+                      <button class="tagList" @click="removeTag(index)">{{tag}}</button>
+                    </span>
+                  </div>
+                </div>
+
                 <!-- stamp list bottom -->
                 <div class="sticker-panel" v-show="stampShow">
                   <button class="stampBtn" v-for="num in stampNums" @click="selectStamp(num)">
@@ -406,53 +445,33 @@
       <div class="label">
         <i class="material-icons folder">folder_open</i>
         条件タグ
-        <button class="button" @click="addToggle">
-          <i class="material-icons btnMark">add_circle_outline</i>
-        </button>
-        <button class="button" v-if="deleteShow" @click="deleteFolder" rel="nofollow" data-method="delete">
+        <button class="button" v-if="deleteShow" @click="deleteTag" rel="nofollow" data-method="delete">
           <i class="material-icons btnMark">remove_circle_outline</i>
         </button>
       </div>
-      <div v-if="addShow">
-        <i class="material-icons open-file">insert_drive_file</i>
-        <div>
-          <input type="text" v-model="newFolder" id="new-folder" class="new-folder">
-          <button v-if="newFolder" class="addFolderBtn" @click="createFolder">追加</button>
-        </div>
-      </div>
       <div :style="flexableMargin">
-        <div v-for="(item,index) in folders" class="added-folder">
+        <div v-for="(tag,index) in tags" class="added-folder">
           <span v-if="index==selected">
             <button
             class="added-folderBtn"
             id="added-folderBtn"
-            @click="firstGate(index,item.id)"
+            @click="clickTag(index,tag.id)"
             :style="selectedCSS"
             >
             <i style="float: left;" class="material-icons open-file-added">insert_drive_file</i>
             <span>
-              {{item.name}}
+              {{tag.name}}
             </span>
           </button>
         </span>
         <span v-else>
-          <button class="added-folderBtn" id="added-folderBtn" @click="firstGate(index,item.id)">
+          <button class="added-folderBtn" id="added-folderBtn" @click="clickTag(index,tag.id)">
             <i style="float: left;" class="material-icons open-file-added">insert_drive_file</i>
             <span>
-              {{item.name}}
+              {{tag.name}}
             </span>
           </button>
         </span>
-
-        <button class="detail-panel" v-if="(selected%folders.length)==index" @click="panelToggle">
-          <i class="material-icons down" v-if="!panelShow">keyboard_arrow_down</i>
-          <i class="material-icons down" v-if="panelShow">keyboard_arrow_up</i>
-        </button>
-        <transition name="fadeUpDown">
-          <div class="edit-panel" id="edit-panel" v-if="panelShow&&(selected%folders.length)==index">
-
-          </div>
-        </transition>
       </div>
     </div>
   </div>
@@ -463,29 +482,31 @@
         <th>
           <input type="checkbox" class="checkbox" v-model="allCheck" @click="allChecker">
         </th>
-        <th>自動応答名</th>
-        <th>アクション</th>
-        <th>操作</th>
-        <th>ヒット数</th>
-        <th>フォルダ</th>
-        <th>
-          <button class="button">
-            <i class="material-icons btnMark">add_circle_outline</i>
-          </button>
-        </th>
+        <th>条件名</th>
+        <th>条件語</th>
+        <th>設定時間</th>
+        <th>設定曜日</th>
+        <th>実行</th>
       </tr>
-      <tr v-for="(check,index) in replyArray">
+      <tr v-for="(option,index) in options">
         <td class="check">
-          <input type="checkbox" class="checkbox" :checked="check.bool" @click="oneChecker(index)">
+          <input type="checkbox" class="checkbox" :checked="option.bool" @click="oneChecker(index)">
         </td>
         <td class="title">
-          {{check.name}}
+          {{option.name}}
         </td>
-        <td class="action">{{check.bool}}</td>
-        <td>샘플</td>
-        <td class="hitcount">샘플</td>
-        <td class="category-in">샘플</td>
-        <td></td>
+        <td class="action">
+          {{option.target_keyword.split(",").length}}
+        </td>
+        <td>
+          {{option.tag}}
+        </td>
+        <td class="hitcount">
+
+        </td>
+        <td class="category-in">
+
+        </td>
       </tr>
     </table>
   </div>
@@ -506,7 +527,7 @@
       return {
         formShow: false,
         addShow: false,
-        folders: [],
+        tags: [],
         newFolder: '',
         selected: null,
         selectedId: null,
@@ -516,7 +537,17 @@
         replyArray: [{name: 'kakasi', bool: false}, {name: 'obito', bool: false}],
         deleteShow: false,
         options: [],
-        newOption: {name: '', match_reaction: '', action_count: '', target_keyword: '', target_day: '', target_time: ''},
+        newOption: {
+          name: '',
+          match_reaction: '',
+          action_count: '',
+          tag: '',
+          target_keyword: '',
+          target_day: '',
+          target_time: '',
+          target_friend: '',
+          option_type: 'autoReply'
+        },
         flexableMargin: {'margin-top': '0px'},
         flexableHeight: {'height': '0vh'},
 
@@ -564,27 +595,38 @@
         reactionListShow: false,
         insiteMode: false,
         selectedOption: null,
+        tags: [],
+        tagtext:['ALL'],
+        tag: '',
+        autoReply: true,
+        remindReply: false,
+        selectedTagId: '',
       }
     },
     mounted: function(){
-      this.fetchFolders();
+      this.fetchTags();
       this.fetchOptions();
       this.setStampNum();
       this.fetchEmojis();
       this.innerContent = this.contents
     },
     methods: {
-      fetchFolders(){
+      fetchTags(){
         axios.get('/api/tags?tag_group=option').then((res)=>{
-          this.folders = res.data.tags
+          this.tags = res.data.tags
         },(error)=>{
           console.log(error)
         })
       },
       fetchOptions(){
-        axios.get('/api/options').then((res)=>{
-          this.options = res.data.options
-          this.fetchOption();
+        axios.post('api/options_by_tag',{option_type: 'autoReply',tag_id: this.selectedTagId}).then((res)=>{
+          console.log(res.data)
+          for(var opt of res.data){
+            opt.tag = opt.tag.substr(0,opt.tag.length-1)
+            opt.target_keyword = opt.target_keyword.substr(0,opt.target_keyword.length-1)
+          }
+          this.options = res.data
+          //this.fetchOption();
         },(error)=>{
           console.log(error)
         })
@@ -603,21 +645,31 @@
         this.selectedReaction = null
         this.formShow = !this.formShow;
         this.selected = null
-        this.selectedId = null
+        //this.selectedId = null
+        this.deleteShow = false
+        this.tag = ''
+        this.tagtext = []
         this.reactionListShow = false;
         this.reactions = []
       },
       addToggle(){
-        this.selectedId = null
+        //this.selectedId = null
         this.deleteShow = false;
         this.addShow = !this.addShow;
         this.selected = null
-        if(this.addShow){
-          this.flexableMargin = {'margin-top': '50px'}
-
-        } else {
+        if(!this.addShow){
           this.flexableMargin = {'margin-top': '0px'}
-          this.newOption = {name: '', match_reaction: '', action_count: '', target_keyword: '', target_day: '', target_time: ''}
+          this.newOption = {
+            name: '',
+            match_reaction: '',
+            action_count: '',
+            tag: '',
+            target_keyword: '',
+            target_day: '',
+            target_time: '',
+            target_friend: '',
+            option_type: 'autoReply'
+          }
         }
         //this.$nextTick(() => document.getElementById('new-folder').focus());
       },
@@ -628,7 +680,7 @@
           this.newFolder = '';
           this.addShow = !this.addShow;
           this.flexableMargin = {'margin-top': '0px'}
-          this.fetchFolders();
+          this.fetchTags();
         },(error)=>{
           console.log(error);
         })
@@ -637,7 +689,17 @@
         if (!this.newOption) return;
         axios.post('/api/options',{ option: this.newOption, }).then((res)=>{
           alert("新しい条件が追加されました。")
-          this.newOption = {name: '', match_reaction: '', action_count: '', target_keyword: '', target_day: '', target_time: ''}
+          this.newOption = {
+            name: '',
+            match_reaction: '',
+            action_count: '',
+            tag: '',
+            target_keyword: '',
+            target_day: '',
+            target_time: '',
+            target_friend: '',
+            option_type: 'autoReply'
+          }
           this.addShow = !this.addShow;
           this.flexableMargin = {'margin-top': '0px'}
           this.fetchOptions();
@@ -645,13 +707,23 @@
           console.log(error)
         })
       },
-      firstGate(index,id){
+      setToggles(){
         this.addShow = true;
         this.addToggle();
         this.deleteShow = true;
+        this.panelShow = false;
+      },
+      clickTag(index,id){
+        this.setToggles();
+        this.selected = index
+        this.selectedTagId = id
+
+        this.fetchOptions();
+      },
+      clickOption(index,id){
+        this.setToggles();
         this.selected = index
         this.selectedId = id
-        this.panelShow = false;
         this.fetchOption();
         this.fetchReactions();
       },
@@ -659,12 +731,12 @@
         this.panelShow = !this.panelShow;
       },
       allChecker(){
-        for(let obj of this.replyArray){
+        for(let obj of this.options){
           obj.bool = !this.allCheck
         }
       },
       oneChecker(index){
-        this.replyArray[index].bool = !this.replyArray[index].bool
+        this.options[index].bool = !this.options[index].bool
       },
       reactionAllChecker(){
         for(let obj of this.reactions){
@@ -674,13 +746,17 @@
       reactionChecker(index){
         this.reactions[index].bool = !this.reactions[index].bool
       },
-      deleteFolder(){
+      deleteTag(){
+        if(this.tags[this.selected].name=='ALL'){
+          alert("ALLタグはデフォルトタグです。");
+          return
+        }
         if (confirm("このファイルを削除しますか。")==true){
           axios.delete('/api/tags/'+this.selectedId).then((res)=>{
             this.selected = null
             this.selectedId = null
             this.panelShow = false
-            this.fetchFolders();
+            this.fetchTags();
           },(error)=>{
             console.log(error)
           })
@@ -717,6 +793,7 @@
           this.selectedId = null
           this.panelShow = false
           this.reactions = []
+          this.deleteShow = false;
           this.fetchOptions();
         },(error)=>{
           console.log(error)
@@ -768,7 +845,8 @@
             name: this.reactionName,
             reaction_type: 'text',
             contents: this.contents,
-            match_option: this.selectedId
+            match_option: this.selectedId,
+            tag: this.tagtext.toString()+',',
           })
           .then((res)=>{
             alert("アクションセーブ完了")
@@ -785,7 +863,8 @@
             name: this.reactionName,
             reaction_type: 'stamp',
             contents: target.substr(26,10),
-            match_option: this.selectedId
+            match_option: this.selectedId,
+            tag: this.tagtext.toString()+',',
           })
           .then((res)=>{
             alert("アクションセーブ完了");
@@ -804,7 +883,8 @@
             name: this.reactionName,
             reaction_type: 'text',
             contents: this.contents,
-            match_option: this.selectedId
+            match_option: this.selectedId,
+            tag: this.tagtext.toString()+',',
           }).then((res)=>{
             let arr = this.selectStampUrl.split('-')
             let target = arr[0]
@@ -812,7 +892,8 @@
               name: this.reactionName,
               reaction_type: 'stamp',
               contents: target.substr(26,10),
-              match_option: this.selectedId
+              match_option: this.selectedId,
+              tag: this.tagtext.toString()+',',
             }).then((res)=>{
               alert("アクションセーブ完了");
               this.reactionToggle();
@@ -831,6 +912,7 @@
           data.append('name', this.reactionName);
           data.append('reaction_type','image');
           data.append('contents','[ NO TEXT ]');
+          data.append('tag',this.tagtext.toString()+',');
           data.append('image',this.imageFile);
           data.append('match_option', this.selectedId)
           axios.post('/api/reactions',data)
@@ -851,13 +933,15 @@
             name: this.reactionName,
             reaction_type: 'text',
             contents: this.contents,
-            match_option: this.selectedId
+            match_option: this.selectedId,
+            tag: this.tagtext.toString()+',',
           }).then((res)=>{
             var data = new FormData();
             var file = this.$refs.fileInput.files[0];
             data.append('name', this.reactionName);
             data.append('reaction_type','image');
             data.append('contents','[ IMAGE ]');
+            data.append('tag',this.tagtext.toString()+',');
             data.append('image',file);
             data.append('match_option', this.selectedId)
             axios.post('/api/reactions',data)
@@ -884,7 +968,8 @@
                 name: this.reactionName,
                 reaction_type: 'map',
                 contents: data,
-                match_option: this.selectedId
+                match_option: this.selectedId,
+                tag: this.tagtext.toString()+',',
               }).then((res)=>{
                 alert("アクションセーブ完了");
                 this.reactionToggle();
@@ -904,7 +989,8 @@
             name: this.reactionName,
             reaction_type: 'text',
             contents: this.contents,
-            match_option: this.selectedId
+            match_option: this.selectedId,
+            tag: this.tagtext.toString()+',',
           }).then((res)=>{
             let geocoder = new google.maps.Geocoder();
             const latlng = this.marker_center
@@ -916,7 +1002,8 @@
                   name: this.reactionName,
                   reaction_type: 'map',
                   contents: data,
-                  match_option: this.selectedId
+                  match_option: this.selectedId,
+                  tag: this.tagtext.toString()+',',
                 }).then((res)=>{
                   alert("アクションセーブ完了");
                   this.reactionToggle();
@@ -1250,10 +1337,11 @@
         }
         var targetTime = [this.startTime,this.endTime]
         axios.put('api/options/'+this.selectedId,{
-          target_keyword: this.keywords.toString(),
+          target_keyword: this.keywords.toString()+',',
           target_day: this.targetDay.toString(),
           target_time: targetTime.toString(),
           action_count: this.actionCount,
+          tag: this.tagtext.toString()+',',
         }).then((res)=>{
           alert("条件セーブ完了！");
           console.log(res.data)
@@ -1265,10 +1353,13 @@
       clearKeyInput(){
         this.keyword = ''
       },
+      clearTag(){
+        this.tag = ''
+      },
       createKeyword(){
         if(!this.keyword) return;
         if(this.keyword.search(",")>-1||this.keyword.search("、")>-1) {
-          alert("コンマはキーワードになれません。")
+          alert("コンマは条件語になれません。")
           return;
         }
         this.keywords.push(this.keyword)
@@ -1314,6 +1405,8 @@
           } else {
             this.setCount = 'unsetCount'
           }
+
+          this.tagtext = this.selectedOption.tag.split(",")
         }
       },
       reactionListToggle(){
@@ -1357,7 +1450,35 @@
         },(error)=>{
           console.log(error)
         })
-      }
+      },
+      createTag(){
+        if(!this.tag) return;
+        if(this.tag.search(",")>-1||this.tag.search("、")>-1) {
+          alert("コンマはキーワードになれません。")
+          return;
+        }
+        for(var t of this.tagtext){
+          if(t==this.tag){
+            alert("もうあるタグです。");
+            return;
+          }
+        }
+        this.tagtext.push(this.tag)
+        this.tag = '';
+      },
+      removeTag(index){
+        if(this.tagtext[index]=='ALL'){
+          alert('ALLタグはデフォルトタグです。');
+          return;
+        }
+        var start = index;
+        if (index != this.tagtext.length-1){
+          for(var i=start;i<this.tagtext.length-1;i++){
+            this.tagtext[i] = this.tagtext[i+1]
+          }
+        }
+        this.tagtext.pop();
+      },
     },
     computed: {
       getOption(){

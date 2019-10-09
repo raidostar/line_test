@@ -61,7 +61,6 @@ Rails.application.routes.draw do
     resources :reactions
   end
 
-  post '/find_message' => 'api/messages#show_with_id'
   post '/find_messages' => 'api/messages#index_with_id'
   post '/show_current' => 'api/users#show_current_user'
 
@@ -81,4 +80,8 @@ Rails.application.routes.draw do
   post 'api/reactions_all' => 'api/reactions#index_all_except'
   post 'api/link_option_reaction' => 'api/reactions#link_option_reaction'
   post 'api/reactions_by_tag' => 'api/reactions#index_by_tag'
+  post 'api/options_by_tag' => 'api/options#index_by_tag'
+  post 'api/direct_reply' => 'api/showmes#direct_reply'
+  post 'api/by_fr_account' => 'api/friends#find_by_fr_account'
+  post 'api/get_last_message' => 'api/messages#get_last_message'
 end

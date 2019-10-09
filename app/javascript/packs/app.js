@@ -27,4 +27,9 @@ export default {
       console.log(error)
     })
   },
+  methods: {
+    readyAlert(){
+      alert("まだ準備中でございます。")
+    }
+  }
 }

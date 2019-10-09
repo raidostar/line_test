@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_09_24_020002) do
+ActiveRecord::Schema.define(version: 2019_10_09_032054) do
 
   create_table "books", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "title"
@@ -52,6 +52,7 @@ ActiveRecord::Schema.define(version: 2019_09_24_020002) do
     t.datetime "block_at"
     t.datetime "follow_at"
     t.string "tags"
+    t.text "last_message"
   end
 
   create_table "groups", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
@@ -74,6 +75,9 @@ ActiveRecord::Schema.define(version: 2019_09_24_020002) do
     t.string "package_id"
     t.string "fr_account"
     t.string "group_id"
+    t.string "reply_token"
+    t.string "check_status"
+    t.string "image"
   end
 
   create_table "notifies", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
@@ -102,6 +106,9 @@ ActiveRecord::Schema.define(version: 2019_09_24_020002) do
     t.string "target_time"
     t.string "target_keyword"
     t.string "target_friend"
+    t.string "option_type"
+    t.boolean "bool", default: false
+    t.string "remind_after"
   end
 
   create_table "people", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|

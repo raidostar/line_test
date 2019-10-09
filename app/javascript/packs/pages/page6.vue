@@ -80,7 +80,7 @@
 
           <!-- stamp image area -->
           <div class="stampArea" v-show="stampAreaShow">
-            <a class="closeStamp" @click="closeStamp">X</a>
+            <a class="closeStamp" @click="closeStamp" style="float: right;">X</a>
             <p>[スタンプ]</p>
             <img class="selectStamp" :src="selectStampUrl">
           </div>
@@ -322,7 +322,6 @@
             console.log(error)
           })
         } else if(this.stampAreaShow&&!this.contents){//stamp only
-          alert("only stamp")
           let arr = this.selectStampUrl.split('-')
           let target = arr[0]
           axios.post('/create_notify',{notify_type: 'stamp',contents: target.substr(26,10)})
@@ -332,7 +331,6 @@
             console.log(error)
           })
         } else if(this.stampAreaShow&&this.contents){//text+stamp
-          alert("text+stamp")
           axios.post('/create_notify',{notify_type: 'text', contents: this.contents}).then((res)=>{
             let arr = this.selectStampUrl.split('-')
             let target = arr[0]
@@ -347,7 +345,6 @@
             console.log(error)
           })
         } else if(!this.contents&&this.uploadedImage){//only image
-          alert("only image")
           var data = new FormData();
           var file = this.$refs.fileInput.files[0];
           data.append('notify_type','image');
@@ -362,7 +359,6 @@
             console.log(error)
           })
         } else if(this.contents&&this.uploadedImage){//text+image
-          alert("text+image")
           let data = new FormData();
           let file = this.$refs.fileInput.files[0];
           data.append('notify_type','text+image');
@@ -377,7 +373,6 @@
             console.log(error)
           })
         } else if(!this.contents&&this.mapShow){//only map
-          alert("only map");
           let geocoder = new google.maps.Geocoder();
           const latlng = this.info.center
           geocoder.geocode({'location':this.info.center,'language': 'ja'},(results,status)=>{
@@ -394,7 +389,6 @@
             }
           })
         } else {//text+map
-          alert("text+map");
           axios.post('/create_notify',{notify_type: 'text',contents: this.contents}).then((res)=>{
             let geocoder = new google.maps.Geocoder();
             const latlng = this.info.center

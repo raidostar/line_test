@@ -96,11 +96,11 @@ input[type=text] {
   line-height: 39px;
   padding-left: 4px;
 }
-.added-folder {
+div.added-folder {
   position: relative;
   margin-top: 5px;
-  height: 40px;
-  line-height: 40px;
+  height: 37px;
+  line-height: 37px;
   text-align: center;
 }
 .added-folder span {
@@ -111,7 +111,8 @@ input[type=text] {
   padding-bottom: 0px;
   background-color: white;
   color: black;
-  width: 80%;
+  width: 90%;
+  float: left;
   -webkit-appearance: media-sliderthumb;
 }
 .added-folderBtn:hover {
@@ -255,10 +256,10 @@ input[type=text] {
   width: 5%;
 }
 .chattingContents {
-  background-color: #EEFFFF;
+  background-color: #EEECFF;
   padding: 30px 30px;
   width: 95%;
-  height: 69vh;
+  height: 60vh;
   border: 1px solid #C0C0C0;
   box-shadow: 0 0 2px #666;
   border-radius: 5px;
@@ -285,6 +286,9 @@ input[type=text] {
   width: 100%;
   height: auto;
   color: grey;
+}
+.stamp:hover {
+  font-size: 31px;
 }
 .stampBtn {
   width: 43px;
@@ -339,7 +343,7 @@ input[type=text] {
   width: 20%;
   height: 335px;
   border-radius: 8px;
-  background-color: #EEFFFF;
+  background-color: #EEECFF;
   position: absolute;
   top: 11%;
   right: 8%;
@@ -631,4 +635,44 @@ input.countSet {
 }
 table.actionList tbody tr{
   height: 12vh;
+}
+input.daysInput {
+  text-align: center;
+  width: 30%;
+}
+div.tags {
+  float: right;
+  height: 100%;
+  width: 100%;
+  margin: 10px -22px;
+}
+input.tagInput {
+  float: left;
+  height: auto;
+  width: 10em;
+  margin-left: 2%;
+  margin-right: 0px;
+}
+button.tagList {
+  color: #007FFF;
+  margin-right: 10px;
+  margin-top: 1%;
+  padding: 10px 10px;
+  border-radius: 8px;
+  font-size: 17px;
+}
+button.tagList:focus {
+  outline: none;
+  color: #007FFF;
+  background-color: white;
+}
+div.tags-top {
+  width: 100%;
+  height: 48%;
+  margin-top: 1%;
+}
+div.tags-bottom {
+  width: 95%;
+  height: 48%;
+  margin: 2% 1%;
 }

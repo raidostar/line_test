@@ -65,7 +65,7 @@ b {
   background-color: #E0E0F8;
 }
 .list-group button {
-  color: #00B900;
+  /*color: #00B900;*/
   background-color: white;
   height: 53px;
   max-height: 100%;
@@ -73,6 +73,9 @@ b {
   padding: 1px;
   margin: 1px;
   border: 1px grey;
+}
+.list-group button:focus {
+  outline: none;
 }
 .list-group button:hover {
   background-color: #E9E9FB;
@@ -138,4 +141,7 @@ b {
 }
 .frNum {
   text-align: center;
+}
+.alarm-list {
+  width: 100%;
 }

@@ -21,6 +21,24 @@ class Api::TagsController < ApplicationController
 
   def destroy
     @tag = Tag.find(params[:id])
+    tag_name = @tag.attributes['name']+','
+    case @tag.tag_group
+    when 'option'
+      options = Option.where("tag like '%"+tag_name+"%'")
+      options.each do |opt|
+        puts "1번"
+        tag = opt.tag.gsub(tag_name,'')
+        puts "2번"
+        opt.update(tag: tag)
+        puts "3번"
+      end
+    when 'reaction'
+      reactions = Reaction.where("tag like '%"+tag_name+"%'")
+      reactions.each do |act|
+        tag = act.tag.gsub(tag_name,'')
+        act.update(tag: tag)
+      end
+    end
     if @tag.destroy
       render :index, status: :ok
     else

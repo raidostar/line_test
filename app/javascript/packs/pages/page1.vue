@@ -47,13 +47,13 @@
           <div class="panel-heading">現在のマーク別人数</div>
           <div class="list-group">
             <button>
-              <span class="label label-danger">要対応（クロージング...)</span>
+              <span class="label label-danger">要対応</span>
             </button>
             <button>
               <span class="label label-primary">未返信（重要度低）</span>
             </button>
             <button>
-              <span class="label label-primary">未返信（マガジンコメ...)</span>
+              <span class="label label-primary">自動応答</span>
             </button>
             <button>
               <span class="label label-info">未確認</span>
@@ -78,12 +78,12 @@
             <tbody>
               <tr v-for="data in weeklyData">
                 <td class="date text-center" style="height: 35px;">{{data.date}}</td>
-                <td class="change text-center" id="gap" v-if="data.gap<0" :style="redFont">{{data.gap}}</td>
-                <td class="change text-center" id="gap" v-else :style="greenFont">{{data.gap}}</td>
+                <td class="change text-center" id="gap" v-if="data.gap<0" style="color: red;">{{data.gap}}</td>
+                <td class="change text-center" id="gap" v-else style="color: green;">{{data.gap}}</td>
 
                 <td class="followNum text-center">{{data.add}}名</td>
                 <td class="blockNum text-center">{{data.block}}名</td>
-                <td class="friendsNum text-center"></td>
+                <td class="friendsNum text-center">名</td>
               </tr>
             </tbody>
           </table>
@@ -97,7 +97,7 @@
         <hr/>
         <div class="panel-right">
           <div class="panel-heading">LINE_MANAGERのお知らせ</div>
-          <div class="list-group">
+          <div class="list-group alarm-list">
             <button>
               <span class="label label-danger">お知らせ２</span>
             </button>
@@ -155,8 +155,6 @@
         friends: [],
         dayType: ['日','月','火','水','木','金','土',],
         weeklyData: [],
-        redFont: {color: 'red'},
-        greenFont: {color: 'green'},
       }
     },
     mounted: function(){
@@ -215,51 +213,6 @@
           console.log(error)
         })
       },
-      // getAddFriendNum(){
-      //   axios.post('/add_number').then((res)=>{
-      //     this.addNum = Object.keys(res.data).length
-      //     this.getBlockFriendNum();
-      //   },(error)=>{
-      //     console.log(error)
-      //   })
-      // },
-      // getBlockFriendNum(){
-      //   axios.post('/block_number').then((res)=>{
-      //     //console.log(res.data.friends[0].created_at.substr(0,10))************
-      //     this.blockNum = Object.keys(res.data).length
-      //     this.makeData();
-      //   },(error)=>{
-      //     console.log(error)
-      //   })
-      // },
-      // makeData(){
-      //   let date = new Date
-      //   let dayNum = date.getDay();
-      //   let datestr = (date.getMonth()+1)+"月"+date.getDate()+"日 ("+this.dayType[dayNum]+")";
-      //   this.friends.push({
-      //     "date":datestr,
-      //     "add":this.addNum,
-      //     "block":this.blockNum,
-      //     "friendsNum":this.friendsNum
-      //   })
-      // },
-      // getDateInfo(){
-      //   axios.post('/week_date').then((res)=>{
-      //     console.log(res.data)
-      //     for(let date of res.data){
-      //       date = date.replace("-", "月");
-      //       date = date.replace("-", "日");
-      //       let dayNum = date.substr(-1)*1
-      //       date=date.substr(0,date.length-1);
-      //       date=date+'('+this.dayType[dayNum]+')'
-      //       this.dateInfo.push(date)
-      //     }
-      //     console.log(this.dateInfo)
-      //     console.log(this.unblockList.length)
-      //   },(error)=>{
-      //     console.log(error)
-      //   })
-      // },
       weekly_data(){
         axios.post('/weekly_friend_info').then((res)=>{
           for(let d of res.data){
