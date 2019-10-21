@@ -2,142 +2,64 @@
   <div class="page" id="page5">
     <div>
       <div class="title area">
-        <h2 class="title">統計情報<hr/></h2>
-      </div>
-      <div class="buttons" style="float: right; margin-right: 50px;">
-        <button class="svc-button" @click="formToggle">サービス登録</button>
+        <h2 class="title">データ分析<hr/></h2>
       </div>
     </div>
-    <transition name="slideInOut">
-      <div class="service-add pannel" v-if="formShow">
-        <table class="service-add-form">
-          <tr>
-            <th>
-              <input type="text" name="service-name" placeholder="サービス名" class="sc-name">
-            </th>
-            <th>
-              <select class="sc-type">
-                <option>-------------------------サービス状態-------------------------</option>
-                <option value="running">リリース中</option>
-                <option value="stop">停止中</option>
-              </select>
-            </th>
-          </tr>
-          <tr>
-            <th></th>
-            <th>
-              <select class="sc-type">
-                <option>-------------------------サービスタイプ-------------------------</option>
-                <option value="chatBot">CHAT_BOT</option>
-                <option value="message">MESSAGE</option>
-              </select>
-            </th>
-          </tr>
-          <tr>
-            <th></th>
-            <th>
-              <select class="sc-type">
-                <option>-----------------------新規登録メッセージ-----------------------</option>
-                <option>必要</option>
-                <option>不要</option>
-              </select>
-            </th>
-          </tr>
-          <tr>
-            <th></th>
-            <th>
-              <select class="sc-type">
-                <option>----------------------------Richメニュー----------------------------</option>
-                <option>必要</option>
-                <option>不要</option>
-              </select>
-            </th>
-          </tr>
-        </table>
+    <div class="service-add big-panel" >
+      <div class="panel">
+        <div class="top-panel">
+          <div>
+            <button class="friend_analysis" to="/friendslist" @click="loadPage(0)">友だち時間データ</button>
+            <button class="friend_analysis" to="/friendslist" @click="loadPage(1)">メッセージ時間データ</button>
+            <button class="friend_analysis" to="/friendslist" @click="loadPage(2)">メッセージタイプデータ</button>
+            <button class="friend_analysis" to="/friendslist" @click="loadPage(3)">返事時間データ</button>
+            <button class="friend_analysis" to="/friendslist" @click="loadPage(4)">返事タイプデータ</button>
+          </div>
+        </div>
+        <div class="bottom-panel">
+          <friendsData v-if="baseNum==0"/>
+          <messageTimeData v-if="baseNum==1"/>
+          <messageTypeData v-if="baseNum==2"/>
+          <replyTimeData v-if="baseNum==3"/>
+          <replyTypeData v-if="baseNum==4"/>
+        </div>
       </div>
-    </transition>
+    </div>
   </div>
 </template>
 
 <script>
   import axios from 'axios'
+  import friendsData from '../components/page5/friendsData.vue'
+  import messageTimeData from '../components/page5/messageTimeData.vue'
+  import messageTypeData from '../components/page5/messageTypeData.vue'
+  import replyTimeData from '../components/page5/replyTimeData.vue'
+  import replyTypeData from '../components/page5/replyTypeData.vue'
   export default {
-    name: 'servicePage',
+    name: 'analysis',
+    components: {
+      friendsData,
+      messageTimeData,
+      messageTypeData,
+      replyTimeData,
+      replyTypeData
+    },
     data: function(){
       return {
-        formShow: false
+        formShow: false,
+        baseNum: 0,
       }
     },
     mounted: function(){
-
     },
     methods: {
       formToggle(){
         this.formShow = !this.formShow
-      }
+      },
+      loadPage(index){
+        this.baseNum = index
+      },
     }
   }
 </script>
-<style scoped>
-.title {
-  float: left;
-  padding-left: 10px;
-  width: 100%;
-  text-align: left;
-}
-hr {
-  margin: 5px;
-  width: 95%
-}
-.svc-button {
-  background-color: #C0C0C0;
-  color: #2C3250;
-  padding: 5px 5px;
-  border-radius: 10px;
-  border: 1px solid #C0C0C0;
-  box-shadow: 0 0 2px #666;
-}
-.svc-button:hover {
-  text-decoration: none;
-  background-color: #2C3250;
-  color: white;
-}
-.svc-button:focus {
-  outline: none;
-}
-.svc-button:active {
-  -webkit-transform: translateY(2px);
-  transform: translateY(2px);
-  box-shadow: 0 0 1px rgba(0, 0, 0, 0.15);
-}
-.buttons {
-  padding-bottom: 10px;
-  padding-left: 40px;
-  text-align: left;
-}
-.service-add-form {
-  width: 90%;
-  padding-left: 30px;
-}
-.sc-type {
-  display: -webkit-box;
-  width: 80%;
-  margin: 10px auto;
-}
-table {
-  width: 80%;
-  margin-left: 30px;
-  border-collapse: inherit;
-}
-table th {
-  width: 50%;
-  text-align: center;
-  padding: 0px 10px;
-}
-.slideInOut-enter-active{
-  animation: slideInDown .5s;
-}
-.slideInOut-leave-active{
-  animation: slideInDown .5s reverse;
-}
-</style>
+<style scoped src="../components/page5/page5.css"/>

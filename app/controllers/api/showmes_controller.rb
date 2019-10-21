@@ -1,19 +1,20 @@
 class Api::ShowmesController < ApplicationController
   require 'line/bot'  # gem 'line-bot-api'
 
-  THUMBNAIL_URL = 'https://vuejs.org/images/logo.png'
+  THUMBNAIL_URL = 'https://www.disney.co.jp/content/dam/disney/images/sns/studio_mstore_03.jpg'
+  THUMBNAIL_URL1 = 'https://www.disney.co.jp/content/disney/jp/deluxe/blog/maximum-guide/live-action-aladdin-subtitle/_jcr_content/par/navi_vertical_child/navi_vertical_child_par/image_only_1500734488/image.img.jpg/1570425883041.jpg'
+  LOTTO_URL = 'https://www.japannetbank.co.jp/lottery/images/index_img032.png'
   HORIZONTAL_THUMBNAIL_URL = 'https://via.placeholder.com/1024x768'
   QUICK_REPLY_ICON_URL = 'https://via.placeholder.com/64x64'
-
 
   # set :app_base_url, ENV['APP_BASE_URL']
   protect_from_forgery with: :null_session
 
   def client
     @client ||= Line::Bot::Client.new do |config|
-      config.channel_id = ENV["FULLOUT_CHANNEL_ID"]
-      config.channel_secret = ENV["FULLOUT_CHANNEL_SECRET"]
-      config.channel_token = ENV["FULLOUT_CHANNEL_TOKEN"]
+      config.channel_id = ENV["SHOW_ME_ID"]
+      config.channel_secret = ENV["SHOW_ME_SECRET"]
+      config.channel_token = ENV["SHOW_ME_TOKEN"]
       config.http_options = {
         open_timeout: 5,
         read_timeout: 5,
@@ -114,13 +115,19 @@ class Api::ShowmesController < ApplicationController
 
       when Line::Bot::Event::Postback
         dateInfo = "#{JSON.generate(event['postback']['params'])}"
-
         if dateInfo != 'null'
           message = "#{event['postback']['data']} (#{dateInfo})"
         else
           message = "#{event['postback']['data']}"
+          fr_account = event['source']['userId']
+          if message.class == 'String'
+            temp_array = message.split("_")
+            send_next_question(fr_account,temp_array[0],temp_array[1])
+          else
+            puts "1번"
+            send_lottery_number(fr_account,message)
+          end
         end
-        reply_text(event, message)
 
       when Line::Bot::Event::Beacon
         reply_text(event, "[BEACON]\n#{JSON.generate(event['beacon'])}")
@@ -133,6 +140,266 @@ class Api::ShowmesController < ApplicationController
       end
     end
     "OK"
+  end
+
+  def send_lottery_number(fr_account,num)
+    case num
+    when "7"
+      text = (1..37).to_a.sample(7).to_s
+      message = {
+        type: 'text',
+        text: "ロト７ナンバー\n"+text
+      }
+    when "6"
+      text = (1..43).to_a.sample(6).to_s
+      message = {
+        type: 'text',
+        text: "ロト６ナンバー\n"+text
+      }
+    when "5"
+      text = (1..31).to_a.sample(5).to_s
+      message = {
+        type: 'text',
+        text: "ミニロトナンバー\n"+text
+      }
+    end
+    client.push_message(fr_account, message)
+  end
+
+  def send_next_question(fr_account,q_number,point)
+    friend = Friend.find_by(fr_account: fr_account)
+    final_question = friend.final_question
+    get_point = friend.disney_point + point.to_i
+    if q_number.to_i <= final_question
+      message = {
+        type: 'text',
+        text: 'もう答えた質問です。'
+      }
+      client.push_message(fr_account, message)
+      return
+    else
+      friend.update(disney_point: get_point, final_question: q_number)
+      case q_number
+      when "1"
+        message = {
+          type: 'template',
+          altText: 'Buttons alt text',
+          template: {
+            type: 'buttons',
+            thumbnailImageUrl: THUMBNAIL_URL,
+            title: '質問2',
+            text: '選択してください。',
+            actions: [
+              { label: '答え1', type: 'postback', data: "2_3", text: '答え1'},
+              { label: '答え2', type: 'postback', data: "2_2", text: '答え2' },
+              { label: '答え3', type: 'postback', data: "2_1", text: '答え3' }
+            ]
+          }
+        }
+      when "2"
+        message = {
+          type: 'template',
+          altText: 'Buttons alt text',
+          template: {
+            type: 'buttons',
+            thumbnailImageUrl: THUMBNAIL_URL,
+            title: '質問3',
+            text: '選択してください。',
+            actions: [
+              { label: '答え1', type: 'postback', data: "3_3", text: '答え1'},
+              { label: '答え2', type: 'postback', data: "3_2", text: '答え2' },
+              { label: '答え3', type: 'postback', data: "3_1", text: '答え3' }
+            ]
+          }
+        }
+      when "3"
+        message = {
+          type: 'template',
+          altText: 'Buttons alt text',
+          template: {
+            type: 'buttons',
+            thumbnailImageUrl: THUMBNAIL_URL,
+            title: '質問4',
+            text: '選択してください。',
+            actions: [
+              { label: '答え1', type: 'postback', data: "4_3", text: '答え1'},
+              { label: '答え2', type: 'postback', data: "4_2", text: '答え2' },
+              { label: '答え3', type: 'postback', data: "4_1", text: '答え3' }
+            ]
+          }
+        }
+      when "4"
+        message = {
+          type: 'template',
+          altText: 'Buttons alt text',
+          template: {
+            type: 'buttons',
+            thumbnailImageUrl: THUMBNAIL_URL,
+            title: '質問5',
+            text: '選択してください。',
+            actions: [
+              { label: '答え1', type: 'postback', data: "5_3", text: '答え1'},
+              { label: '答え2', type: 'postback', data: "5_2", text: '答え2' },
+              { label: '答え3', type: 'postback', data: "5_1", text: '答え3' }
+            ]
+          }
+        }
+      when "5"
+        message = {
+          type: 'template',
+          altText: 'Buttons alt text',
+          template: {
+            type: 'buttons',
+            thumbnailImageUrl: THUMBNAIL_URL,
+            title: '質問6',
+            text: '選択してください。',
+            actions: [
+              { label: '答え1', type: 'postback', data: "6_3", text: '答え1'},
+              { label: '答え2', type: 'postback', data: "6_2", text: '答え2' },
+              { label: '答え3', type: 'postback', data: "6_1", text: '答え3' }
+            ]
+          }
+        }
+      when "6"
+        message = {
+          type: 'template',
+          altText: 'Buttons alt text',
+          template: {
+            type: 'buttons',
+            thumbnailImageUrl: THUMBNAIL_URL,
+            title: '質問7',
+            text: '選択してください。',
+            actions: [
+              { label: '答え1', type: 'postback', data: "7_3", text: '答え1'},
+              { label: '答え2', type: 'postback', data: "7_2", text: '答え2' },
+              { label: '答え3', type: 'postback', data: "7_1", text: '答え3' }
+            ]
+          }
+        }
+      when "7"
+        message = {
+          type: 'template',
+          altText: 'Buttons alt text',
+          template: {
+            type: 'buttons',
+            thumbnailImageUrl: THUMBNAIL_URL,
+            title: '質問8',
+            text: '選択してください。',
+            actions: [
+              { label: '答え1', type: 'postback', data: "8_3", text: '答え1'},
+              { label: '答え2', type: 'postback', data: "8_2", text: '答え2' },
+              { label: '答え3', type: 'postback', data: "8_1", text: '答え3' }
+            ]
+          }
+        }
+      when "8"
+        message = {
+          type: 'template',
+          altText: 'Buttons alt text',
+          template: {
+            type: 'buttons',
+            thumbnailImageUrl: THUMBNAIL_URL,
+            title: '質問9',
+            text: '選択してください。',
+            actions: [
+              { label: '答え1', type: 'postback', data: "9_3", text: '答え1'},
+              { label: '答え2', type: 'postback', data: "9_2", text: '答え2' },
+              { label: '答え3', type: 'postback', data: "9_1", text: '答え3' }
+            ]
+          }
+        }
+      when "9"
+        message = {
+          type: 'template',
+          altText: 'Buttons alt text',
+          template: {
+            type: 'buttons',
+            thumbnailImageUrl: THUMBNAIL_URL,
+            title: '質問10',
+            text: '選択してください。',
+            actions: [
+              { label: '答え1', type: 'postback', data: "10_3", text: '答え1'},
+              { label: '答え2', type: 'postback', data: "10_2", text: '答え2' },
+              { label: '答え3', type: 'postback', data: "10_1", text: '答え3' }
+            ]
+          }
+        }
+      when "10"
+        friend = Friend.find_by(fr_account: fr_account)
+        if friend.disney_point > 25
+          message = {
+            type: 'template',
+            altText: 'Buttons alt text',
+            template: {
+              type: 'buttons',
+              thumbnailImageUrl: THUMBNAIL_URL1,
+              title: 'あなたのキャラクターはCharacter1です。',
+              text: 'ゲームのために下記のページに移動ください。',
+              actions: [
+                { label: 'こちらに移動', type: 'uri', uri: "https://www.disney.co.jp/", altUri: {desktop: 'https://line.me#desktop'} },
+              ]
+            }
+          }
+        elsif friend.disney_point <= 25&&friend.disney_point > 20
+          message = {
+            type: 'template',
+            altText: 'Buttons alt text',
+            template: {
+              type: 'buttons',
+              thumbnailImageUrl: THUMBNAIL_URL1,
+              title: 'あなたのキャラクターはCharacter2です。',
+              text: 'ゲームのために下記のページに移動ください。',
+              actions: [
+                { label: 'こちらに移動', type: 'uri', uri: "https://www.disney.co.jp/", altUri: {desktop: 'https://line.me#desktop'} },
+              ]
+            }
+          }
+        elsif friend.disney_point <= 20&&friend.disney_point > 15
+          message = {
+            type: 'template',
+            altText: 'Buttons alt text',
+            template: {
+              type: 'buttons',
+              thumbnailImageUrl: THUMBNAIL_URL1,
+              title: 'あなたのキャラクターはCharacter3です。',
+              text: 'ゲームのために下記のページに移動ください。',
+              actions: [
+                { label: 'こちらに移動', type: 'uri', uri: "https://www.disney.co.jp/", altUri: {desktop: 'https://line.me#desktop'} },
+              ]
+            }
+          }
+        elsif friend.disney_point <= 15&&friend.disney_point >= 10
+          message = {
+            type: 'template',
+            altText: 'Buttons alt text',
+            template: {
+              type: 'buttons',
+              thumbnailImageUrl: THUMBNAIL_URL1,
+              title: 'あなたのキャラクターはCharacter4です。',
+              text: 'ゲームのために下記のページに移動ください。',
+              actions: [
+                { label: 'こちらに移動', type: 'uri', uri: "https://www.disney.co.jp/", altUri: {desktop: 'https://line.me#desktop'} },
+              ]
+            }
+          }
+        else
+          message = {
+            type: 'template',
+            altText: 'Buttons alt text',
+            template: {
+              type: 'buttons',
+              thumbnailImageUrl: THUMBNAIL_URL1,
+              title: 'あなたのキャラクターは何々です。',
+              text: 'ゲームのために下記のページに移動ください。',
+              actions: [
+                { label: 'こちらに移動', type: 'uri', uri: "https://www.disney.co.jp/", altUri: {desktop: 'https://line.me#desktop'} },
+              ]
+            }
+          }
+        end
+      end
+    end
+    client.push_message(fr_account, message)
   end
 
   def handle_message(event)
@@ -185,6 +452,39 @@ class Api::ShowmesController < ApplicationController
               { label: 'Send postback', type: 'postback', data: 'hello world' },
               { label: 'Send postback2', type: 'postback', data: 'hello world', text: 'hello world' },
               { label: 'Send message', type: 'message', text: 'This is message' }
+            ]
+          }
+        })
+
+      when 'Disney'
+        reply_content(event, {
+          type: 'template',
+          altText: 'Buttons alt text',
+          template: {
+            type: 'buttons',
+            thumbnailImageUrl: THUMBNAIL_URL,
+            title: 'どのディズニーランドに行きたいですか。',
+            text: '行きたいディズニーを選択してください。',
+            actions: [
+              { label: 'アメリカのディズニー', type: 'postback', data: "1_3", text: 'アメリカのディズニー'},
+              { label: '中国のディズニー', type: 'postback', data: "1_2", text: '中国のディズニー' },
+              { label: 'ヨーロッパのディズニー', type: 'postback', data: "1_1", text: 'ヨーロッパのディズニー' }
+            ]
+          }
+        })
+      when "ロト"
+        reply_content(event, {
+          type: 'template',
+          altText: 'Buttons alt text',
+          template: {
+            type: 'buttons',
+            thumbnailImageUrl: LOTTO_URL,
+            title: '宝くじ',
+            text: '自分の宝くじを選択してください。',
+            actions: [
+              { label: 'ロト7', type: 'postback', data: 7, text: 'ロト7'},
+              { label: 'ロト6', type: 'postback', data: 6, text: 'ロト6' },
+              { label: 'ミニロト', type: 'postback', data: 5, text: 'ミニロト' },
             ]
           }
         })
@@ -264,7 +564,7 @@ class Api::ShowmesController < ApplicationController
 
           @message = Message.new({sender: profile['displayName'], receiver: @group, contents: event.message['text'], message_type: 'text', message_id: event.message['id'], sticker_id: nil, package_id: nil, fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'unchecked'})
           save_message(@message)
-          update_friend_info(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],group_id,@message.contents)
+          # update_friend_info(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],group_id,@message.contents)
           event.message['text'] = unicodeConverter(event.message['text'])
           message = Message.new({sender: @group, receiver: profile['displayName'], message_id: event.message['id'],fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'answered'})
           auto_reply = option_checker(event,message)
@@ -301,7 +601,7 @@ class Api::ShowmesController < ApplicationController
     reply_token = event['replyToken']
     sticker_id = event.message['stickerId']
     package_id = event.message['packageId']
-    @message = Message.new({sender: profile['displayName'], receiver: @group, contents: "https://cdn.lineml.jp/api/media/sticker/#{package_id}_#{sticker_id}", message_type: 'stamp', message_id: event.message['id'], sticker_id: sticker_id, package_id: package_id, fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'unread'})
+    @message = Message.new({sender: profile['displayName'], receiver: @group, contents: "https://cdn.lineml.jp/api/media/sticker/#{package_id}_#{sticker_id}", message_type: 'stamp', message_id: event.message['id'], sticker_id: sticker_id, package_id: package_id, fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'unchecked'})
     save_message(@message)
 
     update_friend_info(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],group_id,@message.contents)
@@ -389,17 +689,17 @@ class Api::ShowmesController < ApplicationController
     @notify = Notify.new({sender: sender, receiver: receiver, contents: contents, notify_type: notify_type, group_id: group_id, image: image})
 
     if @notify.notify_type == "text"
-      broadcast_text(contents)
+      broadcast_text(sender,contents)
     elsif @notify.notify_type == "stamp"
-      broadcast_stamp(contents)
+      broadcast_stamp(sender,contents)
     elsif @notify.notify_type == "image"
-      broadcast_image(@notify.image)
+      broadcast_image(sender,@notify.image)
     elsif @notify.notify_type == "text+image"
-      broadcast_text(contents)
-      broadcast_image(@notify.image)
+      broadcast_text(sender,contents)
+      broadcast_image(sender,@notify.image)
     elsif @notify.notify_type == "map"
       address_array = map_converter(contents)
-      broadcast_map(address_array)
+      broadcast_map(sender,address_array)
       @notify.contents = address_array[0]
     end
     if @notify.save
@@ -416,35 +716,49 @@ class Api::ShowmesController < ApplicationController
     return address_array
   end
 
-  def broadcast_text(contents)
+  def broadcast_text(sender,contents)
     contents = contents_converter(contents)
     message = {
       "type": "text",
       "text": "["+current_user.group+"]\n"+contents
     }
+    client = client_selecter(sender)
     client.broadcast(message)
   end
 
-  def broadcast_stamp(contents)
+  def client_selecter(group)
+    client = nil
+    case group
+    when "ShowMeTheMoney"
+      client = client1
+    when "FullouT"
+      client = client2
+    end
+    return client
+  end
+
+  def broadcast_stamp(sender,contents)
     message = {
       type: 'sticker',
       packageId: 1,
       stickerId: contents[2..contents.length].to_i
     }
+    client = client_selecter(sender)
     client.broadcast(message)
   end
 
-  def broadcast_image(url)
+  def broadcast_image(sender,url)
     address = url.to_s
     message = {
       type: "image",
       originalContentUrl: address,
       previewImageUrl: address
     }
+    client = client_selecter(sender)
     client.broadcast(message)
   end
 
-  def broadcast_map(arr)
+  def broadcast_map(sender,arr)
     mapArray = arr[1].split(',')
     message = {
       "type": "location",
@@ -453,6 +767,7 @@ class Api::ShowmesController < ApplicationController
       "latitude": mapArray[0],
       "longitude": mapArray[1]
     };
+    client = client_selecter(sender)
     client.broadcast(message)
   end
 
@@ -749,16 +1064,17 @@ class Api::ShowmesController < ApplicationController
         puts contents
         reply_contents.push(contents)
       when "stamp"
-        contents = reaction.attributes["contents"]
+        stamp_id = reaction.attributes["contents"]
+        contents = "https://cdn.lineml.jp/api/media/sticker/"+stamp_id
         message.contents = contents
         message.message_type = 'stamp'
         message.package_id = 1
-        message.sticker_id = contents[2..contents.length].to_i
+        message.sticker_id = stamp_id[2..stamp_id.length].to_i
         message.save
         contents = {
           type: 'sticker',
           packageId: 1,
-          stickerId: contents[2..contents.length].to_i
+          stickerId: message.sticker_id
         }
         reply_contents.push(contents)
       when "image"
@@ -858,7 +1174,6 @@ class Api::ShowmesController < ApplicationController
 
     case message_type
     when "text"
-      puts "text를 보낸다"
       message.contents = contents
       message.message_type = 'text'
       contents = contents_converter(contents)
@@ -870,7 +1185,6 @@ class Api::ShowmesController < ApplicationController
       }
       contents_array.push(contents)
     when "stamp"
-      puts "stamp를 보낸다"
       message.contents = contents
       message.message_type = 'stamp'
       message.package_id = 1
@@ -885,7 +1199,6 @@ class Api::ShowmesController < ApplicationController
       contents_array.push(reply)
       contents_array.push(contents)
     when "image"
-      puts "image를 보낸다"
       message.contents = contents
       message.message_type = 'image'
       message.save
@@ -896,7 +1209,6 @@ class Api::ShowmesController < ApplicationController
         previewImageUrl: address
       }
     when "map"
-      puts "map를 보낸다"
       message.contents = contents
       message.message_type = 'map'
       message.save

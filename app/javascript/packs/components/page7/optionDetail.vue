@@ -145,6 +145,7 @@
           setDay: 'unsetDay',
           setTime: 'unsetTime',
           setCount: 'unsetCount',
+          setTarget: 'unsetTarget',
           startTime: '00:00',
           endTime: '00:00',
           actionCount: null,

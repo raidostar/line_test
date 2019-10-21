@@ -39,13 +39,9 @@ class Api::ReactionsController < ApplicationController
 
   def create
     @reaction = Reaction.new(reaction_params)
-    puts "1번"
     option_id = params[:match_option]
-    puts "2번"
     tags = params[:tag].split(",")
-    puts "3번"
     @option = Option.find_by(id: option_id)
-    puts "4번"
     if @reaction.save
       option_update(@option)
       tag_create(tags)

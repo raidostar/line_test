@@ -25,7 +25,7 @@
             <i class="material-icons">email</i>
             メッセージ
           </li>
-          <li><router-link class="pageLink" to="/page5">統計情報</router-link></li>
+          <li><router-link class="pageLink" to="/page5">データ分析</router-link></li>
           <li><router-link class="pageLink" to="/page6">一斉配信</router-link></li>
           <li><router-link class="pageLink" to="/page7">自動応答</router-link></li>
           <li><router-link class="pageLink" to="/page8">テンプレート</router-link></li>

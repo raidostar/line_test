@@ -35,7 +35,7 @@
 }
 .friendsList {
   padding-top: 10px;
-  height: 37em;
+  height: 79vh;
   max-height: 100%;
 }
 .message {
@@ -50,8 +50,10 @@
   margin: 0 auto;
 }
 .chatting-content {
-  height: 37em;
+  background-color: #EEECFF;
+  height: 79vh;
   max-height: 100%;
+  overflow-y: scroll;
 }
 .chatting-text {
   height: 2em;
@@ -117,9 +119,78 @@
   -webkit-appearance: media-sliderthumb;
 }
 .frBtn:focus {
-  background-color: #CCFFFF;
+  outline: none;
 }
 .rotate {
   z-index: 1000;
   animation: flip infinite;
+}
+.attachedImg {
+  width: 18em;
+  border-radius: 8px;
+  position: initial;
+}
+.balloon-left {
+  display: inline-block;
+  position: relative;
+  background: #fff;
+  height: auto;
+  width: max-content;
+  max-width: 23em;
+  margin: 4px 0px;
+  border-radius: 10px;
+  padding: 8px 12px;
+  z-index: 3;
+  float: left;
+  word-break: keep-all;
+  margin-left: 1em;
+  margin-right: 50%;
+}
+.balloon-left:after {
+  content: '';
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  z-index: -1;
+  bottom: 10px;
+  left: -3px;
+  top: 5px;
+  background: #fff;
+  -ms-transform: rotate(45deg); /* IE 9 */
+  -webkit-transform: rotate(45deg); /* Chrome, Safari, Opera */
+  transform: rotate(45deg);
+}
+.balloon-right {
+  display: inline-block;
+  position: relative;
+  background: #2c3e50;
+  height: auto;
+  width: max-content;
+  max-width: 50vh;
+  margin: 4px 0px;
+  border-radius: 10px;
+  padding: 8px 12px;
+  z-index: 3;
+  float: right;
+  color: white;
+  word-break: keep-all;
+  margin-right: 1em;
+  margin-left: 50%;
+}
+.balloon-right:after {
+  content: '';
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  z-index: -1;
+  bottom: 10px;
+  right: -3px;
+  top: 5px;
+  background: #2c3e50;
+  -ms-transform: rotate(45deg); /* IE 9 */
+  -webkit-transform: rotate(45deg); /* Chrome, Safari, Opera */
+  transform: rotate(45deg);
+}
+.attachedStamp {
+  width: 8em;
 }

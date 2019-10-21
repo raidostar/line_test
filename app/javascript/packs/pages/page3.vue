@@ -6,6 +6,10 @@
           <div>
             <h2 class="title">トーク一覧<hr/></h2>
             <i @click="fetchMessage" class="material-icons loop">loop</i><br/>
+            <div class="search-keyword">
+              <input class="searchBar" @keydown.enter="searchMessage" placeholder="検索" v-model="searchKey"/>
+              <button class="searchBtn" @click="searchMessage"><i class="material-icons" style="color: grey;">search</i></button>
+            </div>
             <div class="setting">
               <select v-model="parPage" @change="resetPage">
                 <option value=5>5ライン別表示</option>
@@ -54,13 +58,13 @@
             <td>{{ msg.message_type }}</td>
             <td v-if="msg.check_status=='autoReplied'">自動返事</td>
             <td v-else-if="msg.check_status=='replied'">直接返事</td>
-            <td v-else-if="msg.check_status=='replyFirst'" style="color: red;">要対応</td>
-            <td v-else-if="msg.check_status=='replyLast'" style="color: blue;">未返事</td>
+            <td v-else-if="msg.check_status=='urgent'" style="color: red;">要対応</td>
+            <td v-else-if="msg.check_status=='checked'">確認完了</td>
+            <td v-else-if="msg.check_status=='unreplied'" style="color: blue;">未返事</td>
             <td v-else style="color: grey;">未確認</td>
-
-            <td v-if="msg.check_status=='autoReplied'||msg.check_status=='replied'" >
+            <td v-if="msg.check_status=='autoReplied'||msg.check_status=='replied'||msg.check_status=='checked'" >
               <button class="replyBtn" @click="replyMessage(msg)" style="color: green;">
-                返事完了
+                処理完了
               </button>
             </td>
             <td v-else><button class="replyBtn" @click="replyMessage(msg)">返事</button></td>
@@ -82,7 +86,10 @@
   <transition name="fadeInOut">
     <div v-show="replyShow">
       <div>
-        <button v-show="replyShow" @click="reactionToggle" class="allSend-button">戻り</button>
+        <button v-show="replyShow" @click="checkMessage" class="allSend-button" style="background-color: #2C3250; color: white;">
+          確認処理
+        </button>
+        <button v-show="replyShow" @click="messageToggle" class="allSend-button">戻り</button>
       </div>
       <div class="right-panel" >
         <!-- side buttons -->
@@ -273,6 +280,7 @@
         replyToken: '',
         selectedMessage: null,
         selectedFriend: '',
+        searchKey:'',
       }
     },
     mounted: function(){
@@ -309,7 +317,7 @@
       resetPage(){
         this.currentPage = 1;
       },
-      reactionToggle(){
+      messageToggle(){
         this.emptyAll();
         this.replyShow = !this.replyShow
       },
@@ -325,6 +333,7 @@
         this.editMode = false;
         this.reactionListShow = false;
         this.flexablePadding = {"padding-right": "30px"}
+        this.fetchMessage();
       },
       toggleStamp(){
         this.emojiShow = false;
@@ -599,10 +608,17 @@
         return {lat: tempArr[0], lng: tempArr[1]}
       },
       replyMessage(msg){
-        this.reactionToggle();
+        this.messageToggle();
         this.replyToken = msg.reply_token
         this.selectedMessage = msg
         this.loadProfile(msg.fr_account)
+        axios.post('api/read_message',{
+          id: msg.id
+        }).then((res)=>{
+          this.fetchMessage();
+        },(error)=>{
+          console.log(error)
+        })
       },
       fetchStamps(){
         for(let i=1; i<47;i++){
@@ -635,6 +651,28 @@
         }).then((res)=>{
           this.selectedFriend = res.data
           console.log(this.selectedFriend)
+        },(error)=>{
+          console.log(error)
+        })
+      },
+      searchMessage(){
+        if(this.searchKey.length==0) {
+          this.fetchMessage();
+        } else {
+          let searchResult = []
+          for(let msg of this.messageList){
+            if(msg.contents.search(this.searchKey)>-1){
+              searchResult.push(msg)
+            }
+          }
+          this.messageList = searchResult
+        }
+      },
+      checkMessage(){
+        axios.post('api/check_message',{
+          id: this.selectedMessage.id
+        }).then((res)=>{
+          this.messageToggle();
         },(error)=>{
           console.log(error)
         })

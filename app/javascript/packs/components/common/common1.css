@@ -274,12 +274,12 @@ input[type=text] {
   padding: 0px 0px;
   text-align: left;
   width: 98%;
-  height: 90%;
+  height: 36em;
   border: 1px solid #C0C0C0;
   box-shadow: 0 0 2px #666;
   border-radius: 8px;
   float: right;
-  overflow: hidden;
+  overflow: scroll;
 }
 .stamp {
   font-size: 30px;

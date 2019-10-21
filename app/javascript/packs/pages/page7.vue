@@ -15,7 +15,7 @@
         <div class="col col-left">
           <div class="label">
             <i class="material-icons folder">sms</i>
-              条件リスト
+            条件リスト
             <button class="button" @click="addToggle">
               <i class="material-icons btnMark">add_circle_outline</i>
             </button>
@@ -66,14 +66,23 @@
                     </div>
                     <div>
                       <p class="settingMenu" style="margin-top: 4px;">送信対象設定</p>
-                      <input type="radio" class="settingRadio" id="unsetReceiver" value="unsetReceiver" v-model="setReceiver">
+                      <input type="radio" class="settingRadio" id="unsetReceiver" value="unsetTarget" v-model="setTarget" @click="clearTargetTag">
                       <label class="setting" >全ユーザー</label>
-                      <input type="radio" class="settingRadio" id="setReceiver" value="setReceiver" v-model="setReceiver">
+                      <input type="radio" class="settingRadio" @click="fetchTargets" id="setReceiver" value="setTarget" v-model="setTarget">
                       <label class="setting" >送信対象選択</label>
+                      <div v-if="setTarget=='setTarget'">
+                        <span style="font-size: 14px;">送信対象タグ</span>
+                        <span v-for="(target,index) in targets" style="margin-top: 10px;">
+                          <button  v-model="selectedTargets" v-if="selectedTargets.includes(target)==true" class="keywordsTag" :style="targetCSS" @click="cancelTarget(target)">
+                            {{target}}
+                          </button>
+                          <button v-else class="keywordsTag" @click="selectTarget(index)">{{target}}</button>
+                        </span>
+                      </div>
                     </div>
                     <div>
                       <p class="settingMenu">曜日設定</p>
-                      <input type="radio" class="settingRadio" id="unsetDay" value="unsetDay" v-model="setDay"@click="clearDay">
+                      <input type="radio" class="settingRadio" id="unsetDay" value="unsetDay" v-model="setDay" @click="clearDay">
                       <label class="setting" for="two">毎日</label>
                       <input type="radio" class="settingRadio" id="setDay" value="setDay" v-model="setDay">
                       <label class="setting" for="one">曜日選択</label>
@@ -173,7 +182,6 @@
         </div>
 
         <!--Action部分-->
-
         <div class="col col-right">
           <transition name="fadeInOut">
             <div v-show="!reactionShow">
@@ -527,7 +535,6 @@
       return {
         formShow: false,
         addShow: false,
-        tags: [],
         newFolder: '',
         selected: null,
         selectedId: null,
@@ -584,7 +591,7 @@
         setDay: 'unsetDay',
         setTime: 'unsetTime',
         setCount: 'unsetCount',
-        setReceiver: 'unsetReceiver',
+        setTarget: 'unsetTarget',
         targetDay: [0,1,2,3,4,5,6],
         keyword: '',
         keywords: [],
@@ -598,9 +605,12 @@
         tags: [],
         tagtext:['ALL'],
         tag: '',
+        targets: [],
         autoReply: true,
         remindReply: false,
         selectedTagId: '',
+        selectedTargets: [],
+        targetCSS: {'background-color': '#007FFF', 'color': 'white'},
       }
     },
     mounted: function(){
@@ -618,9 +628,17 @@
           console.log(error)
         })
       },
+      fetchTargets(){
+        axios.post('/api/fetch_targets').then((res)=>{
+          //console.log(res.data)
+          this.targets = res.data
+        },(error)=>{
+          console.log(error)
+        })
+      },
       fetchOptions(){
         axios.post('api/options_by_tag',{option_type: 'autoReply',tag_id: this.selectedTagId}).then((res)=>{
-          console.log(res.data)
+          //console.log(res.data)
           for(var opt of res.data){
             opt.tag = opt.tag.substr(0,opt.tag.length-1)
             opt.target_keyword = opt.target_keyword.substr(0,opt.target_keyword.length-1)
@@ -845,7 +863,7 @@
             name: this.reactionName,
             reaction_type: 'text',
             contents: this.contents,
-            match_option: this.selectedId,
+            match_option: this.selectedId+',',
             tag: this.tagtext.toString()+',',
           })
           .then((res)=>{
@@ -863,7 +881,7 @@
             name: this.reactionName,
             reaction_type: 'stamp',
             contents: target.substr(26,10),
-            match_option: this.selectedId,
+            match_option: this.selectedId+',',
             tag: this.tagtext.toString()+',',
           })
           .then((res)=>{
@@ -883,7 +901,7 @@
             name: this.reactionName,
             reaction_type: 'text',
             contents: this.contents,
-            match_option: this.selectedId,
+            match_option: this.selectedId+',',
             tag: this.tagtext.toString()+',',
           }).then((res)=>{
             let arr = this.selectStampUrl.split('-')
@@ -892,7 +910,7 @@
               name: this.reactionName,
               reaction_type: 'stamp',
               contents: target.substr(26,10),
-              match_option: this.selectedId,
+              match_option: this.selectedId+',',
               tag: this.tagtext.toString()+',',
             }).then((res)=>{
               alert("アクションセーブ完了");
@@ -914,7 +932,7 @@
           data.append('contents','[ NO TEXT ]');
           data.append('tag',this.tagtext.toString()+',');
           data.append('image',this.imageFile);
-          data.append('match_option', this.selectedId)
+          data.append('match_option', this.selectedId+',')
           axios.post('/api/reactions',data)
           .then((res)=>{
             alert("アクションセーブ完了");
@@ -933,7 +951,7 @@
             name: this.reactionName,
             reaction_type: 'text',
             contents: this.contents,
-            match_option: this.selectedId,
+            match_option: this.selectedId+',',
             tag: this.tagtext.toString()+',',
           }).then((res)=>{
             var data = new FormData();
@@ -943,7 +961,7 @@
             data.append('contents','[ IMAGE ]');
             data.append('tag',this.tagtext.toString()+',');
             data.append('image',file);
-            data.append('match_option', this.selectedId)
+            data.append('match_option', this.selectedId+',')
             axios.post('/api/reactions',data)
             .then((res)=>{
               alert("アクションセーブ完了");
@@ -968,7 +986,7 @@
                 name: this.reactionName,
                 reaction_type: 'map',
                 contents: data,
-                match_option: this.selectedId,
+                match_option: this.selectedId+',',
                 tag: this.tagtext.toString()+',',
               }).then((res)=>{
                 alert("アクションセーブ完了");
@@ -989,7 +1007,7 @@
             name: this.reactionName,
             reaction_type: 'text',
             contents: this.contents,
-            match_option: this.selectedId,
+            match_option: this.selectedId+',',
             tag: this.tagtext.toString()+',',
           }).then((res)=>{
             let geocoder = new google.maps.Geocoder();
@@ -1002,7 +1020,7 @@
                   name: this.reactionName,
                   reaction_type: 'map',
                   contents: data,
-                  match_option: this.selectedId,
+                  match_option: this.selectedId+',',
                   tag: this.tagtext.toString()+',',
                 }).then((res)=>{
                   alert("アクションセーブ完了");
@@ -1319,6 +1337,9 @@
           return;
         }
       },
+      clearTargetTag(){
+
+      },
       clearDay(){
         this.targetDay = [0,1,2,3,4,5,6]
       },
@@ -1341,6 +1362,7 @@
           target_day: this.targetDay.toString(),
           target_time: targetTime.toString(),
           action_count: this.actionCount,
+          target_friend: this.selectedTargets.toString()+',',
           tag: this.tagtext.toString()+',',
         }).then((res)=>{
           alert("条件セーブ完了！");
@@ -1362,8 +1384,20 @@
           alert("コンマは条件語になれません。")
           return;
         }
-        this.keywords.push(this.keyword)
-        this.keyword = '';
+        axios.post('api/keyword_check',{
+          keyword: this.keyword
+        }).then((res)=>{
+          console.log(res.data)
+          if(res.data.length>0){
+            alert("もうあるキーワードです。")
+            return;
+          } else {
+            this.keywords.push(this.keyword)
+            this.keyword = '';
+          }
+        },(error)=>{
+          console.log(error)
+        })
       },
       removeKeyword(index){
         var start = index;
@@ -1452,6 +1486,7 @@
         })
       },
       createTag(){
+        alert(this.tagtext)
         if(!this.tag) return;
         if(this.tag.search(",")>-1||this.tag.search("、")>-1) {
           alert("コンマはキーワードになれません。")
@@ -1478,6 +1513,21 @@
           }
         }
         this.tagtext.pop();
+      },
+      selectTarget(index){
+        this.selectedTargets.push(this.targets[index])
+      },
+      cancelTarget(target){
+        for(var i=0;i<this.selectedTargets.length;i++){
+          if(this.selectedTargets[i]==target){
+            var start = i
+            for(var i=start;i<this.selectedTargets.length-1;i++){
+              this.selectedTargets[i] = this.selectedTargets[i+1]
+            }
+            break;
+          }
+        }
+        this.selectedTargets.pop();
       },
     },
     computed: {

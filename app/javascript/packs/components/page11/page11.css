@@ -1,6 +1,9 @@
 input[type=checkbox] {
   display: none;
 }
+.area {
+  width: 100%;
+}
 .title {
   float: left;
   padding-left: 20px;
@@ -177,7 +180,7 @@ label.stampBtn:focus {
   height: 32%;
   border-radius: 8px;
   position: absolute;
-  top: 8em;
+  top: 9.5em;
   left: 38em;
   text-align: center;
   margin: 0 auto;
@@ -192,7 +195,7 @@ label.stampBtn:focus {
   border-radius: 8px;
   background-color: white;
   position: absolute;
-  top: 8em;
+  top: 10em;
   left: 37.3em;
   text-align: center;
   margin: 0 auto;
@@ -204,6 +207,7 @@ label.stampBtn:focus {
   z-index: 9;
 }
 .sendBtn {
+  height: 6.2vh;
   width: 24.7%;
   -webkit-transition-duration: 0.4s; /* Safari */
   transition-duration: 0.4s;
@@ -274,12 +278,12 @@ label.stampBtn:focus {
   outline: none;
 }
 .sticker-panel {
-  width: 39.5%;
-  height: 11em;
+  width: 39.4%;
+  height: 12em;
   position: absolute;
   z-index: 3000;
-  top: 56vh;
-  left: 20%;
+  top: 59.3vh;
+  left: 20.2%;
   background-color: white;
   border-radius: 8px;
   opacity: 0.9;
@@ -423,14 +427,21 @@ label.stampBtn:focus {
   height: 60vh;
 }
 .detail {
-  background-color: white;
-  height: 48vh;
+  width: 49%;
+  height: 100%;
   border-radius: 8px;
-  overflow: scroll;
-
 }
-.detail:focus {
-  outline: none;
+.panel-left {
+  border: 1px solid #FFF;
+  box-shadow: 0 0 10px #666;
+  float: left;
+  padding: 15px 15px;
+}
+.panel-right {
+  border: 1px solid #FFF;
+  box-shadow: 0 0 10px #666;
+  float: right;
+  padding: 15px 15px;
 }
 .stampBtnImg {
   padding: 0px 0px;
@@ -515,4 +526,32 @@ a:not([href]):not([tabindex]):hover{
   position: absolute;
   top: 6.7em;
   right: 4.5em;
+}
+.fadeInOut-enter-active {
+  animation: fadeInDown .5s;
+}
+.fadeInOut-leave-active {
+  animation: fadeInDown .5s reverse;
+}
+.setting-icon {
+  color: grey;
+  font-size: 30px;
+  margin-left: 12px;
+  margin-top: 3px;
+}
+.setting-icon:hover {
+  font-size: 33px;
+  opacity: 0.7;
+  cursor: pointer;
+}
+.personDetails {
+  margin: 0px 10px;
+  padding: 10px 10px;
+  text-align: left;
+  width: 98%;
+  height: 13em;
+  border: 1px solid #FFF;
+  border-radius: 8px;
+  box-shadow: 0 0 10px #666;
+  margin-top: 4em;
 }

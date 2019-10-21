@@ -676,3 +676,6 @@ div.tags-bottom {
   height: 48%;
   margin: 2% 1%;
 }
+.keywordsTag:focus {
+  background: white;
+}

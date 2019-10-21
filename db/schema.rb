@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_10_09_032054) do
+ActiveRecord::Schema.define(version: 2019_10_11_031609) do
 
   create_table "books", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "title"
@@ -37,6 +37,7 @@ ActiveRecord::Schema.define(version: 2019_10_09_032054) do
     t.integer "blocks"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "date"
   end
 
   create_table "friends", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
@@ -53,6 +54,8 @@ ActiveRecord::Schema.define(version: 2019_10_09_032054) do
     t.datetime "follow_at"
     t.string "tags"
     t.text "last_message"
+    t.integer "disney_point", default: 0
+    t.integer "final_question", default: 0
   end
 
   create_table "groups", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|

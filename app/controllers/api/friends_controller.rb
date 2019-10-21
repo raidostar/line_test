@@ -64,6 +64,18 @@ class Api::FriendsController < ApplicationController
     end
   end
 
+  def fetch_targets
+    group = current_user.group
+    group = Group.find_by(group: group)
+    friends = Friend.where(group_id: group.group_id).where.not(tags: nil)
+    data = []
+    friends.each do |friend|
+      data = data + friend.tags.split(",")
+    end
+    data = data.uniq
+    render json: data, status: :ok
+  end
+
   def get_date_info
     @timeArray = []
     for i in 0..6
@@ -78,7 +90,7 @@ class Api::FriendsController < ApplicationController
   def get_weekly_friend_info
     @timeArray = []
     for i in 1..7
-      info = Hash.new
+      info = {}
 
       time = Time.new
       time = time.days_ago(i)
@@ -118,7 +130,7 @@ class Api::FriendsController < ApplicationController
   def friends_params
     params.require(:friend).permit(
       :id, :fr_account, :fr_name, :profile_pic, :profile_msg, :block, :created_at, :updated_at, :group_id, :last_message_time, :block_at, :follow_at, :tags
-    )
+      )
   end
 
 end

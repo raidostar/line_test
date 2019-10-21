@@ -38,6 +38,10 @@ Rails.application.routes.draw do
   end
 
   namespace :api, format: 'json' do
+    resources :follows
+  end
+
+  namespace :api, format: 'json' do
     resources :groups, only: [:index,:create]
   end
 
@@ -84,4 +88,14 @@ Rails.application.routes.draw do
   post 'api/direct_reply' => 'api/showmes#direct_reply'
   post 'api/by_fr_account' => 'api/friends#find_by_fr_account'
   post 'api/get_last_message' => 'api/messages#get_last_message'
+  post 'api/keyword_check' => 'api/options#keyword_check'
+  post 'api/read_message' => 'api/messages#read_message'
+  post 'api/check_message' => 'api/messages#check_message'
+  post 'api/fetch_follows_data' => 'api/follows#fetch_follows_data'
+  post 'api/fetch_follows_time_data' => 'api/follows#fetch_follows_time_data'
+  post 'api/fetch_messages_data' => 'api/messages#fetch_messages_data'
+  post 'api/fetch_messages_time_data' => 'api/messages#fetch_messages_time_data'
+  post 'api/fetch_message_type_data' => 'api/messages#fetch_message_type_data'
+  post 'api/fetch_message_check_data' => 'api/messages#fetch_message_check_data'
+  post 'api/fetch_targets' => 'api/friends#fetch_targets'
 end

@@ -75,6 +75,22 @@ class Api::OptionsController < ApplicationController
     end
   end
 
+  def keyword_check
+    user_group = current_user.group
+    result_options = []
+    keyword = params[:keyword]
+    options = Option.where(user_group: user_group).where("target_keyword like '%"+params[:keyword]+"%'")
+    options.each do |opt|
+      temp = opt.target_keyword.split(",")
+      temp.each do |key|
+        if key == keyword
+          result_options.push(opt)
+        end
+      end
+    end
+    render json: result_options, status: :ok
+  end
+
   private
 
   def option_params
