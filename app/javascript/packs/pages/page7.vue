@@ -30,6 +30,8 @@
               :createOptions="createOptions"
               :autoReply="autoReply"
               :remindReply="remindReply"
+              :fetchTargets="fetchTargets"
+              :targets="targets"
               />
             </div>
           </transition>
@@ -320,7 +322,7 @@
                   <div class="tags-top">
                     <span style="margin-left: 10px; float: left;">タグ</span>
                     <input type="text" name="option[target_keyword]" v-model="tag" class="tagInput" @keydown.enter="createTag">
-                    <a @click="clearTagInput" v-if="tag" style="line-height: 0px; float: left;">
+                    <a @click="clearTag" v-if="tag" style="line-height: 0px; float: left;">
                       <i class="material-icons keyword_cancel">cancel</i>
                     </a>
                   </div>
@@ -393,7 +395,7 @@
               <thead>
                 <tr>
                   <th>
-                    <input type="checkbox" class="checkbox" v-model="reactionAllCheck" @click="reactionAllChecker">
+                    <input type="checkbox" class="checkbox" v-model="reactionLeftAllCheck" @click="reactionLeftAllChecker">
                   </th>
                   <th>アクション名</th>
                   <th>アクション内容</th>
@@ -403,9 +405,9 @@
                 </tr>
               </thead>
               <tbody style="overflow:scroll;">
-                <tr v-for="(reaction,index) in reactions" v-model="reactions">
+                <tr v-for="(reaction,index) in reactionsLeft" v-model="reactionsLeft">
                   <td class="check">
-                    <input type="checkbox" class="checkbox" :checked="reaction.bool" @click="reactionChecker(index)">
+                    <input type="checkbox" class="checkbox" :checked="reaction.bool" @click="reactionLeftChecker(index)">
                   </td>
                   <td>
                     {{reaction.name}}
@@ -541,6 +543,7 @@
         panelShow: false,
         allCheck: false,
         reactionAllCheck: false,
+        reactionLeftAllCheck: false,
         replyArray: [{name: 'kakasi', bool: false}, {name: 'obito', bool: false}],
         deleteShow: false,
         options: [],
@@ -611,6 +614,7 @@
         selectedTagId: '',
         selectedTargets: [],
         targetCSS: {'background-color': '#007FFF', 'color': 'white'},
+        reactionsLeft: [],
       }
     },
     mounted: function(){
@@ -639,12 +643,9 @@
       fetchOptions(){
         axios.post('api/options_by_tag',{option_type: 'autoReply',tag_id: this.selectedTagId}).then((res)=>{
           //console.log(res.data)
-          for(var opt of res.data){
-            opt.tag = opt.tag.substr(0,opt.tag.length-1)
-            opt.target_keyword = opt.target_keyword.substr(0,opt.target_keyword.length-1)
-          }
           this.options = res.data
           //this.fetchOption();
+          this.fetchTargets();
         },(error)=>{
           console.log(error)
         })
@@ -761,8 +762,16 @@
           obj.bool = !this.reactionAllCheck
         }
       },
+      reactionLeftAllChecker(){
+        for(let obj of this.reactionsLeft){
+          obj.bool = !this.reactionLeftAllCheck
+        }
+      },
       reactionChecker(index){
         this.reactions[index].bool = !this.reactions[index].bool
+      },
+      reactionLeftChecker(index){
+        this.reactionsLeft[index].bool = !this.reactionsLeft[index].bool
       },
       deleteTag(){
         if(this.tags[this.selected].name=='ALL'){
@@ -819,6 +828,7 @@
       },
       fetchReactions(){
         axios.get('api/reactions?option_id='+this.selectedId).then((res)=>{
+          //console.log(res.data)
           for(let reaction of res.data.reactions){
             reaction.created_at = reaction.created_at.substr(0,16).replace('T',' ');
           }
@@ -863,8 +873,8 @@
             name: this.reactionName,
             reaction_type: 'text',
             contents: this.contents,
-            match_option: this.selectedId+',',
-            tag: this.tagtext.toString()+',',
+            match_option: this.selectedId,
+            tag: this.tagtext.toString(),
           })
           .then((res)=>{
             alert("アクションセーブ完了")
@@ -881,8 +891,8 @@
             name: this.reactionName,
             reaction_type: 'stamp',
             contents: target.substr(26,10),
-            match_option: this.selectedId+',',
-            tag: this.tagtext.toString()+',',
+            match_option: this.selectedId,
+            tag: this.tagtext.toString(),
           })
           .then((res)=>{
             alert("アクションセーブ完了");
@@ -901,8 +911,8 @@
             name: this.reactionName,
             reaction_type: 'text',
             contents: this.contents,
-            match_option: this.selectedId+',',
-            tag: this.tagtext.toString()+',',
+            match_option: this.selectedId,
+            tag: this.tagtext.toString(),
           }).then((res)=>{
             let arr = this.selectStampUrl.split('-')
             let target = arr[0]
@@ -910,8 +920,8 @@
               name: this.reactionName,
               reaction_type: 'stamp',
               contents: target.substr(26,10),
-              match_option: this.selectedId+',',
-              tag: this.tagtext.toString()+',',
+              match_option: this.selectedId,
+              tag: this.tagtext.toString(),
             }).then((res)=>{
               alert("アクションセーブ完了");
               this.reactionToggle();
@@ -930,9 +940,9 @@
           data.append('name', this.reactionName);
           data.append('reaction_type','image');
           data.append('contents','[ NO TEXT ]');
-          data.append('tag',this.tagtext.toString()+',');
+          data.append('tag',this.tagtext.toString());
           data.append('image',this.imageFile);
-          data.append('match_option', this.selectedId+',')
+          data.append('match_option', this.selectedId)
           axios.post('/api/reactions',data)
           .then((res)=>{
             alert("アクションセーブ完了");
@@ -951,17 +961,17 @@
             name: this.reactionName,
             reaction_type: 'text',
             contents: this.contents,
-            match_option: this.selectedId+',',
-            tag: this.tagtext.toString()+',',
+            match_option: this.selectedId,
+            tag: this.tagtext.toString(),
           }).then((res)=>{
             var data = new FormData();
             var file = this.$refs.fileInput.files[0];
             data.append('name', this.reactionName);
             data.append('reaction_type','image');
             data.append('contents','[ IMAGE ]');
-            data.append('tag',this.tagtext.toString()+',');
+            data.append('tag',this.tagtext.toString());
             data.append('image',file);
-            data.append('match_option', this.selectedId+',')
+            data.append('match_option', this.selectedId)
             axios.post('/api/reactions',data)
             .then((res)=>{
               alert("アクションセーブ完了");
@@ -980,14 +990,14 @@
           const latlng = this.marker_center
           geocoder.geocode({'location':this.marker_center,'language': 'ja'},(results,status)=>{
             if(status == 'OK'){
-              console.log(results)
+              //console.log(results)
               let data = '['+results[5].formatted_address+']+[@map('+latlng.lat+','+latlng.lng+')]'
               axios.post('/api/reactions',{
                 name: this.reactionName,
                 reaction_type: 'map',
                 contents: data,
-                match_option: this.selectedId+',',
-                tag: this.tagtext.toString()+',',
+                match_option: this.selectedId,
+                tag: this.tagtext.toString(),
               }).then((res)=>{
                 alert("アクションセーブ完了");
                 this.reactionToggle();
@@ -1007,21 +1017,21 @@
             name: this.reactionName,
             reaction_type: 'text',
             contents: this.contents,
-            match_option: this.selectedId+',',
-            tag: this.tagtext.toString()+',',
+            match_option: this.selectedId,
+            tag: this.tagtext.toString(),
           }).then((res)=>{
             let geocoder = new google.maps.Geocoder();
             const latlng = this.marker_center
             geocoder.geocode({'location':this.marker_center,'language': 'ja'},(results,status)=>{
               if(status == 'OK'){
-                console.log(results)
+                //console.log(results)
                 let data = '['+results[5].formatted_address+']+[@map('+latlng.lat+','+latlng.lng+')]'
                 axios.post('/api/reactions',{
                   name: this.reactionName,
                   reaction_type: 'map',
                   contents: data,
-                  match_option: this.selectedId+',',
-                  tag: this.tagtext.toString()+',',
+                  match_option: this.selectedId,
+                  tag: this.tagtext.toString(),
                 }).then((res)=>{
                   alert("アクションセーブ完了");
                   this.reactionToggle();
@@ -1207,8 +1217,8 @@
           this.reactionName = this.selectedReaction.name
           switch(this.selectedReaction.reaction_type){
             case "text":
-            this.innerContent = this.selectedReaction.contents
-            this.contents = this.innerContent
+            this.$refs.chatting.innerHTML = this.selectedReaction.contents;
+            this.contents = this.$refs.chatting.innerHTML
             break
             case "image":
             this.uploadedImage  = this.selectedReaction.image.url
@@ -1231,12 +1241,12 @@
           }
           if(this.reactionListShow == true){
             this.reactionListShow = false
-            this.editMode = false;
-            this.insiteMode = true;
+            this.editMode = false
+            this.insiteMode = true
             this.reactions = []
           } else {
-            this.insiteMode = false;
-            this.editMode = true;
+            this.insiteMode = false
+            this.editMode = true
           }
         },(error)=>{
           console.log(error)
@@ -1263,7 +1273,8 @@
             reaction_type: 'text',
             contents: this.contents,
             image: null,
-            match_option: this.selectedId
+            match_option: this.selectedId,
+            tag: this.tagtext.toString(),
           })
           .then((res)=>{
             alert("アクションセーブ完了")
@@ -1280,7 +1291,8 @@
             reaction_type: 'stamp',
             contents: target.substr(26,10),
             image: null,
-            match_option: this.selectedId
+            match_option: this.selectedId,
+            tag: this.tagtext.toString(),
           })
           .then((res)=>{
             alert("アクションセーブ完了");
@@ -1298,6 +1310,7 @@
           data.append('name', this.reactionName);
           data.append('reaction_type','image');
           data.append('contents','[ NO TEXT ]');
+          data.append('tag',this.tagtext.toString());
           data.append('image',this.imageFile);
           data.append('match_option', this.selectedId)
           axios.put('/api/reactions/'+this.selectedReaction.id,data)
@@ -1322,7 +1335,8 @@
                 reaction_type: 'map',
                 contents: data,
                 image: null,
-                match_option: this.selectedId
+                match_option: this.selectedId,
+                tag: this.tagtext.toString(),
               }).then((res)=>{
                 alert("アクションセーブ完了");
                 this.reactionToggle();
@@ -1338,7 +1352,7 @@
         }
       },
       clearTargetTag(){
-
+        this.selectedTargets = []
       },
       clearDay(){
         this.targetDay = [0,1,2,3,4,5,6]
@@ -1358,12 +1372,12 @@
         }
         var targetTime = [this.startTime,this.endTime]
         axios.put('api/options/'+this.selectedId,{
-          target_keyword: this.keywords.toString()+',',
+          target_keyword: this.keywords.toString(),
           target_day: this.targetDay.toString(),
           target_time: targetTime.toString(),
           action_count: this.actionCount,
-          target_friend: this.selectedTargets.toString()+',',
-          tag: this.tagtext.toString()+',',
+          target_friend: this.selectedTargets.toString(),
+          tag: this.tagtext.toString(),
         }).then((res)=>{
           alert("条件セーブ完了！");
           console.log(res.data)
@@ -1424,7 +1438,6 @@
           } else {
             this.setDay = 'setDay'
           }
-
           var targetTime = this.selectedOption.target_time.split(",")
           this.startTime = targetTime[0]
           this.endTime = targetTime[1]
@@ -1441,6 +1454,11 @@
           }
 
           this.tagtext = this.selectedOption.tag.split(",")
+          let friends = this.selectedOption.target_friend
+          if(friends.length>0){
+            this.setTarget = 'setTarget'
+            this.selectedTargets = friends.split(",")
+          }
         }
       },
       reactionListToggle(){
@@ -1455,38 +1473,36 @@
         axios.post('api/reactions_all',{
           option_id: this.selectedId
         }).then((res)=>{
-          this.reactions = res.data
-          if(this.reactions.length==0){
+          this.reactionsLeft = res.data
+          if(this.reactionsLeft.length==0){
             alert("登録できるアクションがありません。")
-            this.fetchReactions();
             this.reactionListShow = false;
           }
+          this.fetchReactions();
         },(error)=>{
           console.log(error)
         })
       },
       linkOptionReaction(id){
-        this.fetchOptions();
-        var reactions = this.selectedOption.match_reaction.split(",")
-        console.log(reactions)
-        console.log(reactions.length)
-        if(reactions.length>=5){
+        // console.log(reactions)
+        // console.log(reactions.length)
+        if(this.reactions.length>=5){
           alert("最大アクション値は５つです。")
           this.fetchReactions();
           this.reactionListShow = false;
-          return;
+        } else {
+          axios.post('api/link_option_reaction',{
+            reaction_id: id,
+            option_id: this.selectedId
+          }).then((res)=>{
+            this.fetchOptions();
+            this.fetchAllReactions();
+          },(error)=>{
+            console.log(error)
+          })
         }
-        axios.post('api/link_option_reaction',{
-          reaction_id: id,
-          option_id: this.selectedId
-        }).then((res)=>{
-          this.fetchAllReactions();
-        },(error)=>{
-          console.log(error)
-        })
       },
       createTag(){
-        alert(this.tagtext)
         if(!this.tag) return;
         if(this.tag.search(",")>-1||this.tag.search("、")>-1) {
           alert("コンマはキーワードになれません。")
@@ -1532,9 +1548,9 @@
     },
     computed: {
       getOption(){
-        let current = this.currentPage * this.parPage;
-        let start = current - this.parPage;
-        return this.options.slice(start, current);
+        let current = this.currentPage * this.parPage
+        let start = current - this.parPage
+        return this.options.slice(start, current)
       },
       getPageCount(){
         return Math.ceil(this.options.length / this.parPage)

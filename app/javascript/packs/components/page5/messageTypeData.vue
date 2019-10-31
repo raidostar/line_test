@@ -108,7 +108,19 @@
         axios.post('api/fetch_message_check_data',{
           reply_boolean: false
         }).then((res)=>{
-          //console.log(res.data)
+          for(var msg of res.data){
+            if(msg[0]=="checked"){
+              msg[0] = "確認完了"
+            } else if(msg[0]=="unchecked"){
+              msg[0] = "未確認"
+            } else if(msg[0]=="auto_replied"){
+              msg[0] = "自動応答"
+            } else if(msg[0]=="replied"){
+              msg[0] = "直接応答"
+            } else if(msg[0]=="unreplied"){
+              msg[0] = "未対応"
+            }
+          }
           this.checkStatus = res.data
           this.firstCheck = res.data[0]
           this.secondCheck = res.data[1]

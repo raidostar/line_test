@@ -357,3 +357,13 @@ label.stampBtn:focus {
   right: 10vh;
   z-index: 90000;
 }
+.sendAgainBtn {
+  border-radius: 8px;
+
+}
+.sendAgainBtn:focus {
+  outline: none;
+}
+.sendAgainBtn:active {
+  background:
+}

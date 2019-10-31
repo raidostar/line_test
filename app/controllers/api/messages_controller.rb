@@ -73,13 +73,17 @@ class Api::MessagesController < ApplicationController
 
   def read_message
     message = Message.find(params[:id])
-    message.update(check_status: 'unreplied')
+    if message.check_status == "unchecked"
+      message.update(check_status: 'unreplied')
+    end
     render json: message, status: :ok
   end
 
   def check_message
     message = Message.find(params[:id])
-    message.update(check_status: 'checked')
+    if message.check_status == "unchecked"||message.check_status == "unreplied"
+      message.update(check_status: 'checked')
+    end
     render json: message, status: :ok
   end
 
@@ -274,11 +278,11 @@ class Api::MessagesController < ApplicationController
     replied = messages.where(check_status: "replied")
     auto_replied = messages.where(check_status: "autoReplied")
 
-    message_align["未対応"] = unreplied.length
-    message_align["未確認"] = unchecked.length
-    message_align["確認完了"] = checked.length
-    message_align["直接応答"] = replied.length
-    message_align["自動応答"] = auto_replied.length
+    message_align["unreplied"] = unreplied.length
+    message_align["unchecked"] = unchecked.length
+    message_align["checked"] = checked.length
+    message_align["replied"] = replied.length
+    message_align["auto_replied"] = auto_replied.length
 
     infos = message_align.sort{|(k1,v1),(k2,v2)| v2 <=> v1}
     render json: infos, status: :ok

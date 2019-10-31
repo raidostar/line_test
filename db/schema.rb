@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_10_11_031609) do
+ActiveRecord::Schema.define(version: 2019_10_28_083219) do
 
   create_table "books", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "title"
@@ -112,6 +112,7 @@ ActiveRecord::Schema.define(version: 2019_10_11_031609) do
     t.string "option_type"
     t.boolean "bool", default: false
     t.string "remind_after"
+    t.integer "hit_count", default: 0
   end
 
   create_table "people", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|

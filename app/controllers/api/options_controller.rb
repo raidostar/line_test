@@ -24,8 +24,35 @@ class Api::OptionsController < ApplicationController
     render json: @options, status: :ok
   end
 
+  def update_option_bool
+    @option = Option.find_by(option_type: 'welcomeReply', user_group: current_user.group)
+    @option.update(bool: params[:bool])
+    render :show, status: :ok
+  end
+
+  def update_option_remind
+    @option = Option.find_by(option_type: 'welcomeReply', user_group: current_user.group)
+    @option.update(remind_after: params[:remind_after])
+    render :show, status: :ok
+  end
+
   def create
-    @option = Option.new(option_params)
+    option_type = params[:option_type]
+    group = current_user.group
+    if option_type=="welcomeReply"
+      @option = Option.find_by(user_group: group,option_type: option_type)
+      if @option.present?
+        render :show, status: :ok
+      else
+        save_option(option_params)
+      end
+    else
+      save_option(option_params)
+    end
+  end
+
+  def save_option(option)
+    @option = Option.new(option)
     tags = params[:option][:tag].split(",")
     if @option.save
       tag_create(tags)
@@ -55,8 +82,9 @@ class Api::OptionsController < ApplicationController
     @reactions = Reaction.where("match_option like '%"+id+"%'")
     if @reactions.present?
       @reactions.each do |reaction|
-        match_option = reaction.match_option.gsub(id,'')
-        if reaction.update(match_option: match_option)
+        match_option = reaction.match_option.split(",")
+        match_option.delete(id.to_s)
+        if reaction.update(match_option: match_option.join(","))
         else
           render json: reaction.errors, status: :unprocessable_entity
         end
@@ -67,8 +95,9 @@ class Api::OptionsController < ApplicationController
 
   def update
     @option = Option.find(params[:id])
-
+    tags = params[:option][:tag].split(",")
     if @option.update(option_params)
+      tag_create(tags)
       render :show, status: :ok
     else
       render json: @reaction.errors, status: :unprocessable_entity

@@ -98,4 +98,8 @@ Rails.application.routes.draw do
   post 'api/fetch_message_type_data' => 'api/messages#fetch_message_type_data'
   post 'api/fetch_message_check_data' => 'api/messages#fetch_message_check_data'
   post 'api/fetch_targets' => 'api/friends#fetch_targets'
+  post 'api/fetch_welcome_reactions' => 'api/reactions#index_welcome_reaction'
+  post 'api/update_option_bool' => 'api/options#update_option_bool'
+  post 'api/update_option_remind' => 'api/options#update_option_remind'
+  post 'api/notify_again' => 'api/showmes#notify_again'
 end

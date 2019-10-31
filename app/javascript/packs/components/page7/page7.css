@@ -258,7 +258,7 @@ input[type=text] {
 .chattingContents {
   background-color: #EEECFF;
   padding: 30px 30px;
-  width: 95%;
+  width: 94%;
   height: 60vh;
   border: 1px solid #C0C0C0;
   box-shadow: 0 0 2px #666;
@@ -306,12 +306,12 @@ input[type=text] {
   text-align: center;
 }
 .sticker-panel {
-  width: 89.5%;
+  width: 92%;
   height: 22.7%;
   position: absolute;
-  z-index: 3000;
-  top: 57vh;
-  right: 3%;
+  z-index: 30;
+  top: 48vh;
+  right: 2%;
   background-color: white;
   border-radius: 8px;
   opacity: 0.9;
@@ -474,13 +474,13 @@ label.stampBtn:focus {
   width: 70px; height: 70px;
 }
 .googleMap {
-  width: 45%;
-  height: 72%;
+  width: 47%;
+  height: 70%;
   border-radius: 8px;
   background-color: white;
   position: absolute;
-  top: 17%;
-  right: 2%;
+  top: 8.5%;
+  right: 2.2%;
   text-align: center;
   margin: 0 auto;
 }

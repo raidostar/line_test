@@ -135,7 +135,7 @@
         </tr>
         <tr class="notiShow" v-for="notify in getNotify" style="height: 80px;">
           <td>
-            <button>コピー</button>
+            <button class="sendAgainBtn" @click="sendAgain(notify.id)">送信</button>
           </td>
 
           <td v-if="notify.target_tag==null">
@@ -524,6 +524,15 @@
       },
       selectTag(index){
         this.selectedTag = this.tags[index]
+      },
+      sendAgain(id){
+        axios.post('api/notify_again',{
+          id: id
+        }).then((res)=>{
+          console.log(res.data)
+        },(error)=>{
+          console.log(error)
+        })
       }
     },
     computed: {

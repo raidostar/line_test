@@ -25,10 +25,19 @@
       </div>
       <div>
         <p class="settingMenu" style="margin-top: 4px;">送信対象設定</p>
-        <input type="radio" class="settingRadio" id="unsetReceiver" value="unsetReceiver" v-model="setReceiver">
-        <label class="setting" for="unsetCount">全ユーザー</label>
-        <input type="radio" class="settingRadio" id="setReceiver" value="setReceiver" v-model="setReceiver">
-        <label class="setting" for="setCount">送信対象選択</label>
+        <input type="radio" class="settingRadio" id="unsetReceiver" value="unsetTarget" v-model="setTarget" @click="clearTargetTag">
+        <label class="setting" >全ユーザー</label>
+        <input type="radio" class="settingRadio" @click="fetchTargets" id="setReceiver" value="setTarget" v-model="setTarget">
+        <label class="setting" >送信対象選択</label>
+        <div v-if="setTarget=='setTarget'">
+          <span style="font-size: 14px;">送信対象タグ</span>
+          <span v-for="(target,index) in targets" style="margin-top: 10px;">
+            <button  v-model="selectedTargets" v-if="selectedTargets.includes(target)==true" class="keywordsTag" :style="targetCSS" @click="cancelTarget(target)">
+              {{target}}
+            </button>
+            <button v-else class="keywordsTag" @click="selectTarget(index)">{{target}}</button>
+          </span>
+        </div>
       </div>
       <div v-if="remindReply">
         <p class="settingMenu">リマインド条件設定</p>
@@ -127,13 +136,16 @@
     </div>
   </template>
   <script>
+    import axios from 'axios'
     export default {
       name: 'optionDetail',
       props: {
         newOption: Object,
+        targets: Array,
         autoReply: Boolean,
         remindReply: Boolean,
         createOptions: Function,
+        fetchTargets: Function,
       },
       data: function(){
         return {
@@ -153,6 +165,8 @@
           tagtext:['ALL'],
           tag: '',
           days: 0,
+          selectedTargets: [],
+          targetCSS: {'background-color': '#007FFF', 'color': 'white'},
         }
       },
       mounted: function(){
@@ -183,6 +197,9 @@
           }
           this.keywords.pop();
         },
+        clearTargetTag(){
+          this.selectedTargets = []
+        },
         clearDay(){
           this.targetDay = [0,1,2,3,4,5,6]
         },
@@ -204,7 +221,7 @@
 
           var targetTime = [this.startTime,this.endTime]
           if(this.keywords.toString().length!=0){
-            this.newOption.target_keyword = this.keywords.toString()+','
+            this.newOption.target_keyword = this.keywords.toString()
           }
           this.newOption.action_count = this.actionCount
           this.newOption.target_day = this.targetDay.toString()
@@ -214,7 +231,8 @@
             this.newOption.remind_after = this.days
           }
           this.newOption.name = this.optName
-          this.newOption.tag = this.tagtext.toString()+','
+          this.newOption.tag = this.tagtext.toString()
+          this.newOption.target_friend = this.selectedTargets.toString()
           this.createOptions();
         },
         createTag(){
@@ -244,6 +262,21 @@
             }
           }
           this.tagtext.pop();
+        },
+        selectTarget(index){
+          this.selectedTargets.push(this.targets[index])
+        },
+        cancelTarget(target){
+          for(var i=0;i<this.selectedTargets.length;i++){
+            if(this.selectedTargets[i]==target){
+              var start = i
+              for(var i=start;i<this.selectedTargets.length-1;i++){
+                this.selectedTargets[i] = this.selectedTargets[i+1]
+              }
+              break;
+            }
+          }
+          this.selectedTargets.pop();
         },
       }
     }

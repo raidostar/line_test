@@ -88,19 +88,22 @@ class Api::ShowmesController < ApplicationController
         profile = client.get_profile(event['source']['userId'])
         profile = JSON.parse(profile.read_body)
 
-        reply_text(event, "["+@group+"]\n友達登録いただき、ありがとうございます、#{profile['displayName']}様！")
         fr_account = event['source']['userId']
-        friend = Friend.where(fr_account: fr_account)
-
+        option = Option.find_by(user_group: @group, option_type: 'welcomeReply')
+        friend = Friend.find_by(fr_account: fr_account)
         if friend.blank?
-          add_friend(
-            fr_account,profile['displayName'],
-            profile['pictureUrl'],profile['statusMessage'],
-            @group_id
-            )
+          friend = add_friend(fr_account,profile['displayName'],profile['pictureUrl'],profile['statusMessage'],@group_id)
         else
           unblock(fr_account)
         end
+        if option.present?
+          if option.bool&&friend.block_at.blank?
+            send_welcome_message(option,event)
+          elsif option.remind_after=='1'&&friend.block_at.present?
+            send_welcome_message(option,event)
+          end
+        end
+
 
       when Line::Bot::Event::Unfollow
         logger.info "[UNFOLLOW]\n#{body}"
@@ -120,13 +123,7 @@ class Api::ShowmesController < ApplicationController
         else
           message = "#{event['postback']['data']}"
           fr_account = event['source']['userId']
-          if message.class == 'String'
-            temp_array = message.split("_")
-            send_next_question(fr_account,temp_array[0],temp_array[1])
-          else
-            puts "1번"
-            send_lottery_number(fr_account,message)
-          end
+          send_lottery_number(fr_account,message)
         end
 
       when Line::Bot::Event::Beacon
@@ -140,6 +137,50 @@ class Api::ShowmesController < ApplicationController
       end
     end
     "OK"
+  end
+
+  def send_welcome_message(option,event)
+    reaction_ids = option.match_reaction.split(",")
+    contents_array = []
+    reaction_ids.each do |id|
+      reaction = Reaction.find(id.to_i)
+      case reaction.reaction_type
+      when "text"
+        contents = contents_converter(reaction.contents)
+        contents = {
+          'type': 'text',
+          'text': contents
+        }
+        contents_array.push(contents)
+      when "stamp"
+        contents = {
+          type: 'sticker',
+          packageId: 1,
+          stickerId: reaction.contents[2..reaction.contents.length].to_i
+        }
+        contents_array.push(contents)
+      when "image"
+        address = reaction.image.url.to_s
+        contents = {
+          type: "image",
+          originalContentUrl: address,
+          previewImageUrl: address
+        }
+        contents_array.push(contents)
+      when "map"
+        map_array = map_converter(reaction.contents)
+        latlng_array = map_array[1].split(',')
+        contents = {
+          type: "location",
+          title: "位置情報",
+          address: map_array[0],
+          latitude: latlng_array[0],
+          longitude: latlng_array[1]
+        }
+        contents_array.push(contents)
+      end
+    end
+    reply_content(event,contents_array)
   end
 
   def send_lottery_number(fr_account,num)
@@ -162,242 +203,6 @@ class Api::ShowmesController < ApplicationController
         type: 'text',
         text: "ミニロトナンバー\n"+text
       }
-    end
-    client.push_message(fr_account, message)
-  end
-
-  def send_next_question(fr_account,q_number,point)
-    friend = Friend.find_by(fr_account: fr_account)
-    final_question = friend.final_question
-    get_point = friend.disney_point + point.to_i
-    if q_number.to_i <= final_question
-      message = {
-        type: 'text',
-        text: 'もう答えた質問です。'
-      }
-      client.push_message(fr_account, message)
-      return
-    else
-      friend.update(disney_point: get_point, final_question: q_number)
-      case q_number
-      when "1"
-        message = {
-          type: 'template',
-          altText: 'Buttons alt text',
-          template: {
-            type: 'buttons',
-            thumbnailImageUrl: THUMBNAIL_URL,
-            title: '質問2',
-            text: '選択してください。',
-            actions: [
-              { label: '答え1', type: 'postback', data: "2_3", text: '答え1'},
-              { label: '答え2', type: 'postback', data: "2_2", text: '答え2' },
-              { label: '答え3', type: 'postback', data: "2_1", text: '答え3' }
-            ]
-          }
-        }
-      when "2"
-        message = {
-          type: 'template',
-          altText: 'Buttons alt text',
-          template: {
-            type: 'buttons',
-            thumbnailImageUrl: THUMBNAIL_URL,
-            title: '質問3',
-            text: '選択してください。',
-            actions: [
-              { label: '答え1', type: 'postback', data: "3_3", text: '答え1'},
-              { label: '答え2', type: 'postback', data: "3_2", text: '答え2' },
-              { label: '答え3', type: 'postback', data: "3_1", text: '答え3' }
-            ]
-          }
-        }
-      when "3"
-        message = {
-          type: 'template',
-          altText: 'Buttons alt text',
-          template: {
-            type: 'buttons',
-            thumbnailImageUrl: THUMBNAIL_URL,
-            title: '質問4',
-            text: '選択してください。',
-            actions: [
-              { label: '答え1', type: 'postback', data: "4_3", text: '答え1'},
-              { label: '答え2', type: 'postback', data: "4_2", text: '答え2' },
-              { label: '答え3', type: 'postback', data: "4_1", text: '答え3' }
-            ]
-          }
-        }
-      when "4"
-        message = {
-          type: 'template',
-          altText: 'Buttons alt text',
-          template: {
-            type: 'buttons',
-            thumbnailImageUrl: THUMBNAIL_URL,
-            title: '質問5',
-            text: '選択してください。',
-            actions: [
-              { label: '答え1', type: 'postback', data: "5_3", text: '答え1'},
-              { label: '答え2', type: 'postback', data: "5_2", text: '答え2' },
-              { label: '答え3', type: 'postback', data: "5_1", text: '答え3' }
-            ]
-          }
-        }
-      when "5"
-        message = {
-          type: 'template',
-          altText: 'Buttons alt text',
-          template: {
-            type: 'buttons',
-            thumbnailImageUrl: THUMBNAIL_URL,
-            title: '質問6',
-            text: '選択してください。',
-            actions: [
-              { label: '答え1', type: 'postback', data: "6_3", text: '答え1'},
-              { label: '答え2', type: 'postback', data: "6_2", text: '答え2' },
-              { label: '答え3', type: 'postback', data: "6_1", text: '答え3' }
-            ]
-          }
-        }
-      when "6"
-        message = {
-          type: 'template',
-          altText: 'Buttons alt text',
-          template: {
-            type: 'buttons',
-            thumbnailImageUrl: THUMBNAIL_URL,
-            title: '質問7',
-            text: '選択してください。',
-            actions: [
-              { label: '答え1', type: 'postback', data: "7_3", text: '答え1'},
-              { label: '答え2', type: 'postback', data: "7_2", text: '答え2' },
-              { label: '答え3', type: 'postback', data: "7_1", text: '答え3' }
-            ]
-          }
-        }
-      when "7"
-        message = {
-          type: 'template',
-          altText: 'Buttons alt text',
-          template: {
-            type: 'buttons',
-            thumbnailImageUrl: THUMBNAIL_URL,
-            title: '質問8',
-            text: '選択してください。',
-            actions: [
-              { label: '答え1', type: 'postback', data: "8_3", text: '答え1'},
-              { label: '答え2', type: 'postback', data: "8_2", text: '答え2' },
-              { label: '答え3', type: 'postback', data: "8_1", text: '答え3' }
-            ]
-          }
-        }
-      when "8"
-        message = {
-          type: 'template',
-          altText: 'Buttons alt text',
-          template: {
-            type: 'buttons',
-            thumbnailImageUrl: THUMBNAIL_URL,
-            title: '質問9',
-            text: '選択してください。',
-            actions: [
-              { label: '答え1', type: 'postback', data: "9_3", text: '答え1'},
-              { label: '答え2', type: 'postback', data: "9_2", text: '答え2' },
-              { label: '答え3', type: 'postback', data: "9_1", text: '答え3' }
-            ]
-          }
-        }
-      when "9"
-        message = {
-          type: 'template',
-          altText: 'Buttons alt text',
-          template: {
-            type: 'buttons',
-            thumbnailImageUrl: THUMBNAIL_URL,
-            title: '質問10',
-            text: '選択してください。',
-            actions: [
-              { label: '答え1', type: 'postback', data: "10_3", text: '答え1'},
-              { label: '答え2', type: 'postback', data: "10_2", text: '答え2' },
-              { label: '答え3', type: 'postback', data: "10_1", text: '答え3' }
-            ]
-          }
-        }
-      when "10"
-        friend = Friend.find_by(fr_account: fr_account)
-        if friend.disney_point > 25
-          message = {
-            type: 'template',
-            altText: 'Buttons alt text',
-            template: {
-              type: 'buttons',
-              thumbnailImageUrl: THUMBNAIL_URL1,
-              title: 'あなたのキャラクターはCharacter1です。',
-              text: 'ゲームのために下記のページに移動ください。',
-              actions: [
-                { label: 'こちらに移動', type: 'uri', uri: "https://www.disney.co.jp/", altUri: {desktop: 'https://line.me#desktop'} },
-              ]
-            }
-          }
-        elsif friend.disney_point <= 25&&friend.disney_point > 20
-          message = {
-            type: 'template',
-            altText: 'Buttons alt text',
-            template: {
-              type: 'buttons',
-              thumbnailImageUrl: THUMBNAIL_URL1,
-              title: 'あなたのキャラクターはCharacter2です。',
-              text: 'ゲームのために下記のページに移動ください。',
-              actions: [
-                { label: 'こちらに移動', type: 'uri', uri: "https://www.disney.co.jp/", altUri: {desktop: 'https://line.me#desktop'} },
-              ]
-            }
-          }
-        elsif friend.disney_point <= 20&&friend.disney_point > 15
-          message = {
-            type: 'template',
-            altText: 'Buttons alt text',
-            template: {
-              type: 'buttons',
-              thumbnailImageUrl: THUMBNAIL_URL1,
-              title: 'あなたのキャラクターはCharacter3です。',
-              text: 'ゲームのために下記のページに移動ください。',
-              actions: [
-                { label: 'こちらに移動', type: 'uri', uri: "https://www.disney.co.jp/", altUri: {desktop: 'https://line.me#desktop'} },
-              ]
-            }
-          }
-        elsif friend.disney_point <= 15&&friend.disney_point >= 10
-          message = {
-            type: 'template',
-            altText: 'Buttons alt text',
-            template: {
-              type: 'buttons',
-              thumbnailImageUrl: THUMBNAIL_URL1,
-              title: 'あなたのキャラクターはCharacter4です。',
-              text: 'ゲームのために下記のページに移動ください。',
-              actions: [
-                { label: 'こちらに移動', type: 'uri', uri: "https://www.disney.co.jp/", altUri: {desktop: 'https://line.me#desktop'} },
-              ]
-            }
-          }
-        else
-          message = {
-            type: 'template',
-            altText: 'Buttons alt text',
-            template: {
-              type: 'buttons',
-              thumbnailImageUrl: THUMBNAIL_URL1,
-              title: 'あなたのキャラクターは何々です。',
-              text: 'ゲームのために下記のページに移動ください。',
-              actions: [
-                { label: 'こちらに移動', type: 'uri', uri: "https://www.disney.co.jp/", altUri: {desktop: 'https://line.me#desktop'} },
-              ]
-            }
-          }
-        end
-      end
     end
     client.push_message(fr_account, message)
   end
@@ -456,22 +261,6 @@ class Api::ShowmesController < ApplicationController
           }
         })
 
-      when 'Disney'
-        reply_content(event, {
-          type: 'template',
-          altText: 'Buttons alt text',
-          template: {
-            type: 'buttons',
-            thumbnailImageUrl: THUMBNAIL_URL,
-            title: 'どのディズニーランドに行きたいですか。',
-            text: '行きたいディズニーを選択してください。',
-            actions: [
-              { label: 'アメリカのディズニー', type: 'postback', data: "1_3", text: 'アメリカのディズニー'},
-              { label: '中国のディズニー', type: 'postback', data: "1_2", text: '中国のディズニー' },
-              { label: 'ヨーロッパのディズニー', type: 'postback', data: "1_1", text: 'ヨーロッパのディズニー' }
-            ]
-          }
-        })
       when "ロト"
         reply_content(event, {
           type: 'template',
@@ -489,55 +278,123 @@ class Api::ShowmesController < ApplicationController
           }
         })
 
-      when 'ボタン'
-        time = Time.new
+      when 'flex'
         reply_content(event, {
-          type: 'template',
-          altText: 'Carousel alt text',
-          template: {
-            type: 'carousel',
-            columns: [
+          type: "flex",
+          altText: "this is a flex message",
+          contents: {
+            type: "bubble",
+            header: {
+              type: "box",
+              layout: "vertical",
+              contents: [
+                {
+                  type: "text",
+                  text: "Header text"
+                }
+              ]
+            },
+            hero: {
+              type: "image",
+              url: THUMBNAIL_URL,
+              size: "full",
+              aspectRatio: "4:4"
+            },
+            body: {
+              type: "box",
+              layout: "vertical",
+              contents: [
+                {
+                  type: "text",
+                  text: "Body text",
+                }
+              ]
+            },
+            footer: {
+              type: "box",
+              layout: "vertical",
+              contents: [
+                {
+                  type: "text",
+                  text: "Footer text",
+                  align: "center",
+                  color: "#888888"
+                }
+              ]
+            }
+          }
+        })
+
+      when 'flex carousel'
+        reply_content(event, {
+          type: "flex",
+          altText: "this is a flex carousel",
+          contents: {
+            type: "carousel",
+            contents: [
               {
-                title: '予約店選択',
-                text: '下記のリストで選択してください。',
-                actions: [
-                  { label: 'heel GINZA【ヒール ギンザ】', type: 'postback', data: 'https://beauty.hotpepper.jp/slnH000243060/?wak=BPSC200408_link_PRsalon1_top' },
-                  { label: 'TAYA 丸の内店', type: 'postback', data: 'https://beauty.hotpepper.jp/slnH000052996/?cstt=1' },
-                  { label: 'W3school', type: 'postback', data: 'https://www.w3schools.com/js/js_string_methods.asp' }
-                ]
+                type: "bubble",
+                body: {
+                  type: "box",
+                  layout: "horizontal",
+                  contents: [
+                    {
+                      type: "text",
+                      text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                      wrap: true
+                    }
+                  ]
+                },
+                footer: {
+                  type: "box",
+                  layout: "horizontal",
+                  contents: [
+                    {
+                      type: "button",
+                      style: "primary",
+                      action: {
+                        type: "uri",
+                        label: "Go",
+                        uri: "https://example.com",
+                        altUri: {
+                          desktop: "https://example.com#desktop"
+                        },
+                      }
+                    }
+                  ]
+                }
               },
               {
-                title: '予約時間',
-                text: '予約時間を設定してください。',
-                actions: [
-                  {
-                    type: 'datetimepicker',
-                    label: "Datetime",
-                    data: '予約時間',
-                    mode: 'datetime',
-                    initial: time.strftime("%Y-%m-%dT%H:%M"),
-                    max: '2100-12-31T23:59',
-                    min: '1900-01-01T00:00'
-                  },
-                  {
-                    type: 'datetimepicker',
-                    label: "Date",
-                    data: 'action=sel&only=date',
-                    mode: 'date',
-                    initial: '2017-06-18',
-                    max: '2100-12-31',
-                    min: '1900-01-01'
-                  },
-                  {
-                    type: 'datetimepicker',
-                    label: "Time",
-                    data: 'action=sel&only=time',
-                    mode: 'time',
-                    initial: '12:15',
-                    max: '23:00',
-                    min: '10:00'
-                  }
-                ]
+                type: "bubble",
+                body: {
+                  type: "box",
+                  layout: "horizontal",
+                  contents: [
+                    {
+                      type: "text",
+                      text: "Hello, World!",
+                      wrap: true
+                    }
+                  ]
+                },
+                footer: {
+                  type: "box",
+                  layout: "horizontal",
+                  contents: [
+                    {
+                      type: "button",
+                      style: "primary",
+                      action: {
+                        type: "uri",
+                        label: "Go",
+                        uri: "https://example.com",
+                        altUri: {
+                          desktop: "https://example.com#desktop"
+                        }
+                      }
+                    }
+                  ]
+                }
               }
             ]
           }
@@ -564,7 +421,7 @@ class Api::ShowmesController < ApplicationController
 
           @message = Message.new({sender: profile['displayName'], receiver: @group, contents: event.message['text'], message_type: 'text', message_id: event.message['id'], sticker_id: nil, package_id: nil, fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'unchecked'})
           save_message(@message)
-          # update_friend_info(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],group_id,@message.contents)
+          update_friend_info(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],group_id,@message.contents)
           event.message['text'] = unicodeConverter(event.message['text'])
           message = Message.new({sender: @group, receiver: profile['displayName'], message_id: event.message['id'],fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'answered'})
           auto_reply = option_checker(event,message)
@@ -629,9 +486,9 @@ class Api::ShowmesController < ApplicationController
   end
 
   def add_friend(fr_account,fr_name,profile_pic,profile_msg,group_id)
-    @friend = Friend.new({fr_account: fr_account, fr_name: fr_name, profile_pic: profile_pic, profile_msg: profile_msg})
+    @friend = Friend.new({fr_account: fr_account, fr_name: fr_name, profile_pic: profile_pic, profile_msg: profile_msg, group_id: group_id})
     if @friend.save
-      puts "save!"
+      return @friend
     else
       render json: @message.errors, status: :unprocessable_entity
     end
@@ -670,6 +527,9 @@ class Api::ShowmesController < ApplicationController
 
   def update_message_profile(fr_account,fr_name)
     @messages = Message.where(fr_account: fr_account)
+    @messages.each do |message|
+      message
+    end
     if @messages.update(sender: fr_name)
       puts "profile updated"
     else
@@ -1007,6 +867,7 @@ class Api::ShowmesController < ApplicationController
   end
 
   def option_checker(event,message)
+    puts "here$$$$$$$$"
     @text = event.message['text']
     group = Group.find_by(group_id: @group_id)
     group = group.attributes["group"]
@@ -1014,27 +875,29 @@ class Api::ShowmesController < ApplicationController
     options = Option.where(user_group: group)
     if options.present?
       options.each do |option|
-        now = Time.new
-        tempArray = option.target_day.split(",")
-        if tempArray.include? now.wday.to_s
-          tempArray = option.target_time.split(",")
-          startTime = tempArray[0].delete(":").to_i
-          endTime = tempArray[1].delete(":").to_i
-          timeGap = endTime - startTime
-          tempTime = now.strftime("%H%M").to_i
-          if (timeGap >= 0 && ((startTime <= tempTime)&&(tempTime<=endTime)))||(timeGap < 0 && ((startTime <= tempTime)||(tempTime<=endTime))) || (startTime==0&&endTime==0)
-            if option.target_keyword.present?
-              tempArray = option.target_keyword.split(",")
-              if tempArray.include? @text
-                if option.match_reaction.present?
-                  action_ids = option.match_reaction.split(",")
-                  if option.action_count.present?
-                    if option.action_count > 0
-                      option.update(action_count: option.action_count - 1)
+        if check_target(option,message)
+          now = Time.new
+          tempArray = option.target_day.split(",")
+          if tempArray.include? now.wday.to_s
+            tempArray = option.target_time.split(",")
+            startTime = tempArray[0].delete(":").to_i
+            endTime = tempArray[1].delete(":").to_i
+            timeGap = endTime - startTime
+            tempTime = now.strftime("%H%M").to_i
+            if (timeGap >= 0 && ((startTime <= tempTime)&&(tempTime<=endTime)))||(timeGap < 0 && ((startTime <= tempTime)||(tempTime<=endTime))) || (startTime==0&&endTime==0)
+              if option.target_keyword.present?
+                tempArray = option.target_keyword.split(",")
+                if tempArray.include? @text
+                  if option.match_reaction.present?
+                    action_ids = option.match_reaction.split(",")
+                    if option.action_count.present?
+                      if option.action_count > 0
+                        option.update(action_count: option.action_count - 1)
+                        send_by_option(event,action_ids,message)
+                      end
+                    else
                       send_by_option(event,action_ids,message)
                     end
-                  else
-                    send_by_option(event,action_ids,message)
                   end
                 end
               end
@@ -1042,6 +905,23 @@ class Api::ShowmesController < ApplicationController
           end
         end
       end
+    end
+  end
+
+  def check_target(option,message)
+    if option.target_friend.present?
+      tempArray = option.target_friend.split(",")
+      tempArray.each do |target|
+        friend = Friend.find_by(fr_account: message.fr_account)
+        if friend.tags.split(",").include? target
+          return true
+          break
+        else
+          return false
+        end
+      end
+    else
+      return true
     end
   end
 
@@ -1060,8 +940,6 @@ class Api::ShowmesController < ApplicationController
           type: 'text',
           text: contents
         }
-        puts "before enter"
-        puts contents
         reply_contents.push(contents)
       when "stamp"
         stamp_id = reaction.attributes["contents"]
@@ -1121,6 +999,7 @@ class Api::ShowmesController < ApplicationController
     end
     update_msg = Message.where(sender: message.receiver, receiver: message.sender, reply_token: message.reply_token)
     update_msg.update({check_status: 'autoReplied'})
+
     reply_content(event, reply_contents)
   end
 
@@ -1160,12 +1039,7 @@ class Api::ShowmesController < ApplicationController
     contents = params[:contents]
     image = params[:image]
     contents_array = []
-    if message.contents.length < 10
-      reply_intro = '【 re: '+message.contents+' 】'
-    else
-      reply_intro = '【 re: '+message.contents[0..7]+'... 】'
-    end
-    reply = {'type': 'text','text': reply_intro}
+
     if image.present?
       message = Message.new({sender: message.receiver, receiver: message.sender, message_id: message.message_id+'a', fr_account: message.fr_account, group_id: message.group_id, reply_token: message.reply_token, check_status: 'answered', image: image})
     else
@@ -1177,11 +1051,9 @@ class Api::ShowmesController < ApplicationController
       message.contents = contents
       message.message_type = 'text'
       contents = contents_converter(contents)
-      puts "contents"
-      puts contents
       contents = {
         'type': 'text',
-        'text': reply_intro+"\n"+contents
+        'text': contents
       }
       contents_array.push(contents)
     when "stamp"
@@ -1196,7 +1068,6 @@ class Api::ShowmesController < ApplicationController
         packageId: 1,
         stickerId: contents[2..contents.length].to_i
       }
-      contents_array.push(reply)
       contents_array.push(contents)
     when "image"
       message.contents = contents
@@ -1221,7 +1092,6 @@ class Api::ShowmesController < ApplicationController
         latitude: latlng_array[0],
         longitude: latlng_array[1]
       }
-      contents_array.push(reply)
       contents_array.push(contents)
     end
     case message.sender
@@ -1242,6 +1112,26 @@ class Api::ShowmesController < ApplicationController
     @messages = Message.where(reply_token: reply_token).where.not(check_status: 'answered')
     @messages.each do |msg|
       msg.update(check_status: 'replied')
+    end
+  end
+
+  def notify_again
+    id = params[:id]
+    notify = Notify.find(id)
+
+    sender = notify.sender
+    contents = notify.contents
+    url = notify.image.url
+    case notify.notify_type
+    when "text"
+      broadcast_text(sender,contents)
+    when "stamp"
+      broadcast_stamp(sender,contents)
+    when "image"
+      broadcast_image(sender,url)
+    when "map"
+      address_array = map_converter(contents)
+      broadcast_map(sender,address_array)
     end
   end
 

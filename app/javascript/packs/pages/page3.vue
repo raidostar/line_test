@@ -650,7 +650,7 @@
           fr_account: fr_account
         }).then((res)=>{
           this.selectedFriend = res.data
-          console.log(this.selectedFriend)
+          //console.log(this.selectedFriend)
         },(error)=>{
           console.log(error)
         })

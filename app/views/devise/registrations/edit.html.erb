@@ -1,43 +1,98 @@
-<h2>Edit <%= resource_name.to_s.humanize %></h2>
+<h2 class="title">パスワード修正</h2>
 
 <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
+<%= render "devise/shared/error_messages", resource: resource %>
 
-  <div class="field">
-    <%= f.label :email %><br />
-    <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
-  </div>
+<div class="field input-field">
+  <%= f.label :メール %><br />
+  <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
+</div>
 
-  <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
-    <div>Currently waiting confirmation for: <%= resource.unconfirmed_email %></div>
-  <% end %>
-
-  <div class="field">
-    <%= f.label :password %> <i>(leave blank if you don't want to change it)</i><br />
-    <%= f.password_field :password, autocomplete: "new-password" %>
-    <% if @minimum_password_length %>
-      <br />
-      <em><%= @minimum_password_length %> characters minimum</em>
-    <% end %>
-  </div>
-
-  <div class="field">
-    <%= f.label :password_confirmation %><br />
-    <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
-  </div>
-
-  <div class="field">
-    <%= f.label :current_password %> <i>(we need your current password to confirm your changes)</i><br />
-    <%= f.password_field :current_password, autocomplete: "current-password" %>
-  </div>
-
-  <div class="actions">
-    <%= f.submit "Update" %>
-  </div>
+<% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
+<div>Currently waiting confirmation for: <%= resource.unconfirmed_email %></div>
 <% end %>
 
-<h3>Cancel my account</h3>
+<div class="field input-field">
+  <%= f.label :パスワード %> <i></i>
+  <%= f.password_field :password, autocomplete: "new-password" %>
+  <% if @minimum_password_length %>
+  <br />
+  <em>最小<%= @minimum_password_length %>文字 (変更したくない場合は空白で残らせてください。)</em>
+  <% end %>
+</div>
 
-<p>Unhappy? <%= button_to "Cancel my account", registration_path(resource_name), data: { confirm: "Are you sure?" }, method: :delete %></p>
+<div class="field input-field">
+  <%= f.label :パスワード確認 %>
+  <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
+</div>
 
-<%= link_to "Back", :back %>
+<div class="field input-field">
+  <%= f.label :現在のパスワード %>
+  <input autocomplete="current-password" type="password" name="user[current_password]" id="user_current_password">
+  <br />
+  <em id="alarm">個人情報を修正するために入力してください。</em>
+</div>
+
+<div class="field input-field">
+  <%= f.label :代表番号 %>
+  <input type="text" name="user[group_phone_number]" id="user_group_phone">
+</div>
+
+<div class="actions">
+  <input class="button" type="submit" name="commit" value="修正" data-disable-with="修正">
+</div>
+<% end %>
+
+<div class="actions">
+  <%= link_to "戻る", :back %>
+</div>
+
+<script>
+  $(function(){
+    $('.button').on('click', function(){
+      var currentPassword = $('#user_current_password').val()
+      if(currentPassword.length<1){
+        $('#alarm').css({"color": "red", "font-size": "17px"})
+        return false;
+      }
+    })
+  })
+</script>
+
+<style scoped>
+  .title{
+    margin: 0 auto;
+    text-align: center;
+  }
+  .field {
+    width: 50%;
+    margin: 0 auto;
+    margin-bottom: 2em;
+  }
+  .actions {
+    margin: 0 auto;
+    text-align: right;
+    width: 50%;
+  }
+  .button {
+    width: 100%;
+    cursor: pointer;
+    -webkit-transition-duration: 0.4s;
+    transition-duration: 0.4s;
+    border-radius: 10px;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    letter-spacing: 5px;
+    text-align: center;
+  }
+  .button:hover {
+    background-color: #039be5;
+    color: white;
+  }
+  .button:focus {
+    outline: none;
+  }
+</style>

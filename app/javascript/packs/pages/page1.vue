@@ -47,19 +47,24 @@
           <div class="panel-heading">現在のマーク別人数</div>
           <div class="list-group">
             <button>
-              <span class="label label-danger">要対応</span>
+              <span class="label label-danger">未確認</span>
+              <span class="msg-number" v-model="messages">{{ messages.unchecked }}件</span>
             </button>
             <button>
-              <span class="label label-primary">未返信（重要度低）</span>
+              <span class="label label-primary">未対応</span>
+              <span class="msg-number" v-model="messages">{{ messages.unreplied }}件</span>
             </button>
             <button>
-              <span class="label label-primary">自動応答</span>
+              <span class="label label-answer">自動応答</span>
+              <span class="msg-number" v-model="messages">{{ messages.auto_replied }}件</span>
             </button>
             <button>
-              <span class="label label-info">未確認</span>
+              <span class="label label-answer">直接応答</span>
+              <span class="msg-number" v-model="messages">{{ messages.replied }}件</span>
             </button>
             <button>
-              <span class="label label-default">確認済み</span>
+              <span class="label label-default">確認完了</span>
+              <span class="msg-number" v-model="messages">{{ messages.checked }}件</span>
             </button>
           </div>
         </div>
@@ -108,7 +113,7 @@
               <span class="label label-primary">お知らせ４</span>
             </button>
             <button>
-              <span class="label label-info">お知らせ５</span>
+              <span class="label label-answer">お知らせ５</span>
             </button>
             <button>
               <span class="label label-default">お知らせ６</span>
@@ -123,7 +128,7 @@
               <span class="label label-primary">お知らせ９</span>
             </button>
             <button>
-              <span class="label label-info">お知らせ１０</span>
+              <span class="label label-answer">お知らせ１０</span>
             </button>
             <button>
               <span class="label label-default">お知らせ１１</span>
@@ -155,16 +160,16 @@
         friends: [],
         dayType: ['日','月','火','水','木','金','土',],
         weeklyData: [],
+        messages: {},
       }
     },
     mounted: function(){
+      this.fetchMessages();
       this.fetchFriends();
       this.getTime();
       this.getThisMonth();
       this.getThisWeek();
       this.getToday();
-      //this.getAddFriendNum();
-      //this.getDateInfo();
       this.weekly_data();
     },
     methods: {
@@ -174,8 +179,8 @@
       },
       fetchFriends(){
         axios.get('/api/friends').then((res) => {
-          console.log("friends")
-          console.log(res.data.friends)
+          // console.log("friends")
+          // console.log(res.data.friends)
           this.friendsNum = res.data.friends.length
           for (let friend of res.data.friends){
             if(friend.block==0){
@@ -228,7 +233,18 @@
           console.log(error)
         })
       },
-
+      fetchMessages(){
+        axios.post('api/fetch_message_check_data',{
+          reply_boolean: false
+        }).then((res)=>{
+          for(var msg of res.data){
+            this.messages[msg[0]] = msg[1]
+          }
+          console.log(this.messages)
+        },(error)=>{
+          console.log(error)
+        })
+      },
     }
   }
 </script>

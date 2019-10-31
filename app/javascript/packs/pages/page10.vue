@@ -28,6 +28,8 @@
               :createOptions="createOptions"
               :autoReply="autoReply"
               :remindReply="remindReply"
+              :fetchTargets="fetchTargets"
+              :targets="targets"
               />
             </div>
           </transition>
@@ -56,10 +58,19 @@
                     </div>
                     <div>
                       <p class="settingMenu" style="margin-top: 4px;">送信対象設定</p>
-                      <input type="radio" class="settingRadio" id="unsetReceiver" value="unsetReceiver" v-model="setReceiver">
+                      <input type="radio" class="settingRadio" id="unsetReceiver" value="unsetTarget" v-model="setTarget" @click="clearTargetTag">
                       <label class="setting" >全ユーザー</label>
-                      <input type="radio" class="settingRadio" id="setReceiver" value="setReceiver" v-model="setReceiver">
+                      <input type="radio" class="settingRadio" @click="fetchTargets" id="setReceiver" value="setTarget" v-model="setTarget">
                       <label class="setting" >送信対象選択</label>
+                      <div v-if="setTarget=='setTarget'">
+                        <span style="font-size: 14px;">送信対象タグ</span>
+                        <span v-for="(target,index) in targets" style="margin-top: 10px;">
+                          <button  v-model="selectedTargets" v-if="selectedTargets.includes(target)==true" class="keywordsTag" :style="targetCSS" @click="cancelTarget(target)">
+                            {{target}}
+                          </button>
+                          <button v-else class="keywordsTag" @click="selectTarget(index)">{{target}}</button>
+                        </span>
+                      </div>
                     </div>
                     <div>
                       <div>
@@ -104,7 +115,9 @@
             <div v-show="!reactionShow">
               <div>
                 <button v-show="selectedId" @click="reactionToggle" class="allSend-button">新規アクション作成</button>
-                <button v-show="selectedId" @click="reactionListToggle" class="allSend-button">既存アクション中選択</button>
+                <button v-show="selectedId" @click="reactionListToggle" class="allSend-button">
+                  既存アクション中選択
+                </button>
               </div>
               <div class="right-panel" style="border: none;" v-show="!reactionListShow">
                 <table class="actionList">
@@ -511,6 +524,7 @@
         setTime: 'unsetTime',
         setCount: 'unsetCount',
         setReceiver: 'unsetReceiver',
+        setTarget: 'unsetTarget',
         targetDay: [0,1,2,3,4,5,6],
         keyword: '',
         keywords: [],
@@ -528,6 +542,8 @@
         autoReply: false,
         remindReply: true,
         selectedTagId: '',
+        targets: [],
+        selectedTargets: [],
       }
     },
     mounted: function(){
@@ -547,10 +563,7 @@
       },
       fetchOptions(){
         axios.post('api/options_by_tag',{option_type: 'remindReply',tag_id: this.selectedTagId}).then((res)=>{
-          console.log(res.data)
-          for(var opt of res.data){
-            opt.tag = opt.tag.substr(0,opt.tag.length-1)
-          }
+          //console.log(res.data)
           this.options = res.data
 
           //this.fetchOption();
@@ -776,7 +789,7 @@
             reaction_type: 'text',
             contents: this.contents,
             match_option: this.selectedId,
-            tag: this.tagtext.toString()+',',
+            tag: this.tagtext.toString(),
           })
           .then((res)=>{
             alert("アクションセーブ完了")
@@ -794,7 +807,7 @@
             reaction_type: 'stamp',
             contents: target.substr(26,10),
             match_option: this.selectedId,
-            tag: this.tagtext.toString()+',',
+            tag: this.tagtext.toString(),
           })
           .then((res)=>{
             alert("アクションセーブ完了");
@@ -814,7 +827,7 @@
             reaction_type: 'text',
             contents: this.contents,
             match_option: this.selectedId,
-            tag: this.tagtext.toString()+',',
+            tag: this.tagtext.toString(),
           }).then((res)=>{
             let arr = this.selectStampUrl.split('-')
             let target = arr[0]
@@ -823,7 +836,7 @@
               reaction_type: 'stamp',
               contents: target.substr(26,10),
               match_option: this.selectedId,
-              tag: this.tagtext.toString()+',',
+              tag: this.tagtext.toString(),
             }).then((res)=>{
               alert("アクションセーブ完了");
               this.reactionToggle();
@@ -842,7 +855,7 @@
           data.append('name', this.reactionName);
           data.append('reaction_type','image');
           data.append('contents','[ NO TEXT ]');
-          data.append('tag',this.tagtext.toString()+',');
+          data.append('tag',this.tagtext.toString());
           data.append('image',this.imageFile);
           data.append('match_option', this.selectedId)
           axios.post('/api/reactions',data)
@@ -864,14 +877,14 @@
             reaction_type: 'text',
             contents: this.contents,
             match_option: this.selectedId,
-            tag: this.tagtext.toString()+',',
+            tag: this.tagtext.toString(),
           }).then((res)=>{
             var data = new FormData();
             var file = this.$refs.fileInput.files[0];
             data.append('name', this.reactionName);
             data.append('reaction_type','image');
             data.append('contents','[ IMAGE ]');
-            data.append('tag',this.tagtext.toString()+',');
+            data.append('tag',this.tagtext.toString());
             data.append('image',file);
             data.append('match_option', this.selectedId)
             axios.post('/api/reactions',data)
@@ -899,7 +912,7 @@
                 reaction_type: 'map',
                 contents: data,
                 match_option: this.selectedId,
-                tag: this.tagtext.toString()+',',
+                tag: this.tagtext.toString(),
               }).then((res)=>{
                 alert("アクションセーブ完了");
                 this.reactionToggle();
@@ -920,7 +933,7 @@
             reaction_type: 'text',
             contents: this.contents,
             match_option: this.selectedId,
-            tag: this.tagtext.toString()+',',
+            tag: this.tagtext.toString(),
           }).then((res)=>{
             let geocoder = new google.maps.Geocoder();
             const latlng = this.marker_center
@@ -933,7 +946,7 @@
                   reaction_type: 'map',
                   contents: data,
                   match_option: this.selectedId,
-                  tag: this.tagtext.toString()+',',
+                  tag: this.tagtext.toString(),
                 }).then((res)=>{
                   alert("アクションセーブ完了");
                   this.reactionToggle();
@@ -1175,7 +1188,8 @@
             reaction_type: 'text',
             contents: this.contents,
             image: null,
-            match_option: this.selectedId
+            match_option: this.selectedId,
+            tag: this.tagtext.toString(),
           })
           .then((res)=>{
             alert("アクションセーブ完了")
@@ -1192,7 +1206,8 @@
             reaction_type: 'stamp',
             contents: target.substr(26,10),
             image: null,
-            match_option: this.selectedId
+            match_option: this.selectedId,
+            tag: this.tagtext.toString(),
           })
           .then((res)=>{
             alert("アクションセーブ完了");
@@ -1211,6 +1226,7 @@
           data.append('reaction_type','image');
           data.append('contents','[ NO TEXT ]');
           data.append('image',this.imageFile);
+          data.append('tag',this.tagtext.toString());
           data.append('match_option', this.selectedId)
           axios.put('/api/reactions/'+this.selectedReaction.id,data)
           .then((res)=>{
@@ -1234,7 +1250,8 @@
                 reaction_type: 'map',
                 contents: data,
                 image: null,
-                match_option: this.selectedId
+                match_option: this.selectedId,
+                tag: this.tagtext.toString(),
               }).then((res)=>{
                 alert("アクションセーブ完了");
                 this.reactionToggle();
@@ -1306,8 +1323,12 @@
         if(this.selected != null){
           this.selectedOption = this.options[this.selected]
           this.days = this.selectedOption.remind_after*1
-
           this.tagtext = this.selectedOption.tag.split(",")
+          let friends = this.selectedOption.target_friend
+          if(friends.length>0){
+            this.setTarget = "setTarget"
+            this.targets = friends.split(",")
+          }
         }
       },
       reactionListToggle(){
@@ -1379,6 +1400,32 @@
           }
         }
         this.tagtext.pop();
+      },
+      fetchTargets(){
+        axios.post('/api/fetch_targets').then((res)=>{
+          //console.log(res.data)
+          this.targets = res.data
+        },(error)=>{
+          console.log(error)
+        })
+      },
+      selectTarget(index){
+        this.selectedTargets.push(this.targets[index])
+      },
+      cancelTarget(target){
+        for(var i=0;i<this.selectedTargets.length;i++){
+          if(this.selectedTargets[i]==target){
+            var start = i
+            for(var i=start;i<this.selectedTargets.length-1;i++){
+              this.selectedTargets[i] = this.selectedTargets[i+1]
+            }
+            break;
+          }
+        }
+        this.selectedTargets.pop();
+      },
+      clearTargetTag(){
+        this.selectedTargets = []
       },
     },
     computed: {

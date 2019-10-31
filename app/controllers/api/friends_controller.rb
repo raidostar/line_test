@@ -15,10 +15,11 @@ class Api::FriendsController < ApplicationController
   end
 
   def update
-    @friend = Friend.find(params[:id])
+    id = params[:id]
+    @friend = Friend.find(id)
     tags = params[:tags].split(",")
+    group = current_user.group
     tags.each do |tag|
-      group = current_user.group
       @tag = Tag.where(name: tag, user_group: group, tag_group: 'friend')
       if !@tag.present?
         @tag = Tag.new({name: tag, user_group: group, tag_group: 'friend'})
@@ -28,6 +29,26 @@ class Api::FriendsController < ApplicationController
         end
       end
     end
+    if @friend.tags.present?
+      temp_array = @friend.tags.split(",") - tags
+      temp_array.each do |tag|
+        group = Group.find_by(group: group)
+        friends = Friend.where(group_id: group.group_id)
+        friends = friends.where("tags like ?","%#{tag}%").where.not(id: id)
+        if !friends.present?
+          @tag = Tag.find_by(name: tag, tag_group: 'friend')
+
+          @tag.destroy
+          options = Option.where("target_friend like ?","%#{tag}%").where(user_group: group.group)
+          options.each do |option|
+            temp_array = option.target_friend.split(",")
+            temp_array.delete(tag)
+            option.update(target_friend: temp_array.join(","))
+          end
+        end
+      end
+    end
+
     if @friend.update(friends_params)
       render :show, status: :ok
     else

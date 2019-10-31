@@ -426,7 +426,7 @@
             name: this.reactionName,
             reaction_type: 'text',
             contents: this.contents,
-            tag: this.tagtext.toString()+','
+            tag: this.tagtext.toString(),
           })
           .then((res)=>{
             this.afterAxios();
@@ -440,7 +440,7 @@
             name: this.reactionName,
             reaction_type: 'stamp',
             contents: target.substr(26,10),
-            tag: this.tagtext.toString()+','
+            tag: this.tagtext.toString(),
           })
           .then((res)=>{
             this.afterAxios();
@@ -456,7 +456,7 @@
             name: this.reactionName,
             reaction_type: 'text',
             contents: this.contents,
-            tag: this.tagtext.toString()+','
+            tag: this.tagtext.toString(),
           }).then((res)=>{
             let arr = this.selectStampUrl.split('-')
             let target = arr[0]
@@ -464,7 +464,7 @@
               name: this.reactionName,
               reaction_type: 'stamp',
               contents: target.substr(26,10),
-              tag: this.tagtext.toString()+','
+              tag: this.tagtext.toString(),
             }).then((res)=>{
               this.afterAxios();
             },(error)=>{
@@ -479,7 +479,7 @@
           data.append('name', this.reactionName);
           data.append('reaction_type','image');
           data.append('contents','[ NO TEXT ]');
-          data.append('tag',this.tagtext.toString()+',');
+          data.append('tag',this.tagtext.toString());
           data.append('image',this.imageFile);
           axios.post('/api/reactions',data)
           .then((res)=>{
@@ -496,14 +496,14 @@
             name: this.reactionName,
             reaction_type: 'text',
             contents: this.contents,
-            tag: this.tagtext.toString()+',',
+            tag: this.tagtext.toString(),
           }).then((res)=>{
             var data = new FormData();
             var file = this.$refs.fileInput.files[0];
             data.append('name', this.reactionName);
             data.append('reaction_type','image');
             data.append('contents','[ IMAGE ]');
-            data.append('tag',this.tagtext.toString()+',');
+            data.append('tag',this.tagtext.toString());
             data.append('image',file);
             axios.post('/api/reactions',data)
             .then((res)=>{
@@ -526,7 +526,7 @@
                 name: this.reactionName,
                 reaction_type: 'map',
                 contents: data,
-                tag: this.tagtext.toString()+',',
+                tag: this.tagtext.toString(),
               }).then((res)=>{
                 this.afterAxios();
               },(error)=>{
@@ -543,7 +543,7 @@
             name: this.reactionName,
             reaction_type: 'text',
             contents: this.contents,
-            tag: this.tagtext.toString()+',',
+            tag: this.tagtext.toString(),
           }).then((res)=>{
             let geocoder = new google.maps.Geocoder();
             const latlng = this.marker_center
@@ -555,7 +555,7 @@
                   name: this.reactionName,
                   reaction_type: 'map',
                   contents: data,
-                  tag: this.tagtext.toString()+',',
+                  tag: this.tagtext.toString(),
                 }).then((res)=>{
                   this.afterAxios();
                 },(error)=>{
@@ -791,7 +791,7 @@
             reaction_type: 'text',
             contents: this.contents,
             image: null,
-            tag: this.tagtext.toString()+',',
+            tag: this.tagtext.toString(),
           })
           .then((res)=>{
             this.afterAxios();
@@ -806,7 +806,7 @@
             reaction_type: 'stamp',
             contents: target.substr(26,10),
             image: null,
-            tag: this.tagtext.toString()+',',
+            tag: this.tagtext.toString(),
           })
           .then((res)=>{
             this.afterAxios();
@@ -823,7 +823,7 @@
           data.append('reaction_type','image');
           data.append('contents','[ NO TEXT ]');
           data.append('image',this.imageFile);
-          data.append('tag',this.tagtext.toString()+',');
+          data.append('tag',this.tagtext.toString());
           axios.put('/api/reactions/'+this.selectedReaction.id,data)
           .then((res)=>{
             this.afterAxios();
@@ -844,7 +844,7 @@
                 reaction_type: 'map',
                 contents: data,
                 image: null,
-                tag: this.tagtext.toString()+',',
+                tag: this.tagtext.toString(),
               }).then((res)=>{
                 this.afterAxios();
               },(error)=>{
