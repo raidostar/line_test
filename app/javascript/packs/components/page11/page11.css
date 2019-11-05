@@ -208,7 +208,7 @@ label.stampBtn:focus {
 }
 .sendBtn {
   height: 6.2vh;
-  width: 25.1%;
+  width: 49.6%;
   -webkit-transition-duration: 0.4s; /* Safari */
   transition-duration: 0.4s;
   border-radius: 10px;
@@ -262,28 +262,31 @@ label.stampBtn:focus {
   transform: translateY(2px);
   box-shadow: 0 0 1px rgba(0, 0, 0, 0.15);
 }
+.chattingArea {
+  width: 48.7%;
+  float: left;
+}
 .chattingContents {
   background-color: #FFF;
   padding: 15px 30px;
-  width: 48.7%;
+  width: 100%;
   height: 64vh;
   border: 1px solid #C0C0C0;
   box-shadow: 0 0 2px #666;
   border-radius: 5px;
   resize: none;
-  float: right;
   overflow: scroll;
 }
 .chattingContents:focus {
   outline: none;
 }
 .sticker-panel {
-  width: 39.4%;
+  width: 40.4%;
   height: 12em;
   position: absolute;
   z-index: 3000;
-  top: 59.3vh;
-  left: 20.2%;
+  top: 58.6%;
+  left: 19.2%;
   background-color: white;
   border-radius: 8px;
   opacity: 0.9;
@@ -317,9 +320,7 @@ label.stampBtn:focus {
   float: right;
   overflow: scroll;
 }
-.buttons {
-  margin-left: 3.6%;
-}
+
 .balloon-left {
   display: inline-block;
   position: relative;
@@ -585,15 +586,16 @@ div.inline-radio button:active{
   background: white;
 }
 .carouselArea {
-  width: 40.3%;
+  width: 40.4%;
   height: 63.8%;
   position: absolute;
-  left: 18.6em;
+  left: 18.4em;
   background: #2C3E5B;
   border-radius: 8px;
+  top: 9.5em;
 }
-.contol-box {
-  width: 90%;
+.carousel-box {
+  width: 57%;
   height: 100%;
   float: left;
   overflow-x: scroll;
@@ -603,11 +605,14 @@ div.inline-radio button:active{
 .bubble {
   background: white;
   width: 280px;
-  height: 89%;
+  height: 95%;
   border-radius: 8px;
-  margin: 1.5em .3em;
+  margin: .1em .3em;
   display: inline-block;
   vertical-align: text-top;
+}
+.bubble {
+
 }
 .add-button {
   float: left;
@@ -624,6 +629,9 @@ div.inline-radio button:active{
 .add-circle:hover {
   font-size: 33px;
   cursor: pointer;
+}
+.add-circle:active {
+  font-size: 30px;
 }
 .bubble-box {
   width: max-content;
@@ -672,4 +680,50 @@ div.inline-radio button:active{
   font-weight: 600;
   border-radius: 8px;
   letter-spacing: 8px;
+}
+.remove-bubble:focus {
+  outline: none;
+}
+.add-label {
+  width: 11%;
+  height: 15%;
+  border-radius: 8px;
+  margin-top: 10vh;
+}
+.control-box {
+  float: left;
+  height: 64vh;
+  width: 33%;
+  z-index: 10;
+  color: white;
+}
+.css-option {
+  height: 2em;
+  width: 80%;
+}
+.add-bubble-image {
+  font-size: 30px;
+  width: 100%;
+  height: auto;
+  color: grey;
+  margin: 0px 0px;
+}
+.add-bubble-image:hover {
+  cursor: pointer;
+  font-size: 33px;
+}
+.add-bubble-image:active {
+  font-size: 30px;
+}
+.color{
+  height: 4.3em;
+}
+input[type=text]:not(.browser-default) {
+  width: 75%;
+  text-align: center;
+  height: 2em;
+  color: white;
+}
+.bubble-setting {
+  margin-bottom: 1em;
 }

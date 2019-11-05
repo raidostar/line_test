@@ -40,8 +40,8 @@
               </a>
             </td>
             <td v-else-if="msg.message_type=='image'">
-              <a @click="detailImage(msg.contents)">
-                <img class="stampBtnImg" :src="msg.contents"/>
+              <a @click="detailImage(msg.image.url)">
+                <img class="stampBtnImg" :src="msg.image.url"/>
               </a>
             </td>
             <td v-else>
@@ -112,6 +112,36 @@
             <i class="material-icons stamp">remove_red_eye</i>
           </button>
         </div>
+        <div class="chattingArea">
+          <div v-show="uploadedImage"  class="attachedImgPanel">
+            <a class="closeStamp" @click="closeImage" style="margin-right: 1em;">X</a>
+            <p>[イメージ]</p>
+            <img class="attachedImg" :src="uploadedImage">
+          </div>
+
+          <div id="chattingContents" class="chattingContents" contenteditable="true" :style="flexablePadding" @input="sync" v-html="innerContent" v-model="innerContent" ref="chatting" autofocus="autofocus"></div>
+          <input type="text" v-model="contents" style="display: none;">
+
+          <!-- stamp list bottom -->
+          <div class="sticker-panel" v-show="stampShow">
+            <button class="stampBtn" v-for="num in stampNums" @click="selectStamp(num)">
+              <img class="stampBtnImg" :src="getImgUrl(num)"/>
+            </button>
+          </div>
+
+          <!-- emoji list bottom -->
+          <div class="sticker-panel" v-show="emojiShow">
+            <button class="emojiBtn stampBtn" v-for="emoji in emojis" @click="addEmoji(emoji.img_url)">
+              <img class="stampBtnImg" :src="emoji.img_url">
+            </button>
+          </div>
+
+          <div class="buttons">
+            <!-- submit button -->
+            <button class="sendBtn okBtn" @click="createReply">送る</button>
+            <button class="sendBtn cancelBtn" @click="resetReply">再作成</button>
+          </div>
+        </div>
         <div class="resultArea">
           <div class="oneLine" v-for="msg in reverseMessageList">
             <div v-if="(msg.reply_token==replyToken)&&(msg.check_status!='answered')">
@@ -124,8 +154,8 @@
             <div v-else-if="(msg.reply_token==replyToken)&&(msg.check_status=='answered')">
               <div class="balloon-right">
                 <span v-if="msg.message_type=='text'" v-html="msg.contents">{{msg.contents}}</span>
-                <span v-else-if="msg.message_type=='stamp'"><img :src="getImgUrl(msg.contents)"/></span>
-                <span v-else-if="msg.message_type=='image'"><img class="attachedImg" :src="msg.image.url+''"></span>
+                <span v-else-if="msg.message_type=='stamp'"><img :src="msg.contents"/></span>
+                <span v-else-if="msg.message_type=='image'"><img class="attachedImg" :src="msg.image.url"></span>
                 <span v-else>
                   <GmapMap
                   :center="mapConvert(msg.contents)"
@@ -145,30 +175,7 @@
           </div>
         </div>
       </div>
-      <div class="chattingArea">
-        <div v-show="uploadedImage"  class="attachedImgPanel">
-          <a class="closeStamp" @click="closeImage" style="margin-right: 1em;">X</a>
-          <p>[イメージ]</p>
-          <img class="attachedImg" :src="uploadedImage">
-        </div>
 
-        <div id="chattingContents" class="chattingContents" contenteditable="true" :style="flexablePadding" @input="sync" v-html="innerContent" v-model="innerContent" ref="chatting" autofocus="autofocus"></div>
-        <input type="text" v-model="contents" style="display: none;">
-
-        <!-- stamp list bottom -->
-        <div class="sticker-panel" v-show="stampShow">
-          <button class="stampBtn" v-for="num in stampNums" @click="selectStamp(num)">
-            <img class="stampBtnImg" :src="getImgUrl(num)"/>
-          </button>
-        </div>
-
-        <!-- emoji list bottom -->
-        <div class="sticker-panel" v-show="emojiShow">
-          <button class="emojiBtn stampBtn" v-for="emoji in emojis" @click="addEmoji(emoji.img_url)">
-            <img class="stampBtnImg" :src="emoji.img_url">
-          </button>
-        </div>
-      </div>
 
       <!-- stamp image area -->
       <div class="stampArea" v-show="stampAreaShow">
@@ -198,11 +205,6 @@
         :draggable="false"
         />
       </GmapMap>
-    </div>
-    <div class="buttons">
-      <!-- submit button -->
-      <button class="sendBtn okBtn" @click="createReply">送る</button>
-      <button class="sendBtn cancelBtn" @click="resetReply">再作成</button>
     </div>
   </div>
 </div>

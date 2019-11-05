@@ -25,13 +25,6 @@
             {{tag.name}}
           </span>
         </button>
-        <!-- <button class="delete" v-if="(selected%tags.length)==index" @click="panelToggle">
-          <i class="material-icons down">keyboard_arrow_down</i>
-        </button>
-        <div class="edit-panel" id="edit-panel" v-if="panelShow&&(selected%tags.length)==index">
-          <button class="folderEdit">rename</button>
-          <button class="folderEdit">remove</button>
-        </div> -->
       </div>
     </div>
     <div class="col col-right">

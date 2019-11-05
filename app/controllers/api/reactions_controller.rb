@@ -128,7 +128,6 @@ class Api::ReactionsController < ApplicationController
   def destroy
     id = params[:id]
     @reaction = Reaction.find(id)
-    id = id+','
     @options = Option.where("match_reaction like '%"+id+"%'")
     if @options.present?
       @options.each do |option|

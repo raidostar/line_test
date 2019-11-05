@@ -10,16 +10,16 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_10_28_083219) do
+ActiveRecord::Schema.define(version: 2019_10_31_022030) do
 
-  create_table "books", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
-    t.string "title"
-    t.string "author"
-    t.string "publisher"
-    t.string "genre"
+  create_table "bubbles", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
+    t.string "header"
+    t.string "hero"
+    t.text "body"
+    t.string "footer_type"
+    t.string "footer"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.date "release_at"
   end
 
   create_table "emojis", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
@@ -54,8 +54,6 @@ ActiveRecord::Schema.define(version: 2019_10_28_083219) do
     t.datetime "follow_at"
     t.string "tags"
     t.text "last_message"
-    t.integer "disney_point", default: 0
-    t.integer "final_question", default: 0
   end
 
   create_table "groups", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
@@ -113,17 +111,6 @@ ActiveRecord::Schema.define(version: 2019_10_28_083219) do
     t.boolean "bool", default: false
     t.string "remind_after"
     t.integer "hit_count", default: 0
-  end
-
-  create_table "people", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
-    t.string "name"
-    t.string "gender"
-    t.integer "age"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.date "join_in"
-    t.date "withdraw_at"
-    t.boolean "block"
   end
 
   create_table "reactions", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|

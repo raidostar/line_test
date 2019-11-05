@@ -53,150 +53,207 @@
             <i class="material-icons stamp">location_on</i>
           </button>
         </div>
+        <div class="chattingArea">
+          <div v-show="uploadedImage"  class="attachedImgPanel">
+            <a class="closeStamp" @click="closeImage" style="margin-right: 1em;">X</a>
+            <p>[イメージ]</p>
+            <img class="attachedImg" :src="uploadedImage">
+          </div>
+          <!-- chatting area -->
+          <div id="chattingContents" class="chattingContents" contenteditable="true" :style="flexablePadding" @input="sync" v-html="innerContent" v-model="innerContent" ref="chatting" autofocus="autofocus"></div>
+          <input type="text" v-model="contents" style="display: none;">
+
+          <!-- stamp list bottom -->
+          <div class="sticker-panel" v-show="stampShow">
+            <button class="stampBtn" v-for="num in stampNums" @click="selectStamp(num)">
+              <img class="stampBtnImg" :src="getImgUrl(num)"/>
+            </button>
+          </div>
+
+          <!-- emoji list bottom -->
+          <div class="sticker-panel" v-show="emojiShow">
+            <button class="emojiBtn stampBtn" v-for="emoji in emojis" @click="addEmoji(emoji.img_url)">
+              <img class="stampBtnImg" :src="emoji.img_url">
+            </button>
+          </div>
+
+          <!-- submit button -->
+          <div class="buttons">
+            <button class="sendBtn okBtn" @click="createOption">追加</button>
+            <button class="sendBtn okBtn" @click="resetReply">再作成</button>
+          </div>
+        </div>
+
         <div class="resultArea">
           <div class="oneLine" v-for="reaction in reactions">
-            <div v-if="!reaction.bool&&reaction.reaction_type=='text'" style="height: 4em;">
+            <div v-if="reaction.reaction_type=='text'" style="height: 4em;">
               <img src="" class="profile_img">
               <div class="balloon-left">
                 <span v-html="reaction.contents">{{reaction.contents}}</span>
               </div>
               <a class="cancelBtn" @click="reactionDelete(reaction.id)">X</a>
             </div>
-            <div v-else-if="!reaction.bool&&reaction.reaction_type!='text'" style="height: 6em;">
+            <div v-else-if="reaction.reaction_type=='stamp'" style="height: 6em;">
               <img src="" class="profile_img">
-              <div v-if="reaction.reaction_type!='map'">
-                <span v-if="reaction.reaction_type=='stamp'">
+              <div>
+                <span>
                   <img class="attachedStamp" :src="getImgUrl(reaction.contents)" style="width: 4em;" />
                 </span>
-                <span v-else>
-                  <img class="attachedImg" :src="reaction.image.url+''" style="width: 8em;" />
+                <a class="cancelBtn" @click="reactionDelete(reaction.id)" style="margin-left: 10px;">X</a>
+              </div>
+            </div>
+            <div v-else-if="reaction.reaction_type=='image'" style="height: 10em;">
+              <img src="" class="profile_img">
+              <div>
+                <span>
+                  <img class="attachedStamp" :src="reaction.image.url" style="width: 20em;" />
                 </span>
                 <a class="cancelBtn" @click="reactionDelete(reaction.id)" style="margin-left: 10px;">X</a>
               </div>
-              <div v-else>
-                <span>
-                  <GmapMap
-                  :center="mapConvert(reaction.contents)"
-                  :zoom="12"
-                  map-type-id="terrain"
-                  style="width: 16em; height: 16em; float: left;"
-                  >
-                  <GmapMarker
-                  :position="mapConvert(reaction.contents)"
-                  :clickable="true"
-                  :draggable="false"
-                  />
-                </GmapMap>
-                <a class="cancelBtn" @click="reactionDelete(reaction.id)" style="margin-left: 10px;">X</a>
-              </span>
             </div>
-          </div>
-          <div v-else>
-            <div class="balloon-right">
-              <span></span>
-              <span></span>
-              <span><img class="attachedImg"></span>
-              <span></span>
-            </div>
-            <span class="right-time"></span>
+            <div v-else>
+              <span>
+                <GmapMap
+                :center="mapConvert(reaction.contents)"
+                :zoom="12"
+                map-type-id="terrain"
+                style="width: 16em; height: 16em; float: left;"
+                >
+                <GmapMarker
+                :position="mapConvert(reaction.contents)"
+                :clickable="true"
+                :draggable="false"
+                />
+              </GmapMap>
+              <a class="cancelBtn" @click="reactionDelete(reaction.id)" style="margin-left: 10px;">X</a>
+            </span>
           </div>
         </div>
-      </div>
-      <div class="chattingArea">
-        <div v-show="uploadedImage"  class="attachedImgPanel">
-          <a class="closeStamp" @click="closeImage" style="margin-right: 1em;">X</a>
-          <p>[イメージ]</p>
-          <img class="attachedImg" :src="uploadedImage">
-        </div>
-
-        <div id="chattingContents" class="chattingContents" contenteditable="true" :style="flexablePadding" @input="sync" v-html="innerContent" v-model="innerContent" ref="chatting" autofocus="autofocus"></div>
-        <input type="text" v-model="contents" style="display: none;">
-
-        <!-- stamp list bottom -->
-        <div class="sticker-panel" v-show="stampShow">
-          <button class="stampBtn" v-for="num in stampNums" @click="selectStamp(num)">
-            <img class="stampBtnImg" :src="getImgUrl(num)"/>
-          </button>
-        </div>
-
-        <!-- emoji list bottom -->
-        <div class="sticker-panel" v-show="emojiShow">
-          <button class="emojiBtn stampBtn" v-for="emoji in emojis" @click="addEmoji(emoji.img_url)">
-            <img class="stampBtnImg" :src="emoji.img_url">
-          </button>
-        </div>
-      </div>
-
-      <!-- stamp image area -->
-      <div class="stampArea" v-show="stampAreaShow">
-        <a class="closeStamp" @click="closeStamp">X</a>
-        <p>[スタンプ]</p>
-        <img class="selectStamp" :src="selectStampUrl">
-      </div>
-
-      <!-- carousel area -->
-      <div class="carouselArea" v-show="carouselAreaShow">
-        <div class="contol-box">
-          <div class="bubble-box" ref="carousel">
-            <div class="bubble" v-for="(bubble,index) in bubble_array" v-model="bubble_array">
-
-              <div class="blocks header-block" ref="header" contenteditable="true" v-html="bubble.header" @input="syncHeader(index)">
-              </div>
-              <input type="text" v-model="headers[index]" style="display: none;">
-
-              <div class="blocks hero-block">
-                <label class="stampBtn" title="イメージ追加" style="margin-top: 7.5vh;">
-                  <i class="material-icons stamp">add</i>
-                  <input type="file" @change="onFileChange" class="imageBtn" ref="fileInput" accept="img/*">
-                </label>
-              </div>
-              <div class="blocks body-block" ref="body" contenteditable="true" v-html="bubble.body" @input="syncBody(index)">
-              </div>
-              <div class="blocks footer-block" ref="footer" contenteditable="true" v-html="bubble.footer" @input="syncFooter(index)">
-              </div>
-              <div v-if="index>0">
-                <button class="remove-bubble" @click="removeBubble(index)">
-                  削　除
-                </button>
-              </div>
-            </div>
+        <div style="display: none;">
+          <div class="balloon-right">
+            <span></span>
+            <span></span>
+            <span><img class="attachedImg"></span>
+            <span></span>
           </div>
-        </div>
-        <div class="add-button">
-          <i class="material-icons add-circle" @click="addBubble">
-            add_circle_outline
-          </i>
+          <span class="right-time"></span>
         </div>
       </div>
-
-      <!--GoogleMap-->
-      <div class="googleMap" v-show="mapShow">
-        <div class="placeSearch">
-          <GmapAutocomplete @place_changed="setPlace"/>
-        </div>
-        <button style="width: 100%; height: 5%;" id="location" @click="getAddress">
-          住所取得
-        </button>
-        <GmapMap
-        :center="default_center"
-        :zoom="12"
-        map-type-id="terrain"
-        style="width: 100%; height: 95%;"
-        @center_changed="onCenterChanged"
-        >
-        <GmapMarker
-        :position="marker_center"
-        :clickable="true"
-        :draggable="false"
-        />
-      </GmapMap>
     </div>
-    <div class="buttons">
-      <!-- submit button -->
-      <button class="sendBtn okBtn" @click="createOption">追加</button>
-      <button class="sendBtn okBtn" @click="resetReply">再作成</button>
+
+    <!-- stamp image area -->
+    <div class="stampArea" v-show="stampAreaShow">
+      <a class="closeStamp" @click="closeStamp">X</a>
+      <p>[スタンプ]</p>
+      <img class="selectStamp" :src="selectStampUrl">
     </div>
+
+    <!-- carousel area -->
+    <div class="carouselArea" v-show="carouselAreaShow">
+      <div class="control-box">
+        <div class="bubble-setting setting-gravity">
+          <span>垂直配置</span>
+          <select class="css-option" v-model="headerHeight">
+            <option value="top">上</option>
+            <option value="center">中</option>
+            <option value="bottom">下</option>
+          </select>
+        </div>
+        <div class="bubble-setting setting-height">
+          <span>水平配置</span>
+          <select class="css-option" v-model="headerHeight">
+            <option value="top">左</option>
+            <option value="center">中</option>
+            <option value="bottom">右</option>
+          </select>
+        </div>
+        <div class="bubble-setting setting-height">
+          <span>文字サイズ</span>
+          <select class="css-option" v-model="headerSize">
+            <option value="xxs">1</option>
+            <option value="xs">2</option>
+            <option value="sm">3</option>
+            <option value="md">4</option>
+            <option value="lg">5</option>
+            <option value="xl">6</option>
+            <option value="xxl">7</option>
+            <option value="3xl">8</option>
+            <option value="4xl">9</option>
+            <option value="5xl">10</option>
+          </select>
+        </div>
+        <div class="bubble-setting color setting-color">
+          <p style="margin-bottom: 0">文字色</p>
+          #<input class="color-text" type="text">
+          <div class="color-sample"></div>
+        </div>
+        <div class="bubble-setting color setting-backgroundcolor">
+          <p style="margin-bottom: 0">背景色</p>
+          #<input class="color-text" type="text">
+          <div class="color-sample"></div>
+        </div>
+      </div>
+      <div class="carousel-box">
+        <div class="bubble-box" ref="carousel">
+          <div class="bubble" v-for="(bubble,index) in bubble_array" v-model="bubble_array">
+            <div class="blocks header-block">
+              <div class="header-text" ref="header" contenteditable="true" v-html="bubble.header" @input="syncHeader(index)">
+              </div>
+            </div>
+            <input type="text" v-model="headers[index]" style="display: none;">
+
+            <div class="blocks hero-block">
+              <label class="add-label" title="イメージ追加">
+                <i class="material-icons add-bubble-image">add</i>
+                <input type="file" @change="onFileChange" class="imageBtn" ref="" accept="img/*">
+              </label>
+            </div>
+            <div class="blocks body-block">
+              <div class="body-text" ref="body" contenteditable="true" v-html="bubble.body" @input="syncBody(index)"></div>
+            </div>
+            <div class="blocks footer-block">
+              <div class="footer-text" ref="footer" contenteditable="true" v-html="bubble.footer" @input="syncFooter(index)">
+              </div>
+            </div>
+            <div v-if="index>0">
+              <button class="remove-bubble" @click="removeBubble(index)">
+                削　除
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="add-button">
+        <i class="material-icons add-circle" @click="addBubble">
+          add_circle_outline
+        </i>
+      </div>
+    </div>
+
+    <!--GoogleMap-->
+    <div class="googleMap" v-show="mapShow">
+      <div class="placeSearch">
+        <GmapAutocomplete @place_changed="setPlace"/>
+      </div>
+      <button style="width: 100%; height: 5%;" id="location" @click="getAddress">
+        住所取得
+      </button>
+      <GmapMap
+      :center="default_center"
+      :zoom="12"
+      map-type-id="terrain"
+      style="width: 100%; height: 95%;"
+      @center_changed="onCenterChanged"
+      >
+      <GmapMarker
+      :position="marker_center"
+      :clickable="true"
+      :draggable="false"
+      />
+    </GmapMap>
   </div>
+
+</div>
 </div>
 </div>
 </template>
@@ -250,14 +307,32 @@
         bubble_array: [
         {
           header: 'header',
-          image: null,
+          hero: null,
           body: 'body',
           footer: 'footer'
         }
         ],
         headers: [],
+        heros: [],
         bodies: [],
         footers: [],
+        headerHeight: [],
+        headerAlign: [],
+        headerColor: [],
+        headerBackgroundColor: [],
+        headerSize: [],
+        bodyHeight: [],
+        bodyAlign: [],
+        bodyColor: [],
+        bodyBackgroundColor: [],
+        bodySize: [],
+        footerType: [],
+        footerHeight: [],
+        footerAlign: [],
+        footerColor: [],
+        footerBackgroundColor: [],
+        footerSize: [],
+        selectedBubble: null,
       }
     },
     mounted: function(){
@@ -330,10 +405,12 @@
         this.flexablePadding = {"padding-right": "30px"}
       },
       toggleCarousel(){
-        this.stampShow = false
-        this.stampAreaShow = false
-        this.emojiShow = false
-        this.mapShow = false
+        this.reactionClear();
+        this.bubble_array = [{header: 'header', hero: null, body: 'body', footer: 'footer'}]
+        this.headers = []
+        this.heros = []
+        this.bodies = []
+        this.footers = []
         this.carouselAreaShow = !this.carouselAreaShow
       },
       toggleMap(){
@@ -409,11 +486,11 @@
           alert("最大アクション値は５つです。");
           return;
         }
-        if(!this.stampAreaShow&&!this.contents&&!this.uploadedImage&&!this.mapShow){//empty
+        if(!this.stampAreaShow&&!this.contents&&!this.uploadedImage&&!this.mapShow&&!this.carouselAreaShow){//empty
           alert("一応アクションを作成してください。")
           return;
         }
-        else if(this.contents&&!this.uploadedImage&&!this.stampAreaShow&&!this.mapShow){//text only
+        else if(this.contents&&!this.uploadedImage&&!this.stampAreaShow&&!this.mapShow&&!this.carouselAreaShow){//text only
           if(this.reactions.length>4){
             alert("最大メッセージは５つです。");
             return;
@@ -422,7 +499,7 @@
             name: "text_welcome_message",
             reaction_type: 'text',
             contents: this.contents,
-            match_option: this.selectedId+',',
+            match_option: this.selectedId,
             tag: 'ALL',
           })
           .then((res)=>{
@@ -443,7 +520,7 @@
             name: "text_welcome_message",
             reaction_type: 'stamp',
             contents: target.substr(26,10),
-            match_option: this.selectedId+',',
+            match_option: this.selectedId,
             tag: 'ALL',
           })
           .then((res)=>{
@@ -462,7 +539,7 @@
             name: "text_welcome_message",
             reaction_type: 'text',
             contents: this.contents,
-            match_option: this.selectedId+',',
+            match_option: this.selectedId,
             tag: 'ALL',
           }).then((res)=>{
             let arr = this.selectStampUrl.split('-')
@@ -471,7 +548,7 @@
               name: "text_welcome_message",
               reaction_type: 'stamp',
               contents: target.substr(26,10),
-              match_option: this.selectedId+',',
+              match_option: this.selectedId,
               tag: 'ALL',
             }).then((res)=>{
               alert("メッセージセーブ完了")
@@ -496,7 +573,7 @@
           data.append('contents','[ NO TEXT ]');
           data.append('image',this.imageFile);
           data.append('tag','ALL');
-          data.append('match_option', this.selectedId+',')
+          data.append('match_option', this.selectedId)
           axios.post('/api/reactions',data)
           .then((res)=>{
             alert("メッセージセーブ完了")
@@ -514,7 +591,7 @@
             name: "text_welcome_message",
             reaction_type: 'text',
             contents: this.contents,
-            match_option: this.selectedId+',',
+            match_option: this.selectedId,
             tag: 'ALL',
           }).then((res)=>{
             var data = new FormData();
@@ -524,12 +601,47 @@
             data.append('contents','[ IMAGE ]');
             data.append('image',file);
             data.append('tag','ALL');
-            data.append('match_option', this.selectedId+',')
+            data.append('match_option', this.selectedId)
             axios.post('/api/reactions',data)
             .then((res)=>{
               alert("メッセージセーブ完了")
               this.reactionClear();
               this.fetchReactions();
+            },(error)=>{
+              console.log(error)
+            })
+          },(error)=>{
+            console.log(error)
+          })
+
+        } else if(this.carouselAreaShow){//only carousel
+          if(this.reactions.length>4){
+            alert("最大メッセージは５つです。");
+            return;
+          } else if(this.headers.lenth==0&&this.heros.lenth==0&&this.bodies.lenth==0&&this.footers.lenth==0){
+            alert("キャルセルを作成してください。");
+            return
+          }
+          for(var i=0;i<this.bubble_array.length;i++){
+            this.bubble_array[i].header = this.headers[i]
+            //bubble_array[i].header = this.headers[i]
+            this.bubble_array[i].body = this.bodies[i]
+            this.bubble_array[i].footer = this.footers[i]
+          }
+          axios.post('api/bubbles',{
+            bubble_list: this.bubble_array
+          }).then((res)=>{
+            const data = res.data.toString()
+            axios.post('/api/reactions',{
+              name: "text_welcome_message",
+              reaction_type: 'carousel',
+              contents: data,
+              match_option: this.selectedId,
+              tag: 'ALL',
+            }).then((res)=>{
+              //console.log(res.data)
+              alert("メッセージセーブ完了")
+              this.toggleCarousel();
             },(error)=>{
               console.log(error)
             })
@@ -552,7 +664,7 @@
                 name: "text_welcome_message",
                 reaction_type: 'map',
                 contents: data,
-                match_option: this.selectedId+',',
+                match_option: this.selectedId,
                 tag: 'ALL',
               }).then((res)=>{
                 alert("メッセージセーブ完了")
@@ -572,7 +684,7 @@
             name: "text_welcome_message",
             reaction_type: 'text',
             contents: this.contents,
-            match_option: this.selectedId+',',
+            match_option: this.selectedId,
             tag: 'ALL',
           }).then((res)=>{
             let geocoder = new google.maps.Geocoder();
@@ -585,7 +697,7 @@
                   name: "text_welcome_message",
                   reaction_type: 'map',
                   contents: data,
-                  match_option: this.selectedId+',',
+                  match_option: this.selectedId,
                   tag: 'ALL',
                 }).then((res)=>{
                   alert("メッセージセーブ完了")
@@ -735,13 +847,22 @@
         this.footers.pop();
       },
       syncHeader(index){
-        this.headers[index] = this.$refs.body[index].innerHTML
+        this.headers[index] = this.$refs.header[index].innerHTML
       },
       syncBody(index){
         this.bodies[index] = this.$refs.body[index].innerHTML
       },
       syncFooter(index){
         this.footers[index] = this.$refs.footer[index].innerHTML
+      },
+      selectedBorder(){
+        // switch(){
+        //   case "":
+
+        //   break
+        //   default:
+
+        // }
       },
     }
   }

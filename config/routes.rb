@@ -13,18 +13,6 @@ Rails.application.routes.draw do
   end
 
   namespace :api, format: 'json' do
-    resources :books, only: [:index, :create, :update, :show, :destroy]
-  end
-
-  resources :books
-
-  namespace :api, format: 'json' do
-    resources :people, only: [:index]
-  end
-
-  resources :people
-
-  namespace :api, format: 'json' do
     resources :messages, only: [:index, :create, :show]
   end
 
@@ -35,6 +23,10 @@ Rails.application.routes.draw do
 
   namespace :api, format: 'json' do
     resources :friends
+  end
+
+  namespace :api, format: 'json' do
+    resources :bubbles
   end
 
   namespace :api, format: 'json' do

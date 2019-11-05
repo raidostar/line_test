@@ -178,9 +178,98 @@ class Api::ShowmesController < ApplicationController
           longitude: latlng_array[1]
         }
         contents_array.push(contents)
+      when "carousel"
+        bubble_list = []
+        bubble_ids = reaction.contents.split(",")
+        bubble_ids.each do |id|
+          bubble = Bubble.find(id)
+          bubble_list.push(bubble_converter(bubble))
+        end
+        contents = {
+          type: "flex",
+          altText: "this is a flex carousel",
+          contents: {
+            type: "carousel",
+            contents: bubble_list
+          }
+        }
+        contents_array.push(contents)
       end
     end
     reply_content(event,contents_array)
+  end
+
+  def bubble_converter(bubble)
+    converted_bubble = { type: "bubble" }
+
+    if bubble.header.present?
+      converted_bubble[:header] = header_converter(bubble.header)
+    end
+    if bubble.hero.present?
+      converted_bubble[:hero] = hero_converter(bubble.hero)
+    end
+    if bubble.body.present?
+      converted_bubble[:body] = body_converter(bubble.body)
+    end
+    if bubble.footer.present?
+      converted_bubble[:footer] = footer_converter(bubble.footer)
+    end
+
+    return converted_bubble
+  end
+
+  def header_converter(header)
+    converted_header = {
+      type: "box",
+      layout: "vertical",
+      contents: [
+        {
+          type: "text",
+          text: header
+        }
+      ]
+    }
+    return converted_header
+  end
+
+  def hero_converter(hero)
+    converted_hero = {
+      type: "image",
+      url: THUMBNAIL_URL,
+      size: "full",
+      aspectRatio: "4:4"
+    }
+    return converted_hero
+  end
+
+  def body_converter(body)
+    body = contents_converter(body)
+    converted_body = {
+      type: "box",
+      layout: "vertical",
+      contents: [
+        {
+          type: "text",
+          text: body,
+          wrap: true
+        }
+      ]
+    }
+    return converted_body
+  end
+
+  def footer_converter(footer)
+    data = {
+      type: "text",
+      text: footer,
+      align: "center"
+    }
+    converted_footer = {
+      type: "box",
+      layout: "horizontal",
+      contents: [data]
+    }
+    return converted_footer
   end
 
   def send_lottery_number(fr_account,num)
@@ -261,7 +350,7 @@ class Api::ShowmesController < ApplicationController
           }
         })
 
-      when "ロト"
+      when "いまなんじ"
         reply_content(event, {
           type: 'template',
           altText: 'Buttons alt text',
@@ -290,7 +379,10 @@ class Api::ShowmesController < ApplicationController
               contents: [
                 {
                   type: "text",
-                  text: "Header text"
+                  text: "Header text",
+                  gravity: "top",
+                  size: "xs",
+                  align: "end"
                 }
               ]
             },
@@ -298,7 +390,8 @@ class Api::ShowmesController < ApplicationController
               type: "image",
               url: THUMBNAIL_URL,
               size: "full",
-              aspectRatio: "4:4"
+              aspectRatio: "3:1",
+              backgroundColor: "#00b900"
             },
             body: {
               type: "box",
@@ -308,7 +401,8 @@ class Api::ShowmesController < ApplicationController
                   type: "text",
                   text: "Body text",
                 }
-              ]
+              ],
+              backgroundColor: "#CC0000"
             },
             footer: {
               type: "box",
@@ -322,81 +416,6 @@ class Api::ShowmesController < ApplicationController
                 }
               ]
             }
-          }
-        })
-
-      when 'flex carousel'
-        reply_content(event, {
-          type: "flex",
-          altText: "this is a flex carousel",
-          contents: {
-            type: "carousel",
-            contents: [
-              {
-                type: "bubble",
-                body: {
-                  type: "box",
-                  layout: "horizontal",
-                  contents: [
-                    {
-                      type: "text",
-                      text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                      wrap: true
-                    }
-                  ]
-                },
-                footer: {
-                  type: "box",
-                  layout: "horizontal",
-                  contents: [
-                    {
-                      type: "button",
-                      style: "primary",
-                      action: {
-                        type: "uri",
-                        label: "Go",
-                        uri: "https://example.com",
-                        altUri: {
-                          desktop: "https://example.com#desktop"
-                        },
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                type: "bubble",
-                body: {
-                  type: "box",
-                  layout: "horizontal",
-                  contents: [
-                    {
-                      type: "text",
-                      text: "Hello, World!",
-                      wrap: true
-                    }
-                  ]
-                },
-                footer: {
-                  type: "box",
-                  layout: "horizontal",
-                  contents: [
-                    {
-                      type: "button",
-                      style: "primary",
-                      action: {
-                        type: "uri",
-                        label: "Go",
-                        uri: "https://example.com",
-                        altUri: {
-                          desktop: "https://example.com#desktop"
-                        }
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
           }
         })
 
@@ -867,7 +886,6 @@ class Api::ShowmesController < ApplicationController
   end
 
   def option_checker(event,message)
-    puts "here$$$$$$$$"
     @text = event.message['text']
     group = Group.find_by(group_id: @group_id)
     group = group.attributes["group"]
@@ -929,13 +947,14 @@ class Api::ShowmesController < ApplicationController
     reply_contents = []
     array.each do |id|
       reaction = Reaction.find(id)
-      message = Message.new({sender: message.sender, receiver: message.receiver, message_id: message.message_id+'a', fr_account: message.fr_account, group_id: message.group_id, reply_token: message.reply_token, check_status: message.check_status})
+      auto_message = Message.new({sender: message.sender, receiver: message.receiver, message_id: message.message_id+'a', fr_account: message.fr_account, group_id: message.group_id, reply_token: message.reply_token, check_status: message.check_status})
       case reaction.attributes["reaction_type"]
       when "text"
+        auto_message.contents = reaction.attributes["contents"]
         contents = contents_converter(reaction.attributes["contents"])
-        message.contents = contents
-        message.message_type = 'text'
-        message.save
+
+        auto_message.message_type = 'text'
+        auto_message.save
         contents = {
           type: 'text',
           text: contents
@@ -944,22 +963,23 @@ class Api::ShowmesController < ApplicationController
       when "stamp"
         stamp_id = reaction.attributes["contents"]
         contents = "https://cdn.lineml.jp/api/media/sticker/"+stamp_id
-        message.contents = contents
-        message.message_type = 'stamp'
-        message.package_id = 1
-        message.sticker_id = stamp_id[2..stamp_id.length].to_i
-        message.save
+        auto_message.contents = contents
+        auto_message.message_type = 'stamp'
+        auto_message.package_id = 1
+        auto_message.sticker_id = stamp_id[2..stamp_id.length].to_i
+        auto_message.save
         contents = {
           type: 'sticker',
           packageId: 1,
-          stickerId: message.sticker_id
+          stickerId: auto_message.sticker_id
         }
         reply_contents.push(contents)
       when "image"
         address = reaction.image.url.to_s
-        message.contents = address
-        message.message_type = 'image'
-        message.save
+        auto_message.contents = address
+        auto_message.message_type = 'image'
+        auto_message.image = reaction.image
+        auto_message.save
         contents = {
           type: "image",
           originalContentUrl: address,
@@ -968,9 +988,9 @@ class Api::ShowmesController < ApplicationController
         reply_contents.push(contents)
       when "map"
         contents = reaction.attributes["contents"]
-        message.contents = contents
-        message.message_type = 'map'
-        message.save
+        auto_message.contents = contents
+        auto_message.message_type = 'map'
+        auto_message.save
         map_array = map_converter(contents)
         latlng_array = map_array[1].split(',')
         contents = {
@@ -993,6 +1013,9 @@ class Api::ShowmesController < ApplicationController
           originalContentUrl: address,
           previewImageUrl: address
         }
+        auto_message.contents = contents
+        auto_message.message_type = "text+image"
+        auto_message.image = image
         reply_contents.push(contents)
         reply_contents.push(image)
       end
@@ -1079,6 +1102,7 @@ class Api::ShowmesController < ApplicationController
         originalContentUrl: address,
         previewImageUrl: address
       }
+      contents_array.push(contents)
     when "map"
       message.contents = contents
       message.message_type = 'map'
