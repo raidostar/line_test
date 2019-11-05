@@ -96,11 +96,11 @@ input[type=text] {
   line-height: 39px;
   padding-left: 4px;
 }
-.added-folder {
+div.added-folder {
   position: relative;
   margin-top: 5px;
-  height: 40px;
-  line-height: 40px;
+  height: 37px;
+  line-height: 37px;
   text-align: center;
 }
 .added-folder span {
@@ -111,7 +111,8 @@ input[type=text] {
   padding-bottom: 0px;
   background-color: white;
   color: black;
-  width: 80%;
+  width: 90%;
+  float: left;
   -webkit-appearance: media-sliderthumb;
 }
 .added-folderBtn:hover {
@@ -136,6 +137,9 @@ input[type=text] {
   line-height: 40px;
   border-radius: 3px;
   height: 20px;
+}
+.detail-panel:focus {
+  outline: none;
 }
 .down{
   font-size: 15px;
@@ -252,10 +256,10 @@ input[type=text] {
   width: 5%;
 }
 .chattingContents {
-  background-color: #EEFFFF;
+  background-color: #EEECFF;
   padding: 30px 30px;
-  width: 95%;
-  height: 69vh;
+  width: 94%;
+  height: 60vh;
   border: 1px solid #C0C0C0;
   box-shadow: 0 0 2px #666;
   border-radius: 5px;
@@ -270,17 +274,21 @@ input[type=text] {
   padding: 0px 0px;
   text-align: left;
   width: 98%;
-  height: 75vh;
+  height: 90%;
   border: 1px solid #C0C0C0;
   box-shadow: 0 0 2px #666;
   border-radius: 8px;
   float: right;
+  overflow: hidden;
 }
 .stamp {
   font-size: 30px;
   width: 100%;
   height: auto;
   color: grey;
+}
+.stamp:hover {
+  font-size: 31px;
 }
 .stampBtn {
   width: 43px;
@@ -298,11 +306,11 @@ input[type=text] {
   text-align: center;
 }
 .sticker-panel {
-  width: 830px;
-  height: 160px;
+  width: 92%;
+  height: 22.7%;
   position: absolute;
-  z-index: 3000;
-  top: 57vh;
+  z-index: 30;
+  top: 48vh;
   right: 2%;
   background-color: white;
   border-radius: 8px;
@@ -335,9 +343,9 @@ input[type=text] {
   width: 20%;
   height: 335px;
   border-radius: 8px;
-  background-color: #EEFFFF;
+  background-color: #EEECFF;
   position: absolute;
-  top: 9vh;
+  top: 11%;
   right: 8%;
   text-align: center;
   margin: 0 auto;
@@ -466,13 +474,13 @@ label.stampBtn:focus {
   width: 70px; height: 70px;
 }
 .googleMap {
-  width: 45%;
-  height: 62vh;
+  width: 47%;
+  height: 70%;
   border-radius: 8px;
   background-color: white;
   position: absolute;
-  top: 13vh;
-  right: 2%;
+  top: 8.5%;
+  right: 2.2%;
   text-align: center;
   margin: 0 auto;
 }
@@ -604,4 +612,70 @@ input.countSet {
   background-image: linear-gradient(-90deg, red, yellow);
   color: white;
   opacity: 0.8;
+}
+.reactionAll {
+  position: absolute;
+  top: 5vh;
+  left: 4.5vh;
+  border-radius: 8px;
+  width: 96.2%;
+  height: 71vh;
+  z-index: 300;
+  background-color: white;
+  overflow: scroll;
+}
+.right-panel-small {
+  margin: 16px 10px;
+  padding: 0px 0px;
+  text-align: left;
+  width: 98%;
+  height: 95%;
+  border-radius: 8px;
+  float: right;
+}
+table.actionList tbody tr{
+  height: 12vh;
+}
+input.daysInput {
+  text-align: center;
+  width: 30%;
+}
+div.tags {
+  float: right;
+  height: 100%;
+  width: 100%;
+  margin: 10px -22px;
+}
+input.tagInput {
+  float: left;
+  height: auto;
+  width: 10em;
+  margin-left: 2%;
+  margin-right: 0px;
+}
+button.tagList {
+  color: #007FFF;
+  margin-right: 10px;
+  margin-top: 1%;
+  padding: 10px 10px;
+  border-radius: 8px;
+  font-size: 17px;
+}
+button.tagList:focus {
+  outline: none;
+  color: #007FFF;
+  background-color: white;
+}
+div.tags-top {
+  width: 100%;
+  height: 48%;
+  margin-top: 1%;
+}
+div.tags-bottom {
+  width: 95%;
+  height: 48%;
+  margin: 2% 1%;
+}
+.keywordsTag:focus {
+  background: white;
 }

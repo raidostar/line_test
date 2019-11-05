@@ -65,7 +65,7 @@ b {
   background-color: #E0E0F8;
 }
 .list-group button {
-  color: #00B900;
+  /*color: #00B900;*/
   background-color: white;
   height: 53px;
   max-height: 100%;
@@ -73,6 +73,9 @@ b {
   padding: 1px;
   margin: 1px;
   border: 1px grey;
+}
+.list-group button:focus {
+  outline: none;
 }
 .list-group button:hover {
   background-color: #E9E9FB;
@@ -83,6 +86,8 @@ b {
   border-radius: 5px;
   padding: 3px;
   margin: 3px;
+  float: left;
+  margin-left: 25px;
 }
 .label-danger {
   background-color: #d9534f;
@@ -92,8 +97,8 @@ b {
   background-color: #337ab7;
   color: white;
 }
-.label-info {
-  background-color: #5bc0de;
+.label-answer {
+  background-color: #28a745;
   color: white;
 }
 .label-default {
@@ -138,4 +143,11 @@ b {
 }
 .frNum {
   text-align: center;
+}
+.alarm-list {
+  width: 100%;
+}
+.msg-number {
+  float: right;
+  margin-right: 15px;
 }

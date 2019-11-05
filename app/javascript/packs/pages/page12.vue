@@ -1,7 +1,7 @@
 <template>
   <div class="page" id="page8">
     <div class="title area">
-      <h2 class="title">アクション管理<hr/></h2>
+      <h2 class="title">Richメニュー作成<hr/></h2>
     </div>
     <div class="col col-left">
       <div class="label">

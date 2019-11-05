@@ -14,7 +14,7 @@ RUN bundle install --without development
 
 ADD package.json $APP_ROOT
 ADD yarn.lock $APP_ROOT
-RUN yarn install --frozen-lockfile
+
 RUN yarn add @vue/cli-service
 RUN bin/rails webpacker:install 
 RUN bin/rails webpacker:install:vue

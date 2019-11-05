@@ -17,12 +17,12 @@
             <span class="detailInfo">{{friend.created_at}}</span>
           </div>
           <div class="detailLine">
-            <span class="detailTitle">応答率</span>
-            <span class="detailInfo">15%(sample)</span>
+            <span class="detailTitle">最後のメッセージ時間</span>
+            <span class="detailInfo">{{friend.last_message_time}}</span>
           </div>
           <div class="detailLine">
             <span class="detailTitle">メッセージ値</span>
-            <span class="detailInfo">10000件(sample)</span>
+            <span class="detailInfo">{{messages.length}}件</span>
           </div>
         </div>
         <div class="detail panel-right">
@@ -57,14 +57,14 @@
     <div class="bottom-panel">
       <message-history
       :messages="messages"
-      v-show="(baseNum%4)==0"/>
+      v-show="baseNum==0"/>
       <message-time
       :time="time"
       :timeRank="timeRank"
       :timeFreqRank="timeFreqRank"
-      v-show="(baseNum%4)==1"/>
-      <message-type :messageType="messageType" v-show="(baseNum%4)==2"/>
-      <message-response v-show="(baseNum%4)==3"/>
+      v-show="baseNum==1"/>
+      <message-type :messageType="messageType" v-show="baseNum==2"/>
+      <message-response v-show="baseNum==3"/>
     </div>
   </div>
 </template>
@@ -88,7 +88,7 @@
         friend: {},
         baseNum: 0,
         text: 0,
-        sticker: 0,
+        stamp: 0,
         messageType: [],
         messages: [],
         timeRank: [],
@@ -112,8 +112,11 @@
           this.friend = res.data.friend
           let fr_account = this.friend.fr_account
           this.friend.created_at = this.friend.created_at.substr(0,16).replace('T',' ');
-          if(this.friend.tags.length>0){
-            this.tags = this.friend.tags.split(",")
+          this.friend.last_message_time = this.friend.last_message_time.substr(0,16).replace('T',' ');
+          if(this.friend.tags != null){
+            if(this.friend.tags.length>0){
+              this.tags = this.friend.tags.split(",")
+            }
           }
           this.fetchMessages(fr_account)
         },(error)=>{
@@ -137,80 +140,82 @@
       },
       makeData1(messages){
         for(let msg of messages){
-          let hour = msg.created_at.substr(11,2)
-          switch(hour){
-            case '00':
-            this.zero++;
-            break
-            case '01':
-            this.one++;
-            break
-            case '02':
-            this.two++;
-            break
-            case '03':
-            this.three++;
-            break
-            case '04':
-            this.four++;
-            break
-            case '05':
-            this.five++;
-            break
-            case '06':
-            this.six++;
-            break
-            case '07':
-            this.seven++;
-            break
-            case '08':
-            this.eight++;
-            break
-            case '09':
-            this.nine++;
-            break
-            case '10':
-            this.ten++;
-            break
-            case '11':
-            this.eleven++;
-            break
-            case '12':
-            this.twelve++;
-            break
-            case '13':
-            this.thirteen++;
-            break
-            case '14':
-            this.fourteen++;
-            break
-            case '15':
-            this.fifteen++;
-            break
-            case '16':
-            this.sixteen++;
-            break
-            case '17':
-            this.seventeen++;
-            break
-            case '18':
-            this.eighteen++;
-            break
-            case '19':
-            this.nineteen++;
-            break
-            case '20':
-            this.twenty++;
-            break
-            case '21':
-            this.t_one++;
-            break
-            case '22':
-            this.t_two++;
-            break
-            case '23':
-            this.t_three++;
-            break
+          if(msg.check_status!='answered'){
+            let hour = msg.created_at.substr(11,2)
+            switch(hour){
+              case '00':
+              this.zero++;
+              break
+              case '01':
+              this.one++;
+              break
+              case '02':
+              this.two++;
+              break
+              case '03':
+              this.three++;
+              break
+              case '04':
+              this.four++;
+              break
+              case '05':
+              this.five++;
+              break
+              case '06':
+              this.six++;
+              break
+              case '07':
+              this.seven++;
+              break
+              case '08':
+              this.eight++;
+              break
+              case '09':
+              this.nine++;
+              break
+              case '10':
+              this.ten++;
+              break
+              case '11':
+              this.eleven++;
+              break
+              case '12':
+              this.twelve++;
+              break
+              case '13':
+              this.thirteen++;
+              break
+              case '14':
+              this.fourteen++;
+              break
+              case '15':
+              this.fifteen++;
+              break
+              case '16':
+              this.sixteen++;
+              break
+              case '17':
+              this.seventeen++;
+              break
+              case '18':
+              this.eighteen++;
+              break
+              case '19':
+              this.nineteen++;
+              break
+              case '20':
+              this.twenty++;
+              break
+              case '21':
+              this.t_one++;
+              break
+              case '22':
+              this.t_two++;
+              break
+              case '23':
+              this.t_three++;
+              break
+            }
           }
         }
         this.time.push({'name': 'メッセージ',
@@ -225,26 +230,29 @@
         let list = this.time[0].data
         this.timeRank = Object.keys(list).sort(function(a,b){return list[b]-list[a]})
         this.timeFreqRank = Object.values(list).sort(function(a,b){return b-a})
+        // console.log(this.timeRank)
+        // console.log(this.timeFreqRank)
         for(let i in this.timeFreqRank){
           let length = this.messages.length;
           this.timeFreqRank[i]=((this.timeFreqRank[i]/length)*100).toFixed(1)
         }
       },
       makeData2(messages){
-        console.log(messages)
+        //console.log(messages)
         for(let msg of messages){
-          switch(msg.message_type){
-            case 'text':
-            this.text++;
-            break;
-            case 'sticker':
-            this.sticker++;
-            break;
+          if(msg.check_status!='answered'){
+            switch(msg.message_type){
+              case 'text':
+              this.text++;
+              break;
+              case 'stamp':
+              this.stamp++;
+              break;
+            }
           }
         }
         this.messageType.push(['テキスト', this.text]);
-        this.messageType.push(['スタンプ', this.sticker]);
-        console.log(this.messageType)
+        this.messageType.push(['スタンプ', this.stamp]);
       },
       detailToggle(){
         this.detailShow = !this.detailShow
@@ -350,10 +358,11 @@
   padding: 0px 10px;
   text-align: left;
   width: 98%;
-  height: 33em;
+  height: 74vh;
   border: 1px solid #FFF;
   border-radius: 8px;
   box-shadow: 0 0 2px #666;
+  background-color: #EEECFF
 }
 button:focus {
   outline: none;

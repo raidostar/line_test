@@ -25,19 +25,19 @@
             <i class="material-icons">email</i>
             メッセージ
           </li>
-          <li><router-link class="pageLink" to="/page5">シナリオ配信</router-link></li>
+          <li><router-link class="pageLink" to="/page5">データ分析</router-link></li>
           <li><router-link class="pageLink" to="/page6">一斉配信</router-link></li>
           <li><router-link class="pageLink" to="/page7">自動応答</router-link></li>
           <li><router-link class="pageLink" to="/page8">テンプレート</router-link></li>
-          <li><router-link class="pageLink" to="/page9">回答フォーム</router-link></li>
+          <li><a class="pageLink" title="準備中" @click="readyAlert">回答フォーム</a></li>
           <li><router-link class="pageLink" to="/page10">リマインダ配信</router-link></li>
           <li><router-link class="pageLink" to="/page11">友だち追加時設定</router-link></li>
-          <li><router-link class="pageLink" to="/page12">アクション管理</router-link></li>
+          <li><a class="pageLink" title="準備中" @click="readyAlert">Richメニュー作成</a></li>
           <li class="category">
             <i class="material-icons">person</i>
             マイページ
           </li>
-          <li><router-link class="pageLink" to="/page13">個人情報設定</router-link></li>
+          <li><a class="pageLink" href="users/edit">個人情報設定</a></li>
           <li>
             <a class="pageLink" rel="nofollow" data-method="delete" href="/users/sign_out">
               ログアウト

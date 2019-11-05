@@ -10,16 +10,16 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_09_18_064929) do
+ActiveRecord::Schema.define(version: 2019_10_31_022030) do
 
-  create_table "books", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
-    t.string "title"
-    t.string "author"
-    t.string "publisher"
-    t.string "genre"
+  create_table "bubbles", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
+    t.string "header"
+    t.string "hero"
+    t.text "body"
+    t.string "footer_type"
+    t.string "footer"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.date "release_at"
   end
 
   create_table "emojis", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
@@ -37,6 +37,7 @@ ActiveRecord::Schema.define(version: 2019_09_18_064929) do
     t.integer "blocks"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "date"
   end
 
   create_table "friends", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
@@ -52,6 +53,7 @@ ActiveRecord::Schema.define(version: 2019_09_18_064929) do
     t.datetime "block_at"
     t.datetime "follow_at"
     t.string "tags"
+    t.text "last_message"
   end
 
   create_table "groups", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
@@ -74,6 +76,9 @@ ActiveRecord::Schema.define(version: 2019_09_18_064929) do
     t.string "package_id"
     t.string "fr_account"
     t.string "group_id"
+    t.string "reply_token"
+    t.string "check_status"
+    t.string "image"
   end
 
   create_table "notifies", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
@@ -86,7 +91,7 @@ ActiveRecord::Schema.define(version: 2019_09_18_064929) do
     t.string "target_tag"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "target_number"
+    t.integer "hit_count"
     t.string "image"
   end
 
@@ -102,17 +107,10 @@ ActiveRecord::Schema.define(version: 2019_09_18_064929) do
     t.string "target_time"
     t.string "target_keyword"
     t.string "target_friend"
-  end
-
-  create_table "people", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
-    t.string "name"
-    t.string "gender"
-    t.integer "age"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.date "join_in"
-    t.date "withdraw_at"
-    t.boolean "block"
+    t.string "option_type"
+    t.boolean "bool", default: false
+    t.string "remind_after"
+    t.integer "hit_count", default: 0
   end
 
   create_table "reactions", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
@@ -120,7 +118,7 @@ ActiveRecord::Schema.define(version: 2019_09_18_064929) do
     t.text "contents"
     t.string "reaction_type"
     t.string "user_group"
-    t.string "target_tag"
+    t.string "tag"
     t.integer "target_number"
     t.string "image"
     t.datetime "created_at", null: false

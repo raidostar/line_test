@@ -9,11 +9,17 @@ class Api::FriendsController < ApplicationController
     @friend = Friend.find(params[:id])
   end
 
+  def find_by_fr_account
+    @friend = Friend.find_by(fr_account: params[:fr_account])
+    render json: @friend, status: :ok
+  end
+
   def update
-    @friend = Friend.find(params[:id])
+    id = params[:id]
+    @friend = Friend.find(id)
     tags = params[:tags].split(",")
+    group = current_user.group
     tags.each do |tag|
-      group = current_user.group
       @tag = Tag.where(name: tag, user_group: group, tag_group: 'friend')
       if !@tag.present?
         @tag = Tag.new({name: tag, user_group: group, tag_group: 'friend'})
@@ -23,6 +29,26 @@ class Api::FriendsController < ApplicationController
         end
       end
     end
+    if @friend.tags.present?
+      temp_array = @friend.tags.split(",") - tags
+      temp_array.each do |tag|
+        group = Group.find_by(group: group)
+        friends = Friend.where(group_id: group.group_id)
+        friends = friends.where("tags like ?","%#{tag}%").where.not(id: id)
+        if !friends.present?
+          @tag = Tag.find_by(name: tag, tag_group: 'friend')
+
+          @tag.destroy
+          options = Option.where("target_friend like ?","%#{tag}%").where(user_group: group.group)
+          options.each do |option|
+            temp_array = option.target_friend.split(",")
+            temp_array.delete(tag)
+            option.update(target_friend: temp_array.join(","))
+          end
+        end
+      end
+    end
+
     if @friend.update(friends_params)
       render :show, status: :ok
     else
@@ -59,6 +85,18 @@ class Api::FriendsController < ApplicationController
     end
   end
 
+  def fetch_targets
+    group = current_user.group
+    group = Group.find_by(group: group)
+    friends = Friend.where(group_id: group.group_id).where.not(tags: nil)
+    data = []
+    friends.each do |friend|
+      data = data + friend.tags.split(",")
+    end
+    data = data.uniq
+    render json: data, status: :ok
+  end
+
   def get_date_info
     @timeArray = []
     for i in 0..6
@@ -73,7 +111,7 @@ class Api::FriendsController < ApplicationController
   def get_weekly_friend_info
     @timeArray = []
     for i in 1..7
-      info = Hash.new
+      info = {}
 
       time = Time.new
       time = time.days_ago(i)
@@ -113,7 +151,7 @@ class Api::FriendsController < ApplicationController
   def friends_params
     params.require(:friend).permit(
       :id, :fr_account, :fr_name, :profile_pic, :profile_msg, :block, :created_at, :updated_at, :group_id, :last_message_time, :block_at, :follow_at, :tags
-    )
+      )
   end
 
 end

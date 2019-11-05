@@ -23,7 +23,7 @@
     name: 'responseTime',
     mounted: function(){
       axios.post('/number_of_monthly').then((res)=>{
-        console.log(res.data)
+        //console.log(res.data)
       },(error)=>{
         console.log(error)
       })

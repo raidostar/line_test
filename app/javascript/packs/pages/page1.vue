@@ -47,19 +47,24 @@
           <div class="panel-heading">現在のマーク別人数</div>
           <div class="list-group">
             <button>
-              <span class="label label-danger">要対応（クロージング...)</span>
+              <span class="label label-danger">未確認</span>
+              <span class="msg-number" v-model="messages">{{ messages.unchecked }}件</span>
             </button>
             <button>
-              <span class="label label-primary">未返信（重要度低）</span>
+              <span class="label label-primary">未対応</span>
+              <span class="msg-number" v-model="messages">{{ messages.unreplied }}件</span>
             </button>
             <button>
-              <span class="label label-primary">未返信（マガジンコメ...)</span>
+              <span class="label label-answer">自動応答</span>
+              <span class="msg-number" v-model="messages">{{ messages.auto_replied }}件</span>
             </button>
             <button>
-              <span class="label label-info">未確認</span>
+              <span class="label label-answer">直接応答</span>
+              <span class="msg-number" v-model="messages">{{ messages.replied }}件</span>
             </button>
             <button>
-              <span class="label label-default">確認済み</span>
+              <span class="label label-default">確認完了</span>
+              <span class="msg-number" v-model="messages">{{ messages.checked }}件</span>
             </button>
           </div>
         </div>
@@ -78,12 +83,12 @@
             <tbody>
               <tr v-for="data in weeklyData">
                 <td class="date text-center" style="height: 35px;">{{data.date}}</td>
-                <td class="change text-center" id="gap" v-if="data.gap<0" :style="redFont">{{data.gap}}</td>
-                <td class="change text-center" id="gap" v-else :style="greenFont">{{data.gap}}</td>
+                <td class="change text-center" id="gap" v-if="data.gap<0" style="color: red;">{{data.gap}}</td>
+                <td class="change text-center" id="gap" v-else style="color: green;">{{data.gap}}</td>
 
                 <td class="followNum text-center">{{data.add}}名</td>
                 <td class="blockNum text-center">{{data.block}}名</td>
-                <td class="friendsNum text-center"></td>
+                <td class="friendsNum text-center">名</td>
               </tr>
             </tbody>
           </table>
@@ -97,7 +102,7 @@
         <hr/>
         <div class="panel-right">
           <div class="panel-heading">LINE_MANAGERのお知らせ</div>
-          <div class="list-group">
+          <div class="list-group alarm-list">
             <button>
               <span class="label label-danger">お知らせ２</span>
             </button>
@@ -108,7 +113,7 @@
               <span class="label label-primary">お知らせ４</span>
             </button>
             <button>
-              <span class="label label-info">お知らせ５</span>
+              <span class="label label-answer">お知らせ５</span>
             </button>
             <button>
               <span class="label label-default">お知らせ６</span>
@@ -123,7 +128,7 @@
               <span class="label label-primary">お知らせ９</span>
             </button>
             <button>
-              <span class="label label-info">お知らせ１０</span>
+              <span class="label label-answer">お知らせ１０</span>
             </button>
             <button>
               <span class="label label-default">お知らせ１１</span>
@@ -155,18 +160,16 @@
         friends: [],
         dayType: ['日','月','火','水','木','金','土',],
         weeklyData: [],
-        redFont: {color: 'red'},
-        greenFont: {color: 'green'},
+        messages: {},
       }
     },
     mounted: function(){
+      this.fetchMessages();
       this.fetchFriends();
       this.getTime();
       this.getThisMonth();
       this.getThisWeek();
       this.getToday();
-      //this.getAddFriendNum();
-      //this.getDateInfo();
       this.weekly_data();
     },
     methods: {
@@ -176,8 +179,8 @@
       },
       fetchFriends(){
         axios.get('/api/friends').then((res) => {
-          console.log("friends")
-          console.log(res.data.friends)
+          // console.log("friends")
+          // console.log(res.data.friends)
           this.friendsNum = res.data.friends.length
           for (let friend of res.data.friends){
             if(friend.block==0){
@@ -215,51 +218,6 @@
           console.log(error)
         })
       },
-      // getAddFriendNum(){
-      //   axios.post('/add_number').then((res)=>{
-      //     this.addNum = Object.keys(res.data).length
-      //     this.getBlockFriendNum();
-      //   },(error)=>{
-      //     console.log(error)
-      //   })
-      // },
-      // getBlockFriendNum(){
-      //   axios.post('/block_number').then((res)=>{
-      //     //console.log(res.data.friends[0].created_at.substr(0,10))************
-      //     this.blockNum = Object.keys(res.data).length
-      //     this.makeData();
-      //   },(error)=>{
-      //     console.log(error)
-      //   })
-      // },
-      // makeData(){
-      //   let date = new Date
-      //   let dayNum = date.getDay();
-      //   let datestr = (date.getMonth()+1)+"月"+date.getDate()+"日 ("+this.dayType[dayNum]+")";
-      //   this.friends.push({
-      //     "date":datestr,
-      //     "add":this.addNum,
-      //     "block":this.blockNum,
-      //     "friendsNum":this.friendsNum
-      //   })
-      // },
-      // getDateInfo(){
-      //   axios.post('/week_date').then((res)=>{
-      //     console.log(res.data)
-      //     for(let date of res.data){
-      //       date = date.replace("-", "月");
-      //       date = date.replace("-", "日");
-      //       let dayNum = date.substr(-1)*1
-      //       date=date.substr(0,date.length-1);
-      //       date=date+'('+this.dayType[dayNum]+')'
-      //       this.dateInfo.push(date)
-      //     }
-      //     console.log(this.dateInfo)
-      //     console.log(this.unblockList.length)
-      //   },(error)=>{
-      //     console.log(error)
-      //   })
-      // },
       weekly_data(){
         axios.post('/weekly_friend_info').then((res)=>{
           for(let d of res.data){
@@ -275,7 +233,18 @@
           console.log(error)
         })
       },
-
+      fetchMessages(){
+        axios.post('api/fetch_message_check_data',{
+          reply_boolean: false
+        }).then((res)=>{
+          for(var msg of res.data){
+            this.messages[msg[0]] = msg[1]
+          }
+          console.log(this.messages)
+        },(error)=>{
+          console.log(error)
+        })
+      },
     }
   }
 </script>
