@@ -94,4 +94,5 @@ Rails.application.routes.draw do
   post 'api/update_option_bool' => 'api/options#update_option_bool'
   post 'api/update_option_remind' => 'api/options#update_option_remind'
   post 'api/notify_again' => 'api/showmes#notify_again'
+  post 'api/fetch_bubbles' => 'api/bubbles#fetch_bubbles'
 end

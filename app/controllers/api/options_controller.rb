@@ -26,7 +26,9 @@ class Api::OptionsController < ApplicationController
 
   def update_option_bool
     @option = Option.find_by(option_type: 'welcomeReply', user_group: current_user.group)
-    @option.update(bool: params[:bool])
+    if @option.present?
+      @option.update(bool: params[:bool])
+    end
     render :show, status: :ok
   end
 

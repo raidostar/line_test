@@ -112,7 +112,9 @@
           this.friend = res.data.friend
           let fr_account = this.friend.fr_account
           this.friend.created_at = this.friend.created_at.substr(0,16).replace('T',' ');
-          this.friend.last_message_time = this.friend.last_message_time.substr(0,16).replace('T',' ');
+          if(this.friend.last_message_time != null){
+            this.friend.last_message_time = this.friend.last_message_time.substr(0,16).replace('T',' ');
+          }
           if(this.friend.tags != null){
             if(this.friend.tags.length>0){
               this.tags = this.friend.tags.split(",")

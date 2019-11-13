@@ -104,7 +104,6 @@ class Api::ShowmesController < ApplicationController
           end
         end
 
-
       when Line::Bot::Event::Unfollow
         logger.info "[UNFOLLOW]\n#{body}"
         fr_account = event['source']['userId']
@@ -203,47 +202,77 @@ class Api::ShowmesController < ApplicationController
     converted_bubble = { type: "bubble" }
 
     if bubble.header.present?
-      converted_bubble[:header] = header_converter(bubble.header)
+      converted_bubble[:header] = header_converter(bubble.header, bubble.header_gravity, bubble.header_align,
+        bubble.header_size, bubble.header_bold, bubble.header_color, bubble.header_background)
     end
-    if bubble.hero.present?
-      converted_bubble[:hero] = hero_converter(bubble.hero)
+    if bubble.image.present?
+      converted_bubble[:hero] = image_converter(bubble.image, bubble.hero_align, bubble.hero_size, bubble.hero_background, bubble.hero_ratio)
     end
     if bubble.body.present?
-      converted_bubble[:body] = body_converter(bubble.body)
+      converted_bubble[:body] = body_converter(bubble.body, bubble.body_gravity, bubble.body_align, bubble.body_size,
+        bubble.body_bold, bubble.body_color, bubble.body_background)
     end
     if bubble.footer.present?
-      converted_bubble[:footer] = footer_converter(bubble.footer)
+      converted_bubble[:footer] = footer_converter(bubble.footer, bubble.footer_gravity, bubble.footer_align,
+        bubble.footer_size, bubble.footer_bold, bubble.footer_color, bubble.footer_background, bubble.footer_type,
+        bubble.footer_button, bubble.footer_uri, bubble.footer_message)
     end
 
     return converted_bubble
   end
 
-  def header_converter(header)
+  def header_converter(header,gravity,align,size,bold,color,background)
+    case gravity
+    when "top"
+      offsetBottom = "15px"
+    when "center"
+      offsetBottom = "0px"
+    when "bottom"
+      offsetBottom = "-15px"
+    end
     converted_header = {
       type: "box",
       layout: "vertical",
       contents: [
         {
           type: "text",
-          text: header
+          text: header,
+          color: color,
+          position: "relative",
+          offsetBottom: offsetBottom,
+          size: size,
+          weight: bold,
+          align: align,
+          wrap: true
         }
-      ]
+      ],
+      backgroundColor: background
     }
     return converted_header
   end
 
-  def hero_converter(hero)
-    converted_hero = {
+  def image_converter(image,align,size,background,ratio)
+    converted_image = {
       type: "image",
-      url: THUMBNAIL_URL,
-      size: "full",
-      aspectRatio: "4:4"
+      url: image.url,
+      align: align,
+      size: size,
+      aspectRatio: ratio,
+      backgroundColor: background
     }
-    return converted_hero
+    return converted_image
   end
 
-  def body_converter(body)
+  def body_converter(body,gravity,align,size,bold,color,background)
     body = contents_converter(body)
+    case gravity
+    when "top"
+      offsetBottom = "20px"
+    when "center"
+      offsetBottom = "5px"
+    when "bottom"
+      offsetBottom = "-10px"
+    end
     converted_body = {
       type: "box",
       layout: "vertical",
@@ -251,24 +280,87 @@ class Api::ShowmesController < ApplicationController
         {
           type: "text",
           text: body,
+          position: "relative",
+          offsetBottom: offsetBottom,
+          align: align,
+          size: size,
+          weight: bold,
+          color: color,
           wrap: true
         }
-      ]
+      ],
+      backgroundColor: background
     }
     return converted_body
   end
 
-  def footer_converter(footer)
-    data = {
-      type: "text",
-      text: footer,
-      align: "center"
-    }
-    converted_footer = {
-      type: "box",
-      layout: "horizontal",
-      contents: [data]
-    }
+  def footer_converter(footer,gravity,align,size,bold,color,background,type,button,uri,message)
+    if type == 'button'
+      if color=='#ffffff'
+        color = "primary"
+      else
+        color = "secondary"
+      end
+
+      if button == 'uri'
+        if !uri.include? "http"
+          uri = "https://"+uri
+        end
+        data = {
+          type: "button",
+          style: color,
+          action: {
+            type: "uri",
+            label: footer,
+            uri: uri,
+          },
+          color: background
+        }
+      elsif button=='message'
+        data = {
+          type: "button",
+          style: color,
+          action: {
+            type: "message",
+            label: footer,
+            text: message
+          },
+          color: background
+        }
+      end
+      converted_footer = {
+        type: "box",
+        layout: "horizontal",
+        contents: [data]
+      }
+    else
+      case gravity
+      when "top"
+        offsetBottom = "10px"
+      when "center"
+        offsetBottom = "0px"
+      when "bottom"
+        offsetBottom = "-10px"
+      end
+      data = {
+        type: "text",
+        text: footer,
+        align: align,
+        position: "relative",
+        offsetBottom: offsetBottom,
+        size: size,
+        weight: bold,
+        color: color,
+        wrap: true
+      }
+      converted_footer = {
+        type: "box",
+        layout: "horizontal",
+        contents: [data],
+        backgroundColor: background
+      }
+    end
+
     return converted_footer
   end
 
@@ -380,17 +472,23 @@ class Api::ShowmesController < ApplicationController
                 {
                   type: "text",
                   text: "Header text",
-                  gravity: "top",
-                  size: "xs",
-                  align: "end"
+                  size: "md",
+                  weight: "bold",
+                  align: "center",
+                  position: "relative",
+                  offsetBottom: "-15px",
+                  color: "#111111",
+                  wrap: true
                 }
-              ]
+              ],
+              backgroundColor: "#dc3545"
             },
             hero: {
               type: "image",
               url: THUMBNAIL_URL,
-              size: "full",
-              aspectRatio: "3:1",
+              size: "4xl",
+              aspectRatio: "1:1",
+              align: "start",
               backgroundColor: "#00b900"
             },
             body: {
@@ -399,20 +497,27 @@ class Api::ShowmesController < ApplicationController
               contents: [
                 {
                   type: "text",
-                  text: "Body text",
+                  text: "Body text\nBody text\nBody text",
+                  position: "relative",
+                  offsetBottom: "-10px",
+                  align: "center",
+                  wrap: true
                 }
               ],
               backgroundColor: "#CC0000"
             },
             footer: {
               type: "box",
-              layout: "vertical",
+              layout: "horizontal",
               contents: [
                 {
                   type: "text",
-                  text: "Footer text",
+                  text: "footer",
+                  position: "relative",
+                  offsetBottom: "0px",
                   align: "center",
-                  color: "#888888"
+                  size: "xxl",
+                  wrap: true
                 }
               ]
             }
@@ -1035,7 +1140,23 @@ class Api::ShowmesController < ApplicationController
       contents = contents.gsub(/<br>/,'')
     end
     if contents.include?"&nbsp;"
-      contents = contents.gsub(/&nbsp;/,'')
+      contents = contents.gsub(/&nbsp;/,' ')
+    end
+    if contents.include?"&amp;"
+      contents = contents.gsub(/&amp;/,'&')
+    end
+    if contents.include?"&quot;"
+      contents = contents.gsub(/&quot;/,'"')
+    end
+    if contents.include?"&lt;"
+      contents = contents.gsub(/&lt;/,'<')
+    end
+    if contents.include?"&gt;"
+      contents = contents.gsub(/&gt;/,'>')
+    end
+    if contents.include?"<span"
+      contents = contents.gsub(/<span style="font-size: 20px;">/,'')
+      contents = contents.gsub(/<\/span>/,'')
     end
     if contents.include?("<img src=")
       tempText = contents.gsub(/<img src="/,'^').gsub(/" style="width: 30px;">/,'^').gsub(/" style="font-size: 1rem; width: 30px;">/,'^')

@@ -36,20 +36,20 @@
           </td>
           <td v-if="fr.block==false" style="color: green;">受信中</td>
           <td v-else style="color: red;">ブロック</td>
-          <td v-if="fr.last_message.search('https://cdn.lineml.jp/api/media')>=0">
+          <td v-if="fr.last_message!=null&&fr.last_message.search('https://cdn.lineml.jp/api/media')>=0">
             <a @click="detailImage(fr.last_message)">
               <img class="stampBtnImg" :src="fr.last_message"/>
             </a>
           </td>
           <td v-else>
-            <a v-if="fr.last_message.search('<img src=')>=0"
+            <a v-if="fr.last_message!=null&&fr.last_message.search('<img src=')>=0"
               @click="showFullContents(fr.last_message)"
               v-html="fr.last_message.substr(0,100)"
               >
             </a>
             <a v-else @click="showFullContents(fr.last_message)">
-              <span v-if="fr.last_message.length>10" v-html="fr.last_message.substr(0,10)+'...'"></span>
-              <span v-else v-html="fr.last_message.substr(0,20)"></span>
+              <span v-if="fr.last_message!=null&&fr.last_message.length>10" v-html="fr.last_message.substr(0,10)+'...'"></span>
+              <span v-else-if="fr.last_message!=null&&fr.last_message.length<=10" v-html="fr.last_message.substr(0,20)"></span>
             </a>
           </td>
           <td>{{fr.tags}}</td>

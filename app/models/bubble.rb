@@ -1,10 +1,11 @@
 class Bubble < ApplicationRecord
-  mount_uploader :hero, ImageUploader
+  mount_uploader :image, ImageUploader
 
   before_destroy :destroy_assets
 
   def destroy_assets
-    self.hero.remove! if self.hero
+    self.image.remove! if self.image
     self.save!
   end
+
 end
