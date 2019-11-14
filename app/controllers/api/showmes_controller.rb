@@ -473,7 +473,7 @@ class Api::ShowmesController < ApplicationController
                   type: "text",
                   text: "Header text",
                   size: "md",
-                  weight: "bold",
+                  weight: "regular",
                   align: "center",
                   position: "relative",
                   offsetBottom: "-15px",

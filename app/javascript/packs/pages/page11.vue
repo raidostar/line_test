@@ -96,24 +96,24 @@
             <div v-if="reaction.reaction_type=='carousel'">
               <img src="" class="profile_img">
               <div class="carousel-box" style="margin-bottom: 1em;">
-                <div class="bubble-box" style="height: 26em;">
+                <div class="bubble-box" style="height: 47vh;">
                   <div class="bubble" v-for="(bubble,index) in bubbles" style="height: inherit;">
-                    <div style="height: inherit;">
-                      <div class="result-blocks header-block">
-                        <div class="header-text" v-html="bubble.header">
+                    <div style="height: 100%;">
+                      <div class="result-blocks header-block rounder1">
+                        <div class="header-text rounder1" v-html="bubble.header" :style="resultHeaderCSS[index]">
                         </div>
                       </div>
                       <div class="result-blocks hero-block">
-                        <div class="carousel-img-area" v-show="bubble.image.url" style="bottom: -1%;">
+                        <div class="carousel-img-area" v-show="bubble.image.url" style="bottom: -1%; display: grid; align-items: center;justify-content: center;">
                           <img class="carousel-img" :src="bubble.image.url">
                         </div>
                       </div>
                       <div class="result-blocks body-block">
-                        <div class="body-text" v-html="bubble.body">
+                        <div class="body-text" v-html="bubble.body" :style="resultBodyCSS[index]">
                         </div>
                       </div>
-                      <div class="result-blocks footer-block">
-                        <div class="footer-text" v-html="bubble.footer">
+                      <div class="result-blocks footer-block" style="line-height: 4.5vh">
+                        <div class="footer-text rounder2" v-html="bubble.footer" :style="resultFooterCSS[index]">
                         </div>
                       </div>
                     </div>
@@ -176,7 +176,7 @@
         <div class="carouselArea" v-show="carouselAreaShow" :style="carouselAreaWidth">
           <!-- left-side menu -->
           <div class="control-box">
-            <div class="bubble-setting setting-gravity" v-if="selectedComponent!='hero'">
+            <div class="bubble-setting setting-gravity" v-if="selectedComponent!='footer'||footer_type!='button'">
               <span>垂直配置</span>
               <select class="css-option" v-model="gravity" @change="syncGravity">
                 <option value="top">上</option>
@@ -237,6 +237,7 @@
                 <div class="color-sample" :style="fontColor" v-model="color"></div>
               </div>
             </div>
+            <button class="colorExchange" @click="exchangeColor" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">色逆に</button>
             <div class="bubble-setting color setting-background">
               <p style="margin-bottom: 0">背景色</p>
               <input class="color-text" type="text" v-model="background" @keyup="syncBackground">
@@ -456,6 +457,11 @@
         headerBackground: [{'background-color':'#ffffff'}],
         bodyBackground: [{'background-color':'#ffffff'}],
         footerBackground: [{'background-color':'#ffffff'}],
+        resultHeaderCSS: [],
+        resultHeroCSS: [],
+        resultBodyCSS: [],
+        resultFooterCSS: [],
+        //{'display': 'flex', 'align-item': '', 'justify-content': '', 'font-weight': '', 'font-size': '', 'color': '', 'background-color': ''}
       }
     },
     mounted: function(){
@@ -488,7 +494,7 @@
               this.fetchBubbles(reaction.contents)
             }
           }
-          //console.log(res.data.reactions)
+          console.log(res.data)
           this.reactions = res.data
         },(error)=>{
           console.log(error)
@@ -865,6 +871,7 @@
             }).then((res)=>{
               //console.log(res.data)
               alert("メッセージセーブ完了")
+              this.fetchReactions();
               this.toggleCarousel();
             },(error)=>{
               console.log(error)
@@ -1250,8 +1257,6 @@
         this.syncAlign()
       },
       sizeConverter(component,size){
-        console.log("size")
-        console.log(size)
         switch(size){
           case 'xxs':
           if(component=='hero'){
@@ -1430,15 +1435,20 @@
         var i = this.selectedBubble
         this.bubble_array[i].footer_type = this.footer_type
         if(this.footer_type=='button'){
+          this.gravity = 'center'
+          this.align = 'center'
+          this.color = '#ffffff'
+          this.background = '#007bff'
+          this.syncGravity();
+          this.syncAlign();
+          this.syncColor();
+          this.syncBackground();
           this.footerCSS[i]['height'] = '6vh'
           this.footerCSS[i]['width'] = '100%'
           this.footerCSS[i]['font-size'] = '25px'
           this.footerCSS[i]['line-height'] = '6vh'
           this.footerCSS[i]['cursor'] = 'pointer'
-          this.color = '#ffffff'
-          this.background = '#007bff'
-          this.syncColor();
-          this.syncBackground();
+          this.footerCSS[i]['margin-top'] = '0px'
         } else{
           this.footerCSS[i]['height'] = ''
           this.footerCSS[i]['width'] = ''
@@ -1528,14 +1538,130 @@
           ids: ids
         }).then((res)=>{
           this.bubbles = [];
+
           for(var bubble of res.data){
             this.bubbles.push(bubble)
+            var headerResult = {'display':'grid', 'height': '7vh'}
+            var bodyResult = {'display':'grid'}
+            var footerResult = {'display':'grid'}
+
+            headerResult = this.gravityResultConverter(bubble.header_gravity,headerResult)
+            headerResult = this.alignResultConverter(bubble.header_align,headerResult)
+            headerResult = this.boldResultConverter(bubble.header_bold,headerResult)
+            headerResult = this.sizeResultConverter(bubble.header_size,headerResult)
+            headerResult = this.colorResultConverter(bubble.header_color,headerResult)
+            headerResult = this.backgroundResultConverter(bubble.header_background,headerResult)
+
+            bodyResult = this.gravityResultConverter(bubble.body_gravity,bodyResult)
+            bodyResult = this.alignResultConverter(bubble.body_align,bodyResult)
+            bodyResult = this.boldResultConverter(bubble.body_bold,bodyResult)
+            bodyResult = this.sizeResultConverter(bubble.body_size,bodyResult)
+            bodyResult = this.colorResultConverter(bubble.body_color,bodyResult)
+            bodyResult = this.backgroundResultConverter(bubble.body_background,bodyResult)
+
+            footerResult = this.gravityResultConverter(bubble.footer_gravity,footerResult)
+            footerResult = this.alignResultConverter(bubble.footer_align,footerResult)
+            footerResult = this.boldResultConverter(bubble.footer_bold,footerResult)
+            footerResult = this.sizeResultConverter(bubble.footer_size,footerResult)
+            footerResult = this.colorResultConverter(bubble.footer_color,footerResult)
+            footerResult = this.backgroundResultConverter(bubble.footer_background,footerResult)
+
+            this.resultHeaderCSS.push(headerResult)
+            this.resultBodyCSS.push(bodyResult)
+            this.resultFooterCSS.push(footerResult)
           }
-          //console.log(this.bubbles)
+          console.log(this.resultHeaderCSS)
+          console.log(this.resultHeaderCSS)
+          console.log(this.resultHeaderCSS)
+          console.log(this.bubbles)
         },(error)=>{
           console.log(error)
         })
-
+      },
+      gravityResultConverter(gravity,result){
+        switch(gravity){
+          case 'top':
+          result['align-items'] = 'flex-start'
+          break
+          case 'center':
+          result['align-items'] = 'center'
+          break
+          case 'bottom':
+          result['align-items'] = 'flex-end'
+          break
+          default:
+          console.log('gravityResultConverter error!')
+        }
+        return result
+      },
+      alignResultConverter(align,result){
+        if(align=='center'){
+          result['justify-content'] = 'center'
+          result['text-align'] = 'center'
+        }else {
+          result['justify-content'] = 'flex-' + align
+          result['text-align'] = align
+        }
+        return result
+      },
+      boldResultConverter(bold,result){
+        if(bold=='bold'){
+          result['font-weight'] = 'bold'
+        }else {
+          result['font-weight'] = 'normal'
+        }
+        return result
+      },
+      sizeResultConverter(size,result){
+        switch(size){
+          case 'xxs':
+          result['font-size'] = '10px'
+          break
+          case 'xs':
+          result['font-size'] = '12px'
+          break
+          case 'sm':
+          result['font-size'] = '14px'
+          break
+          case 'md':
+          result['font-size'] = '16px'
+          break
+          case 'lg':
+          result['font-size'] = '19px'
+          break
+          case 'xl':
+          result['font-size'] = '22px'
+          break
+          case 'xxl':
+          result['font-size'] = '25px'
+          break
+          case '3xl':
+          result['font-size'] = '29px'
+          break
+          case '4xl':
+          result['font-size'] = '33px'
+          break
+          case '5xl':
+          result['font-size'] = '37px'
+          break
+          default:
+        }
+        return result
+      },
+      colorResultConverter(color,result){
+        result['color'] = color
+        return result
+      },
+      backgroundResultConverter(background,result){
+        result['background-color'] = background
+        return result
+      },
+      exchangeColor(){
+        var temp = this.color
+        this.color = this.background
+        this.background = temp
+        this.syncColor();
+        this.syncBackground();
       }
     }
   }
