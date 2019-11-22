@@ -1,15 +1,15 @@
 <template>
   <div class="page" id="page11">
     <div class="title area">
-      <h2 class="title">友達追加メッセージ設定<hr/></h2>
+      <!-- <h2 class="title">友達追加メッセージ設定<hr/></h2>
       <div style="float: left;" class="settings">
         <i class="material-icons setting-icon" @click="detailToggle">settings</i>
-      </div>
-      <transition name="fadeInOut">
-        <div class="personDetails" v-if="detailShow">
-          <div class="detail panel-left">
-            <p>友達新規登録メッセージ配信</p>
-            <div class="inline-radio" v-if="welcome_bool">
+      </div> -->
+      <!-- <transition name="fadeInOut"> -->
+        <div class="personDetails">
+          <div class="detail panel-left" v-model="welcome_bool">
+            <p class="detail-title">友達新規登録メッセージ配信</p>
+            <div class="inline-radio" v-if="!welcome_bool">
               <div><button type="button" style="background: #28a745;">ON</button></div>
               <div><button type="button" @click="welcomeToggle">OFF</button></div>
             </div>
@@ -18,9 +18,9 @@
               <div><button type="button" style="background: #dc3545;">OFF</button></div>
             </div>
           </div>
-          <div class="detail panel-right">
-            <p>友達再登録メッセージ配信</p>
-            <div class="inline-radio" v-if="remind_bool">
+          <div class="detail panel-right" v-model="remind_bool">
+            <p class="detail-title">友達再登録メッセージ配信</p>
+            <div class="inline-radio" v-if="!remind_bool">
               <div><button type="button" style="background: #28a745;">ON</button></div>
               <div><button type="button" @click="remindToggle">OFF</button></div>
             </div>
@@ -30,7 +30,7 @@
             </div>
           </div>
         </div>
-      </transition>
+      <!-- </transition> -->
     </div>
     <div>
       <div class="right-panel" >
@@ -85,19 +85,19 @@
         </div>
 
         <div class="resultArea">
+          <img src="" class="profile_img">
           <div class="oneLine" v-for="reaction in reactions">
             <div v-if="reaction.reaction_type=='text'" style="margin-bottom: 1em;">
-              <img src="" class="profile_img">
               <div class="balloon-left">
                 <span v-html="reaction.contents">{{reaction.contents}}</span>
               </div>
               <a class="cancelBtn" @click="reactionDelete(reaction.id)">X</a>
             </div>
-            <div v-if="reaction.reaction_type=='carousel'">
-              <img src="" class="profile_img">
+            <div v-if="reaction.reaction_type=='carousel'" style="height: 30em; width: max-content;">
               <div class="carousel-box" style="margin-bottom: 1em;">
-                <div class="bubble-box" style="height: 47vh;">
-                  <div class="bubble" v-for="(bubble,index) in bubbles" style="height: inherit;">
+                <div class="bubble-box" style="height: 100%; display: inline-flex;">
+                  <div v-for="(bubble,index) in bubbles">
+                  <div class="bubble" style="height: 100%;" :style="bubbleChecker(bubble,reaction.contents)">
                     <div style="height: 100%;">
                       <div class="result-blocks header-block rounder1">
                         <div class="header-text rounder1" v-html="bubble.header" :style="resultHeaderCSS[index]">
@@ -118,12 +118,12 @@
                       </div>
                     </div>
                   </div>
+                  </div>
                 </div>
               </div>
-              <a class="cancelBtn" @click="reactionDelete(reaction.id)">X</a>
+              <a class="cancelBtn" @click="reactionDelete(reaction.id)" style="float: right;">X</a>
             </div>
             <div v-else-if="reaction.reaction_type=='stamp'" style="margin-bottom: 1em;">
-              <img src="" class="profile_img">
               <div>
                 <span>
                   <img class="attachedStamp" :src="getImgUrl(reaction.contents)" style="width: 4em;"/>
@@ -132,7 +132,6 @@
               </div>
             </div>
             <div v-else-if="reaction.reaction_type=='image'" style="margin-bottom: 1em;">
-              <img src="" class="profile_img">
               <div>
                 <span>
                   <img class="attachedStamp" :src="reaction.image.url" style="width: 20em; height: 15em;" />
@@ -176,7 +175,7 @@
         <div class="carouselArea" v-show="carouselAreaShow" :style="carouselAreaWidth">
           <!-- left-side menu -->
           <div class="control-box">
-            <div class="bubble-setting setting-gravity" v-if="selectedComponent!='footer'||footer_type!='button'">
+            <div class="bubble-setting setting-gravity" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">
               <span>垂直配置</span>
               <select class="css-option" v-model="gravity" @change="syncGravity">
                 <option value="top">上</option>
@@ -184,7 +183,7 @@
                 <option value="bottom">下</option>
               </select>
             </div>
-            <div class="bubble-setting setting-align" v-if="selectedComponent!='footer'||footer_type!='button'">
+            <div class="bubble-setting setting-align" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">
               <span>水平配置</span>
               <select class="css-option" v-model="align" @change="syncAlign">
                 <option value="start">左</option>
@@ -237,7 +236,7 @@
                 <div class="color-sample" :style="fontColor" v-model="color"></div>
               </div>
             </div>
-            <button class="colorExchange" @click="exchangeColor" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">色逆に</button>
+            <button class="colorExchange" @click="exchangeColor" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">↑ 色逆に ↓</button>
             <div class="bubble-setting color setting-background">
               <p style="margin-bottom: 0">背景色</p>
               <input class="color-text" type="text" v-model="background" @keyup="syncBackground">
@@ -265,6 +264,17 @@
               <p style="margin-bottom: 0">配信メッセージ</p>
               <input class="uri-text" type="text" v-model="footer_message" @keyup="syncFooterMessage">
             </div>
+            <div class="design-buttons">
+              <button class="copyChu copy" @click="copyCSS">デザインコピー</button>
+              <button class="copyChu paste" v-if="copiedType" @click="pasteCSS">デザイン適用</button>
+            </div>
+            <label class="image-change" title="イメージ変更" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null">
+              イメージ変更
+              <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
+            </label>
+            <button class="image-remove" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null" @click="removeImage">
+              イメージ削除
+            </button>
           </div>
           <!-- main bubble -->
           <div class="carousel-box" :style="carouselBoxWidth">
@@ -286,7 +296,7 @@
               <div class="blocks hero-block" v-if="selectedComponent=='hero'&&selectedBubble==index" style="border: 5px solid red">
                 <label class="add-label" title="イメージ追加">
                   <i class="material-icons add-bubble-image" v-if="!heros[index]">add</i>
-                  <input type="file" @change="onImageChange(index)" class="imageBtn" ref="hero" accept="img/*">
+                  <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
                 </label>
                 <div class="carousel-img-area" v-show="bubble.hero" :style="heroCSS[index]">
                   <img class="carousel-img" :src="bubble.hero" :style="imageCSS[index]">
@@ -295,7 +305,7 @@
               <div class="blocks hero-block" @click="selectComponent('hero', index)" v-else>
                 <label class="add-label" title="イメージ追加">
                   <i class="material-icons add-bubble-image" v-if="!heros[index]">add</i>
-                  <input type="file" @change="onImageChange(index)" class="imageBtn" ref="hero" accept="img/*">
+                  <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
                 </label>
                 <div class="carousel-img-area" v-show="bubble.hero" :style="heroCSS[index]">
                   <img class="carousel-img" :src="bubble.hero" :style="imageCSS[index]">
@@ -323,8 +333,14 @@
                 </div>
               </div>
               <input type="text" v-model="bubble.footer" style="display: none;">
-              <div v-if="index>0">
-                <button class="remove-bubble" @click="removeBubble(index)">
+              <div>
+                <button v-if="index==0" class="copy-bubble" @click="copyBubble(index)" style="width: 100%;">
+                  複　製
+                </button>
+                <button v-if="index>0" class="copy-bubble" @click="copyBubble(index)">
+                  複　製
+                </button>
+                <button v-if="index>0" class="remove-bubble" @click="removeBubble(index)">
                   削　除
                 </button>
               </div>
@@ -461,7 +477,8 @@
         resultHeroCSS: [],
         resultBodyCSS: [],
         resultFooterCSS: [],
-        //{'display': 'flex', 'align-item': '', 'justify-content': '', 'font-weight': '', 'font-size': '', 'color': '', 'background-color': ''}
+        copied: {},
+        copiedType: '',
       }
     },
     mounted: function(){
@@ -473,6 +490,8 @@
     methods: {
       fetchOption(){
         axios.get('api/options?option_type=welcomeReply').then((res)=>{
+          console.log(res.data.options[0].bool)
+          console.log(res.data.options[0].remind_after)
           if(res.data.length>0){
             this.welcome_bool = res.data.options[0].bool
             if(res.data.options[0].remind_after=='1'){
@@ -488,13 +507,17 @@
       fetchReactions(){
         axios.post('api/fetch_welcome_reactions').then((res)=>{
           //console.log(res.data)
+          this.bubbles = [];
+          this.resultHeaderCSS = []
+          this.resultBodyCSS = []
+          this.resultFooterCSS = []
           for(let reaction of res.data){
-            reaction.created_at = reaction.created_at.substr(0,16).replace('T',' ');
             if(reaction.reaction_type=="carousel"){
               this.fetchBubbles(reaction.contents)
             }
+            reaction.created_at = reaction.created_at.substr(0,16).replace('T',' ');
           }
-          console.log(res.data)
+          //console.log(res.data)
           this.reactions = res.data
         },(error)=>{
           console.log(error)
@@ -534,7 +557,7 @@
         }
         reader.readAsDataURL(file);
       },
-      onImageChange(index){
+      onImageChange(e){
         this.uploadedImage = ""
         this.stampShow = false;
         this.stampAreaShow = false;
@@ -542,11 +565,12 @@
         this.contents = ""
         this.innerContent = ""
 
-        let files = this.$refs.hero[index].files || this.$refs.hero[index].dataTransfer.files;
+        let files = e.target.files || e.dataTransfer.files;
+        var index = this.selectedBubble
         this.heros[index] = files[0]
-        this.createCarouselImage(index, files[0]);
+        this.createCarouselImage(index,files[0]);
       },
-      createCarouselImage(index, file){
+      createCarouselImage(index,file){
         let reader = new FileReader();
         let vm = this
         reader.onload = (e) => {
@@ -569,10 +593,6 @@
           ,footer_color: '#111111', footer_background: '#ffffff', footer_type: 'text', footer_button: 'uri',footer_uri: '',
           footer_message: ''
         }]
-        // this.headers = []
-        // this.heros = []
-        // this.bodies = []
-        // this.footers = []
         this.carouselAreaShow = !this.carouselAreaShow
       },
       toggleMap(){
@@ -1537,8 +1557,6 @@
         axios.post('api/fetch_bubbles',{
           ids: ids
         }).then((res)=>{
-          this.bubbles = [];
-
           for(var bubble of res.data){
             this.bubbles.push(bubble)
             var headerResult = {'display':'grid', 'height': '7vh'}
@@ -1570,10 +1588,10 @@
             this.resultBodyCSS.push(bodyResult)
             this.resultFooterCSS.push(footerResult)
           }
-          console.log(this.resultHeaderCSS)
-          console.log(this.resultHeaderCSS)
-          console.log(this.resultHeaderCSS)
-          console.log(this.bubbles)
+          // console.log(this.resultHeaderCSS)
+          // console.log(this.resultHeaderCSS)
+          // console.log(this.resultHeaderCSS)
+          // console.log(this.bubbles)
         },(error)=>{
           console.log(error)
         })
@@ -1662,7 +1680,127 @@
         this.background = temp
         this.syncColor();
         this.syncBackground();
-      }
+      },
+      copyCSS(){
+        var i = this.selectedBubble
+
+        this.copiedType = this.selectedComponent
+        this.copied['gravity'] = this.gravity
+        this.copied['align'] = this.align
+        this.copied['size'] = this.size
+        this.copied['bold'] = this.bold
+        this.copied['color'] = this.color
+        this.copied['background'] = this.background
+        this.copied['heroWidth']= this.heroWidth
+        this.copied['heroHeight']= this.heroHeight
+        this.copied['footer_type']= this.footer_type
+        this.copied['footer_button']= this.footer_button
+        this.copied['footer_uri']= this.footer_uri
+        this.copied['footer_message']= this.footer_message
+      },
+      pasteCSS(){
+        // var design = this.copiedCSS
+        if(this.copiedType == this.selectedComponent){
+          this.syncCSS()
+        } else {
+          if(this.copiedType=='hero'||this.selectedComponent=='hero'){
+            alert("イメージのデザインはイメージ間だけ適用できます。")
+          }else{
+            if(this.selectedComponent!='footer'){
+              this.syncCSS()
+            } else {
+              if(this.footer_type=='button'){
+                alert("テキストのデザインはボタンに適用できません。")
+              }else{
+                this.syncCSS()
+              }
+            }
+          }
+        }
+      },
+      syncCSS(){
+        if(this.copiedType=='hero'){
+          this.align = this.copied['align']
+          this.size = this.copied['size']
+          this.background = this.copied['background']
+          this.heroHeight = this.copied['heroHeight']
+          this.heroWidth = this.copied['heroWidth']
+
+          this.syncAlign();
+          this.syncSize();
+          this.syncBackground();
+          this.syncRatio();
+        } else {
+          this.gravity = this.copied['gravity']
+          this.align = this.copied['align']
+          this.size = this.copied['size']
+          this.bold = this.copied['bold']
+          this.color = this.copied['color']
+          this.background = this.copied['background']
+
+          this.syncGravity();
+          this.syncAlign();
+          this.syncSize();
+          this.syncBold();
+          this.syncColor();
+          this.syncBackground();
+          if(this.copiedType=='footer'&&this.selectedComponent=='footer'){
+            this.footer_type = this.copied['footer_type']
+            this.footer_button = this.copied['footer_button']
+            this.footer_uri = this.copied['footer_uri']
+            this.footer_message = this.copied['footer_message']
+
+            this.syncFooterType();
+            this.syncFooterButton();
+            this.syncFooterUri();
+            this.syncFooterMessage();
+          }
+        }
+      },
+      bubbleChecker(bubble,contents){
+        var temp = contents.split(",")
+        for(var id of temp){
+          if(bubble.id==id*1){
+            return {'display': 'inline-block'}
+          }
+        }
+        return {'display':'none'}
+      },
+      copyBubble(index){
+        this.addBubble();
+
+        var header = this.bubble_array[index].header
+        var body = this.bubble_array[index].body
+        var file = this.heros[index]
+        var hero = this.bubble_array[index].hero
+        var footer = this.bubble_array[index].footer
+
+        var end = this.bubble_array.length - 1
+
+        this.heros[end] = file
+        this.bubble_array[end]['header'] = header
+        this.bubble_array[end]['body'] = body
+        this.bubble_array[end]['footer'] = footer
+        this.bubble_array[end].hero = hero
+
+        var comp = ['header','hero','body','footer']
+        for(var i in comp){
+          this.selectComponent(comp[i],index)
+          this.copyCSS();
+          var target = this.bubble_array.length - 1
+          this.selectComponent(comp[i],target)
+          this.pasteCSS();
+        }
+        this.selectedBubble = null
+        this.selectedComponent = null
+        this.copied = {}
+        this.copiedType = ''
+      },
+      removeImage(){
+        var i = this.selectedBubble
+        this.heros[i] = null
+        this.bubble_array[i].hero = null
+      },
     }
   }
 </script>

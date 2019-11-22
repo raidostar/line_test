@@ -17,9 +17,11 @@ export default {
       userid: '',
       group: '',
       loading: true,
+      mode: '',
     }
   },
   mounted: function(){
+    this.sendMode();
     axios.post('/show_current').then((res)=>{
       this.userid = res.data.user.email
       this.group = res.data.user.group
@@ -30,6 +32,14 @@ export default {
   methods: {
     readyAlert(){
       alert("まだ準備中でございます。")
+    },
+    sendMode(){
+      var url = window.location.href
+      var mode = url.substr(24,url.length)
+      this.changeMode(mode);
+    },
+    changeMode(mode){
+      this.mode = mode
     }
   }
 }

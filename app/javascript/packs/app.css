@@ -111,8 +111,8 @@ div.container{
   text-align: center;
 }
 nav, nav .nav-wrapper i, nav a.sidenav-trigger, nav a.sidenav-trigger i {
-    height: 64px;
-    line-height: 45px;
+  height: 64px;
+  line-height: 45px;
 }
 button:focus {
   outline: none;
@@ -140,4 +140,10 @@ a:focus {
 }
 .hide-on-med-and-down {
   height: 100%;
+}
+.selected-mode{
+  text-align: center;
+  font-size: large;
+  background: #ffffff;
+  color: #000000;
 }

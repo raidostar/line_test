@@ -135,7 +135,7 @@ hr {
   height: 90%;
 }
 .chattingContents {
-  background-color: #EEFFFF;
+  background-color: #EEECFF;
   padding: 30px 30px;
   width: 95%;
   height: 100%;
@@ -342,7 +342,7 @@ label.stampBtn:focus {
 }
 .googleMap {
   width: 33%;
-  height: 500px;
+  height: 69vh;
   border-radius: 8px;
   background-color: white;
   position: absolute;

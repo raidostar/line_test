@@ -2,7 +2,6 @@
   <div class="page" id="page2">
     <div>
       <div>
-        <h2 class="title">友達リスト<hr/></h2>
         <div class="setting">
           <select v-model="parPage" @change="resetPage">
             <option value=5>5ライン別表示</option>

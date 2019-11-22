@@ -1,8 +1,6 @@
 <template>
   <div class="page">
     <div class="col-left">
-      <h2 class="title">ホーム<hr/></h2>
-
       <table class="status">
         <tr>
           <th>有効友だち数</th>
@@ -98,8 +96,6 @@
 
     <div class="col-right">
       <div>
-        <h2>最新情報</h2>
-        <hr/>
         <div class="panel-right">
           <div class="panel-heading">LINE_MANAGERのお知らせ</div>
           <div class="list-group alarm-list">

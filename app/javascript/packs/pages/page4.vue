@@ -7,7 +7,11 @@
       </div>
       <ul class="friendsList">
         <li v-for="friend in friendsList">
-          <button class="frBtn" @click="fetchMessages(friend)">
+          <button class="frBtn" v-if="friend==selectedFriend" style="background-color: #aac5F2">
+            <img :src="friend.profile_pic" class="profile_img">
+            {{friend.fr_name}}
+          </button>
+          <button class="frBtn" v-else @click="fetchMessages(friend)">
             <img :src="friend.profile_pic" class="profile_img">
             {{friend.fr_name}}
           </button>
@@ -19,12 +23,12 @@
         <i class="material-icons">phonelink_ring</i>
         メッセージ
       </div>
-      <div class="message chatting-content" id="chatting-content">
+      <div class="message chatting-content" id="chatting-content" ref="result">
         <div v-for="msg in messages">
           <div class="chatting-line" v-if="msg.check_status!='answered'">
             <div class="balloon-left">
               <span v-if="msg.message_type=='text'" v-html="msg.contents">{{msg.contents}}</span>
-              <span v-else-if="msg.message_type=='stamp'"><img class="attachedStamp" :src="msg.contents"/></span>
+              <span v-else-if="msg.message_type=='stamp'"><img class="attachedStamp" :src="getImgUrl(msg.contents)"/></span>
               <span v-else-if="msg.message_type=='image'"><img class="attachedImg" :src="msg.image.url+''"></span>
               <span v-else>
                 <GmapMap
@@ -42,11 +46,46 @@
             </span>
           </div>
         </div>
-        <div class="balloon-right" v-if="msg.check_status=='answered'">
-          <span v-if="msg.message_type=='text'" v-html="msg.contents">{{msg.contents}}</span>
-          <span v-else-if="msg.message_type=='stamp'"><img class="attachedStamp" :src="msg.contents"/></span>
-          <span v-else-if="msg.message_type=='image'"><img class="attachedImg" :src="msg.image.url+''"></span>
-          <span v-else>
+        <div v-else-if="(msg.check_status=='answered')">
+          <div class="balloon-right" v-if="msg.message_type=='text'">
+            <span v-html="msg.contents">{{msg.contents}}</span>
+          </div>
+          <div class="balloon-image" v-else-if="msg.message_type=='stamp'">
+            <img :src="getImgUrl(msg.contents)" style="width: 10em;"/>
+          </div>
+          <div class="balloon-image" v-else-if="msg.message_type=='image'">
+            <img class="attachedImg" :src="msg.image.url">
+          </div>
+          <div class="balloon-image" v-else-if="msg.message_type=='carousel'">
+            <div class="carousel-box" style="margin-bottom: 1em; width: 21em;">
+              <div class="bubble-box" style="height: auto; display: inline-flex;">
+                <div v-for="(bubble,index) in bubbles">
+                  <div class="bubble" style="height: inherit;" :style="bubbleChecker(bubble,msg.contents)">
+                    <div style="height: 100%;">
+                      <div class="result-blocks header-block rounder1">
+                        <div class="header-text rounder1" v-html="bubble.header" :style="resultHeaderCSS[index]">
+                        </div>
+                      </div>
+                      <div class="result-blocks hero-block">
+                        <div class="carousel-img-area" v-show="bubble.image.url" style="bottom: -1%; display: grid; align-items: center;justify-content: center;">
+                          <img class="carousel-img" :src="bubble.image.url">
+                        </div>
+                      </div>
+                      <div class="result-blocks body-block">
+                        <div class="body-text" v-html="bubble.body" :style="resultBodyCSS[index]">
+                        </div>
+                      </div>
+                      <div class="result-blocks footer-block" style="line-height: 4.5vh">
+                        <div class="footer-text rounder2" v-html="bubble.footer" :style="resultFooterCSS[index]">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="balloon-image" v-else>
             <GmapMap
             :center="mapConvert(msg.contents)"
             :zoom="12"
@@ -59,7 +98,8 @@
             :draggable="false"
             />
           </GmapMap>
-        </span>
+        </div>
+        <span class="right-time">{{msg.created_at}}</span>
       </div>
     </div>
   </div>
@@ -109,6 +149,11 @@
         personalLink: '',
         personalLinkBtn: null,
         selectedFriend: null,
+        resultHeaderCSS: [],
+        resultHeroCSS: [],
+        resultBodyCSS: [],
+        resultFooterCSS: [],
+        bubbles: [],
       }
     },
     mounted: function(){
@@ -120,6 +165,7 @@
         axios.get('/api/friends').then((res) => {
           //console.log(res.data.friends)
           this.friendsList = res.data.friends
+          this.fetchMessages(this.friendsList[0])
         }, (error) => {
           console.log(error)
         })
@@ -131,8 +177,15 @@
         axios.post('/find_messages', {
           fr_account: friend.fr_account
         }).then((res)=>{
+          this.bubbles = []
+          this.resultHeaderCSS = []
+          this.resultBodyCSS = []
+          this.resultFooterCSS = []
           const fr_account=''
           for(let message of res.data.messages){
+            if(message.message_type=="carousel"){
+              this.fetchBubbles(message.contents)
+            }
             let time = message.created_at+""
             message.created_at = time.substr(0,19).replace('T'," ")
           }
@@ -143,7 +196,7 @@
         })
       },
       showFriend(req){
-        console.log(req);
+        //console.log(req);
         //console.log(this.friendsList)
         for(let friend of this.friendsList){
           let time = friend.created_at+""
@@ -165,6 +218,158 @@
         tempArr[1] = tempArr[1]*1
         return {lat: tempArr[0], lng: tempArr[1]}
       },
+      fetchBubbles(ids){
+        axios.post('api/fetch_bubbles',{
+          ids: ids
+        }).then((res)=>{
+          // console.log("bubble수집")
+          // console.log(res.data)
+          for(var bubble of res.data){
+            this.bubbles.push(bubble)
+            var headerResult = {'display':'grid', 'height': '7vh'}
+            var bodyResult = {'display':'grid'}
+            var footerResult = {'display':'grid'}
+
+            headerResult = this.gravityResultConverter(bubble.header_gravity,headerResult)
+            headerResult = this.alignResultConverter(bubble.header_align,headerResult)
+            headerResult = this.boldResultConverter(bubble.header_bold,headerResult)
+            headerResult = this.sizeResultConverter(bubble.header_size,headerResult)
+            headerResult = this.colorResultConverter(bubble.header_color,headerResult)
+            headerResult = this.backgroundResultConverter(bubble.header_background,headerResult)
+
+            bodyResult = this.gravityResultConverter(bubble.body_gravity,bodyResult)
+            bodyResult = this.alignResultConverter(bubble.body_align,bodyResult)
+            bodyResult = this.boldResultConverter(bubble.body_bold,bodyResult)
+            bodyResult = this.sizeResultConverter(bubble.body_size,bodyResult)
+            bodyResult = this.colorResultConverter(bubble.body_color,bodyResult)
+            bodyResult = this.backgroundResultConverter(bubble.body_background,bodyResult)
+
+            footerResult = this.gravityResultConverter(bubble.footer_gravity,footerResult)
+            footerResult = this.alignResultConverter(bubble.footer_align,footerResult)
+            footerResult = this.boldResultConverter(bubble.footer_bold,footerResult)
+            footerResult = this.sizeResultConverter(bubble.footer_size,footerResult)
+            footerResult = this.colorResultConverter(bubble.footer_color,footerResult)
+            footerResult = this.backgroundResultConverter(bubble.footer_background,footerResult)
+
+            this.resultHeaderCSS.push(headerResult)
+            this.resultBodyCSS.push(bodyResult)
+            this.resultFooterCSS.push(footerResult)
+          }
+          // console.log(this.bubbles)
+          // console.log(this.resultHeaderCSS)
+          // console.log(this.resultBodyCSS)
+          // console.log(this.resultFooterCSS)
+          let height = this.$refs.result.clientHeight
+          let scrollTop = this.$refs.result.scrollTop
+          let scrollHeight = this.$refs.result.scrollHeight
+          // console.log(height)
+          // console.log(scrollTop)
+          // console.log(scrollHeight)
+          scrollTop = scrollHeight - height
+          //console.log(scrollTop)
+          this.$refs.result.scrollTop = scrollTop
+        },(error)=>{
+          console.log(error)
+        })
+      },
+      bubbleChecker(bubble,contents){
+        var temp = contents.split(",")
+        for(var id of temp){
+          if(bubble.id==id*1){
+            return {'display': 'inline-block'}
+          }
+        }
+        return {'display':'none'}
+      },
+      gravityResultConverter(gravity,result){
+        switch(gravity){
+          case 'top':
+          result['align-items'] = 'flex-start'
+          break
+          case 'center':
+          result['align-items'] = 'center'
+          break
+          case 'bottom':
+          result['align-items'] = 'flex-end'
+          break
+          default:
+          console.log('gravityResultConverter error!')
+        }
+        return result
+      },
+      alignResultConverter(align,result){
+        if(align=='center'){
+          result['justify-content'] = 'center'
+          result['text-align'] = 'center'
+        }else {
+          result['justify-content'] = 'flex-' + align
+          result['text-align'] = align
+        }
+        return result
+      },
+      boldResultConverter(bold,result){
+        if(bold=='bold'){
+          result['font-weight'] = 'bold'
+        }else {
+          result['font-weight'] = 'normal'
+        }
+        return result
+      },
+      sizeResultConverter(size,result){
+        switch(size){
+          case 'xxs':
+          result['font-size'] = '10px'
+          break
+          case 'xs':
+          result['font-size'] = '12px'
+          break
+          case 'sm':
+          result['font-size'] = '14px'
+          break
+          case 'md':
+          result['font-size'] = '16px'
+          break
+          case 'lg':
+          result['font-size'] = '19px'
+          break
+          case 'xl':
+          result['font-size'] = '22px'
+          break
+          case 'xxl':
+          result['font-size'] = '25px'
+          break
+          case '3xl':
+          result['font-size'] = '29px'
+          break
+          case '4xl':
+          result['font-size'] = '33px'
+          break
+          case '5xl':
+          result['font-size'] = '37px'
+          break
+          default:
+        }
+        return result
+      },
+      colorResultConverter(color,result){
+        result['color'] = color
+        return result
+      },
+      backgroundResultConverter(background,result){
+        result['background-color'] = background
+        return result
+      },
+      // mouseScroll(){
+      //   let height = this.$refs.result.clientHeight
+      //   let scrollTop = this.$refs.result.scrollTop
+      //   let scrollHeight = this.$refs.result.scrollHeight
+      //   console.log(height)
+      //   console.log(scrollTop)
+      //   console.log(scrollHeight)
+      //   scrollTop = scrollHeight - height
+      //   console.log(scrollTop)
+      //   this.$refs.result.scrollTop = scrollTop
+      // },
     }
   }
 </script>

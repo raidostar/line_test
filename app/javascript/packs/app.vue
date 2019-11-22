@@ -10,39 +10,85 @@
     <nav id="sidebar">
       <div class="side left nav-wrapper container">
         <ul class="hide-on-med-and-down">
-          <li><router-link class="pageLink home" to="/">
-            <i class="material-icons">home</i>
-            ホーム
-          </router-link></li>
-          <li class="category">
-            <i class="material-icons">format_align_justify</i>
-            1対1のトーク
+          <li v-if="mode==''">
+            <router-link class="pageLink selected-mode" to="/""><i class="material-icons">home</i>ホーム</router-link>
           </li>
-          <li><router-link class="pageLink" to="/friendslist">友達リスト</router-link></li>
-          <li><router-link class="pageLink" to="/page3">トーク一覧</router-link></li>
-          <li><router-link class="pageLink" to="/page4">個別トーク</router-link></li>
-          <li class="category">
-            <i class="material-icons">email</i>
-            メッセージ
+          <li v-else @click="changeMode('')">
+            <router-link class="pageLink home" to="/home"><i class="material-icons">home</i>ホーム</router-link>
           </li>
-          <li><router-link class="pageLink" to="/page5">データ分析</router-link></li>
-          <li><router-link class="pageLink" to="/page6">一斉配信</router-link></li>
-          <li><router-link class="pageLink" to="/page7">自動応答</router-link></li>
-          <li><router-link class="pageLink" to="/page8">テンプレート</router-link></li>
+
+          <li class="category"><i class="material-icons">format_align_justify</i>1対1のトーク</li>
+          <li v-if="mode=='friendslist'">
+            <router-link class="pageLink selected-mode" to="/friendslist">友達リスト</router-link>
+          </li>
+          <li v-else @click="changeMode('friendslist')">
+            <router-link class="pageLink" to="/friendslist">友達リスト</router-link>
+          </li>
+
+          <li v-if="mode=='allMessages'">
+            <router-link class="pageLink selected-mode" to="/allMessages">トーク一覧</router-link>
+          </li>
+          <li v-else @click="changeMode('allMessages')">
+            <router-link class="pageLink" to="/allMessages">トーク一覧</router-link>
+          </li>
+
+          <li v-if="mode=='personalMessages'">
+            <router-link class="pageLink selected-mode" to="/personalMessages">個別トーク</router-link>
+          </li>
+          <li v-else @click="changeMode('personalMessages')">
+            <router-link class="pageLink" to="/personalMessages">個別トーク</router-link>
+          </li>
+
+          <li class="category"><i class="material-icons">email</i>メッセージ</li>
+          <li v-if="mode=='dataAnalysis'">
+            <router-link class="pageLink selected-mode" to="/dataAnalysis">データ分析</router-link>
+          </li>
+          <li v-else @click="changeMode('dataAnalysis')">
+            <router-link class="pageLink" to="/dataAnalysis">データ分析</router-link>
+          </li>
+
+          <li v-if="mode=='sendAll'">
+            <router-link class="pageLink selected-mode" to="/sendAll">全配信</router-link>
+          </li>
+          <li v-else @click="changeMode('sendAll')">
+            <router-link class="pageLink" to="/sendAll">全配信</router-link>
+          </li>
+
+          <li v-if="mode=='autoReply'">
+            <router-link class="pageLink selected-mode" to="/autoReply">自動応答</router-link>
+          </li>
+          <li v-else @click="changeMode('autoReply')">
+            <router-link class="pageLink" to="/autoReply">自動応答</router-link>
+          </li>
+
+          <li v-if="mode=='template'">
+            <router-link class="pageLink selected-mode" to="/template">テンプレート</router-link>
+          </li>
+          <li v-else @click="changeMode('template')">
+            <router-link class="pageLink" to="/template">テンプレート</router-link>
+          </li>
+
           <li><a class="pageLink" title="準備中" @click="readyAlert">回答フォーム</a></li>
-          <li><router-link class="pageLink" to="/page10">リマインダ配信</router-link></li>
-          <li><router-link class="pageLink" to="/page11">友だち追加時設定</router-link></li>
+
+          <li v-if="mode=='remindReply'">
+            <router-link class="pageLink selected-mode" to="/remindReply">リマインダ配信</router-link>
+          </li>
+          <li v-else @click="changeMode('remindReply')">
+            <router-link class="pageLink" to="/remindReply">リマインダ配信</router-link>
+          </li>
+
+          <li v-if="mode=='welcomeMessage'">
+            <router-link class="pageLink selected-mode" to="/welcomeMessage">友だち追加時設定</router-link>
+          </li>
+          <li v-else @click="changeMode('welcomeMessage')">
+            <router-link class="pageLink" to="/welcomeMessage">友だち追加時設定</router-link>
+          </li>
+
           <li><a class="pageLink" title="準備中" @click="readyAlert">Richメニュー作成</a></li>
-          <li class="category">
-            <i class="material-icons">person</i>
-            マイページ
-          </li>
+
+          <li class="category"><i class="material-icons">person</i>マイページ</li>
           <li><a class="pageLink" href="users/edit">個人情報設定</a></li>
-          <li>
-            <a class="pageLink" rel="nofollow" data-method="delete" href="/users/sign_out">
-              ログアウト
-            </a>
-          </li>
+          <li><a class="pageLink" rel="nofollow" data-method="delete" href="/users/sign_out">ログアウト</a></li>
         </ul>
       </div>
     </nav>

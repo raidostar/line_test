@@ -1,13 +1,13 @@
 <template>
   <div class="page" id="page7">
-    <div class="title area">
+    <!-- <div class="title area">
       <h2 class="title">
         <span>リマインド配信</span>
         <button class="allSend-button" @click="formToggle" v-show="(!formShow&&selectedTagId)||tags.length==0">新規配信</button>
         <button class="allSend-button" @click="formToggle" v-show="formShow">リスト見る</button>
         <hr/>
       </h2>
-    </div>
+    </div> -->
     <transition name="slideInOut">
       <div v-show="formShow" :style="flexableHeight">
         <div class="col col-left">

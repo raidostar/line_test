@@ -544,10 +544,13 @@ class Api::ShowmesController < ApplicationController
           reply_token = event['replyToken']
 
           @message = Message.new({sender: profile['displayName'], receiver: @group, contents: event.message['text'], message_type: 'text', message_id: event.message['id'], sticker_id: nil, package_id: nil, fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'unchecked'})
+          message = Message.new({sender: @group, receiver: profile['displayName'], message_id: event.message['id'],fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'answered'})
           save_message(@message)
           update_friend_info(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],group_id,@message.contents)
           event.message['text'] = unicodeConverter(event.message['text'])
-          message = Message.new({sender: @group, receiver: profile['displayName'], message_id: event.message['id'],fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'answered'})
+          puts "WhY???????????"
+          puts @group
+
           auto_reply = option_checker(event,message)
 
           # reply_text(event, "ありがとうございます。")
@@ -582,7 +585,7 @@ class Api::ShowmesController < ApplicationController
     reply_token = event['replyToken']
     sticker_id = event.message['stickerId']
     package_id = event.message['packageId']
-    @message = Message.new({sender: profile['displayName'], receiver: @group, contents: "https://cdn.lineml.jp/api/media/sticker/#{package_id}_#{sticker_id}", message_type: 'stamp', message_id: event.message['id'], sticker_id: sticker_id, package_id: package_id, fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'unchecked'})
+    @message = Message.new({sender: profile['displayName'], receiver: @group, contents: "#{package_id}_#{sticker_id}", message_type: 'stamp', message_id: event.message['id'], sticker_id: sticker_id, package_id: package_id, fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'unchecked'})
     save_message(@message)
 
     update_friend_info(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],group_id,@message.contents)
@@ -639,23 +642,27 @@ class Api::ShowmesController < ApplicationController
   end
 
   def update_friend_info(fr_account,fr_name,profile_pic,profile_msg,group_id,contents)
+    @group = Group.find_by(group_id: group_id)
+    @group = @group.group
     @friend = Friend.find_by(fr_account: fr_account)
     time = Time.new
-    puts time
     if @friend.update(fr_name: fr_name, profile_pic: profile_pic, profile_msg: profile_msg,group_id: group_id,last_message_time: time,last_message: contents)
-      update_message_profile(fr_account,fr_name)
+      update_message_profile(fr_account,fr_name,@group)
     else
       render json: @message.errors, status: :unprocessable_entity
     end
   end
 
-  def update_message_profile(fr_account,fr_name)
-    @messages = Message.where(fr_account: fr_account)
-    @messages.each do |message|
-      message
-    end
+  def update_message_profile(fr_account,fr_name,group)
+    @messages = Message.where(fr_account: fr_account, receiver: group)
     if @messages.update(sender: fr_name)
-      puts "profile updated"
+      # puts "profile updated"
+      messages = Message.where(fr_account: fr_account, sender: group)
+      if messages.update(receiver: fr_name)
+        puts "profile updated"
+      else
+        render json: @message.errors, status: :unprocessable_entity
+      end
     else
       render json: @message.errors, status: :unprocessable_entity
     end
@@ -1067,7 +1074,7 @@ class Api::ShowmesController < ApplicationController
         reply_contents.push(contents)
       when "stamp"
         stamp_id = reaction.attributes["contents"]
-        contents = "https://cdn.lineml.jp/api/media/sticker/"+stamp_id
+        contents = stamp_id
         auto_message.contents = contents
         auto_message.message_type = 'stamp'
         auto_message.package_id = 1
@@ -1123,6 +1130,26 @@ class Api::ShowmesController < ApplicationController
         auto_message.image = image
         reply_contents.push(contents)
         reply_contents.push(image)
+      when "carousel"
+        contents = reaction.attributes["contents"]
+        auto_message.contents = contents
+        auto_message.message_type = 'carousel'
+        auto_message.save
+        bubble_list = []
+        bubble_ids = reaction.contents.split(",")
+        bubble_ids.each do |id|
+          bubble = Bubble.find(id)
+          bubble_list.push(bubble_converter(bubble))
+        end
+        contents = {
+          type: "flex",
+          altText: "this is a flex carousel",
+          contents: {
+            type: "carousel",
+            contents: bubble_list
+          }
+        }
+        reply_contents.push(contents)
       end
     end
     update_msg = Message.where(sender: message.receiver, receiver: message.sender, reply_token: message.reply_token)
@@ -1183,11 +1210,13 @@ class Api::ShowmesController < ApplicationController
     contents = params[:contents]
     image = params[:image]
     contents_array = []
+    receiver = message.sender
+    sender = message.receiver
 
     if image.present?
-      message = Message.new({sender: message.receiver, receiver: message.sender, message_id: message.message_id+'a', fr_account: message.fr_account, group_id: message.group_id, reply_token: message.reply_token, check_status: 'answered', image: image})
+      message = Message.new({sender: sender, receiver: receiver, message_id: message.message_id+'a', fr_account: message.fr_account, group_id: message.group_id, reply_token: message.reply_token, check_status: 'answered', image: image})
     else
-      message = Message.new({sender: message.receiver, receiver: message.sender, message_id: message.message_id+'a', fr_account: message.fr_account, group_id: message.group_id, reply_token: message.reply_token, check_status: 'answered', image: nil})
+      message = Message.new({sender: sender, receiver: receiver, message_id: message.message_id+'a', fr_account: message.fr_account, group_id: message.group_id, reply_token: message.reply_token, check_status: 'answered', image: nil})
     end
 
     case message_type
@@ -1236,6 +1265,25 @@ class Api::ShowmesController < ApplicationController
         address: map_array[0],
         latitude: latlng_array[0],
         longitude: latlng_array[1]
+      }
+      contents_array.push(contents)
+    when "carousel"
+      message.contents = contents
+      message.message_type = 'carousel'
+      message.save
+      bubble_list = []
+      bubble_ids = contents.split(",")
+      bubble_ids.each do |id|
+        bubble = Bubble.find(id)
+        bubble_list.push(bubble_converter(bubble))
+      end
+      contents = {
+        type: "flex",
+        altText: "this is a flex carousel",
+        contents: {
+          type: "carousel",
+          contents: bubble_list
+        }
       }
       contents_array.push(contents)
     end

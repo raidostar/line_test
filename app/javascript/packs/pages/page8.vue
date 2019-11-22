@@ -1,8 +1,5 @@
 <template>
   <div class="page" id="page8">
-    <div class="title area">
-      <h2 class="title">テンプレート<hr/></h2>
-    </div>
     <div class="col col-left">
       <div class="label">
         <i class="material-icons folder">folder_open</i>
@@ -87,7 +84,7 @@
                   <td>{{reaction.reaction_type}}</td>
                   <td>
                     <button class="edit-button" v-show="reaction.bool" @click="reactionDelete(reaction.id)">
-                      解除
+                      削除
                     </button>
                   </td>
                 </tr>

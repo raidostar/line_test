@@ -1,6 +1,6 @@
 <template>
   <div class="page" id="page6">
-    <div>
+    <!-- <div>
       <div class="title area">
         <h2 class="title">
           <span>一斉配信</span>
@@ -9,205 +9,209 @@
           <hr/>
         </h2>
       </div>
+    </div> -->
+    <div>
+      <button class="allSend-button" @click="formToggle" v-show="!formShow">新規配信</button>
+      <button class="allSend-button" @click="formToggle" v-show="formShow">リスト見る</button>
     </div>
     <transition name="slideInOut">
       <div class="col col-left" v-show="formShow">
         <div class="left-panel">
           <div class="top-panel">
             <!-- <button class="allSend-button innerBtn innerBtnLeft"></button>
-            <button class="allSend-button innerBtn innerBtnRight"></button> -->
-          </div>
-          <div class="bottom-panel">
+              <button class="allSend-button innerBtn innerBtnRight"></button> -->
+            </div>
+            <div class="bottom-panel">
 
-            <div v-for="(tag,index) in tags" class="added-folder">
-              <button class="added-folderBtn" id="added-folderBtn" v-if="tag==selectedTag" :style="selectedCSS" @click="selectTag(index)">
-                <i class="material-icons open-file-added">people</i>
-                <span>
-                  {{tag}}
-                </span>
+              <div v-for="(tag,index) in tags" class="added-folder">
+                <button class="added-folderBtn" id="added-folderBtn" v-if="tag==selectedTag" :style="selectedCSS" @click="selectTag(index)">
+                  <i class="material-icons open-file-added">people</i>
+                  <span>
+                    {{tag}}
+                  </span>
+                </button>
+                <button class="added-folderBtn" id="added-folderBtn" v-else @click="selectTag(index)">
+                  <i class="material-icons open-file-added">people</i>
+                  <span>
+                    {{tag}}
+                  </span>
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="right-panel">
+
+            <!-- side buttons -->
+            <div class="contentBtns">
+              <button class="stampBtn" @click="toggleStamp"><i class="material-icons stamp">child_care</i></button>
+              <button class="stampBtn" @click="toggleEmoji">
+                <i class="material-icons stamp">sentiment_satisfied_alt</i>
               </button>
-              <button class="added-folderBtn" id="added-folderBtn" v-else @click="selectTag(index)">
-                <i class="material-icons open-file-added">people</i>
-                <span>
-                  {{tag}}
-                </span>
-              </button>
+              <label class="stampBtn">
+                <i class="material-icons stamp">gif</i>
+                <input type="file" @change="onFileChange" class="imageBtn" ref="fileInput" accept="img/*">
+              </label>
+              <button class="stampBtn"><i class="material-icons stamp">border_color</i></button>
+              <button class="stampBtn" @click="mapToggle"><i class="material-icons stamp">location_on</i></button>
             </div>
 
+            <div class="chattingArea">
+              <div v-show="uploadedImage"  class="attachedImgPanel">
+                <a class="closeStamp" @click="closeImage">X</a>
+                <p>[イメージ]</p>
+                <img class="attachedImg" :src="uploadedImage">
+              </div>
+
+              <div id="chattingContents" class="chattingContents" contenteditable="true" :style="flexablePadding" @input="sync" v-html="innerContent" v-model="innerContent" ref="chatting"></div>
+              <input type="text" v-model="contents" style="display: none;">
+
+              <!-- stamp list bottom -->
+              <div class="sticker-panel" v-show="stampShow">
+                <button class="stampBtn" v-for="num in stampNums" @click="selectStamp(num)">
+                  <img class="stampBtnImg" :src="getImgUrl(num)"/>
+                </button>
+              </div>
+
+              <!-- emoji list bottom -->
+              <div class="sticker-panel" v-show="emojiShow">
+                <button class="emojiBtn stampBtn" v-for="emoji in emojis" @click="addEmoji(emoji.img_url)">
+                  <img class="stampBtnImg" :src="emoji.img_url">
+                </button>
+              </div>
+            </div>
+
+            <!-- stamp image area -->
+            <div class="stampArea" v-show="stampAreaShow">
+              <a class="closeStamp" @click="closeStamp" style="float: right;">X</a>
+              <p>[スタンプ]</p>
+              <img class="selectStamp" :src="selectStampUrl">
+            </div>
+
+            <!--GoogleMap-->
+            <div class="googleMap" v-show="mapShow">
+              <div class="placeSearch">
+                <GmapAutocomplete @place_changed="setPlace"/>
+              </div>
+              <button style="width: 100%; height: 5%;" id="location" @click="getAddress">
+                住所取得
+              </button>
+              <GmapMap
+              :center="default_center"
+              :zoom="16"
+              map-type-id="terrain"
+              style="width: 100%; height: 95%;"
+              @center_changed="onCenterChanged"
+              >
+              <GmapMarker
+              :position="info.center"
+              :clickable="true"
+              :draggable="false"
+              />
+            </GmapMap>
           </div>
+          <!-- submit button -->
+          <button class="sendBtn" @click="createNotify">SEND</button>
         </div>
 
-        <div class="right-panel">
+      </div>
+    </transition>
+    <transition name="slideInOut">
+      <div v-show="!formShow">
+        <select v-model="parPage" @change="resetPage">
+          <option value=5>5ラインで表示</option>
+          <option value=10>10ラインで表示</option>
+          <option value=50>50ラインで表示</option>
+          <option value=100>100ラインで表示</option>
+          <option value=500>500ラインで表示</option>
+          <option :value="notifies.length">全体表示</option>
+        </select>
+        <table class="sc-list">
+          <tr>
+            <th>再送信</th>
+            <th>配信先</th>
+            <th>内容</th>
 
-          <!-- side buttons -->
-          <div class="contentBtns">
-            <button class="stampBtn" @click="toggleStamp"><i class="material-icons stamp">child_care</i></button>
-            <button class="stampBtn" @click="toggleEmoji">
-              <i class="material-icons stamp">sentiment_satisfied_alt</i>
-            </button>
-            <label class="stampBtn">
-              <i class="material-icons stamp">gif</i>
-              <input type="file" @change="onFileChange" class="imageBtn" ref="fileInput" accept="img/*">
-            </label>
-            <button class="stampBtn"><i class="material-icons stamp">border_color</i></button>
-            <button class="stampBtn" @click="mapToggle"><i class="material-icons stamp">location_on</i></button>
-          </div>
+            <th>日時</th>
+            <th>配信数</th>
+            <th>タイプ</th>
+          </tr>
+          <tr class="notiShow" v-for="notify in getNotify" style="height: 80px;">
+            <td>
+              <button class="sendAgainBtn" @click="sendAgain(notify.id)">送信</button>
+            </td>
 
-          <div class="chattingArea">
-            <div v-show="uploadedImage"  class="attachedImgPanel">
-              <a class="closeStamp" @click="closeImage">X</a>
-              <p>[イメージ]</p>
-              <img class="attachedImg" :src="uploadedImage">
-            </div>
+            <td v-if="notify.target_tag==null">
+              {{notify.receiver}}
+            </td>
+            <td v-else>
+              {{notify.target_tag}}
+            </td>
 
-            <div id="chattingContents" class="chattingContents" contenteditable="true" :style="flexablePadding" @input="sync" v-html="innerContent" v-model="innerContent" ref="chatting"></div>
-            <input type="text" v-model="contents" style="display: none;">
-
-            <!-- stamp list bottom -->
-            <div class="sticker-panel" v-show="stampShow">
-              <button class="stampBtn" v-for="num in stampNums" @click="selectStamp(num)">
-                <img class="stampBtnImg" :src="getImgUrl(num)"/>
-              </button>
-            </div>
-
-            <!-- emoji list bottom -->
-            <div class="sticker-panel" v-show="emojiShow">
-              <button class="emojiBtn stampBtn" v-for="emoji in emojis" @click="addEmoji(emoji.img_url)">
-                <img class="stampBtnImg" :src="emoji.img_url">
-              </button>
-            </div>
-          </div>
-
-          <!-- stamp image area -->
-          <div class="stampArea" v-show="stampAreaShow">
-            <a class="closeStamp" @click="closeStamp" style="float: right;">X</a>
-            <p>[スタンプ]</p>
-            <img class="selectStamp" :src="selectStampUrl">
-          </div>
-
-          <!--GoogleMap-->
-          <div class="googleMap" v-show="mapShow">
-            <div class="placeSearch">
-              <GmapAutocomplete @place_changed="setPlace"/>
-            </div>
-            <button style="width: 100%; height: 5%;" id="location" @click="getAddress">
-              住所取得
-            </button>
+            <td v-if="notify.notify_type=='stamp'">
+              <a @click="detailImage(getImgUrl(notify.contents))">
+                <img class="stampBtnImg" :src="getImgUrl(notify.contents)"/>
+              </a>
+            </td>
+            <td v-else-if="notify.notify_type=='image'">
+              <a @click="detailImage(notify.image.url)">
+                <img class="imageResult" :src="notify.image.url"/>
+              </a>
+            </td>
+            <td v-else>
+              <a v-if="notify.contents.search('<img src=')>=0"
+                @click="showFullContents(notify.contents)"
+                v-html="notify.contents.substr(0,100)"
+                >
+              </a>
+              <a v-else @click="showFullContents(notify.contents)" >
+                <span v-if="notify.contents.length>19" v-html="notify.contents.substr(0,20)+'...'"></span>
+                <span v-else v-html="notify.contents.substr(0,20)"></span>
+              </a>
+            </td>
+            <td>{{notify.created_at}}</td>
+            <td>{{notify.target_number}}</td>
+            <td>{{notify.notify_type}}</td>
+          </tr>
+        </table>
+        <paginate
+        :page-count="getPageCount"
+        :page-range="3"
+        :margin-pages="2"
+        :click-handler="clickCallback"
+        :prev-text="'Prev'"
+        :next-text="'Next'"
+        :container-class="'pagination'"
+        :page-class="'page-item'"
+        >
+      </paginate>
+    </div>
+  </transition>
+  <transition name="tadaInOut">
+    <div class="detailWindow" v-show="showDetail">
+      <div class="detailPanel">
+        <a class="closeDetail" @click="closeDetail">X</a>
+        <div class="detailContents">
+          <div class="detail" readonly="readonly">
+            <span v-html="fullContents" v-if="fullContents.search('@map')<0"></span>
             <GmapMap
-            :center="default_center"
-            :zoom="16"
+            v-else
+            :center="selected_center"
+            :zoom="12"
             map-type-id="terrain"
             style="width: 100%; height: 95%;"
-            @center_changed="onCenterChanged"
             >
             <GmapMarker
-            :position="info.center"
+            :position="selected_center"
             :clickable="true"
             :draggable="false"
             />
           </GmapMap>
         </div>
-        <!-- submit button -->
-        <button class="sendBtn" @click="createNotify">SEND</button>
-      </div>
-
-    </div>
-  </transition>
-  <transition name="slideInOut">
-    <div v-show="!formShow">
-      <select v-model="parPage" @change="resetPage">
-        <option value=5>5ラインで表示</option>
-        <option value=10>10ラインで表示</option>
-        <option value=50>50ラインで表示</option>
-        <option value=100>100ラインで表示</option>
-        <option value=500>500ラインで表示</option>
-        <option :value="notifies.length">全体表示</option>
-      </select>
-      <table class="sc-list">
-        <tr>
-          <th>再送信</th>
-          <th>配信先</th>
-          <th>内容</th>
-
-          <th>日時</th>
-          <th>配信数</th>
-          <th>タイプ</th>
-        </tr>
-        <tr class="notiShow" v-for="notify in getNotify" style="height: 80px;">
-          <td>
-            <button class="sendAgainBtn" @click="sendAgain(notify.id)">送信</button>
-          </td>
-
-          <td v-if="notify.target_tag==null">
-            {{notify.receiver}}
-          </td>
-          <td v-else>
-            {{notify.target_tag}}
-          </td>
-
-          <td v-if="notify.notify_type=='stamp'">
-            <a @click="detailImage(getImgUrl(notify.contents))">
-              <img class="stampBtnImg" :src="getImgUrl(notify.contents)"/>
-            </a>
-          </td>
-          <td v-else-if="notify.notify_type=='image'">
-            <a @click="detailImage(notify.image.url)">
-              <img class="imageResult" :src="notify.image.url"/>
-            </a>
-          </td>
-          <td v-else>
-            <a v-if="notify.contents.search('<img src=')>=0"
-              @click="showFullContents(notify.contents)"
-              v-html="notify.contents.substr(0,100)"
-              >
-            </a>
-            <a v-else @click="showFullContents(notify.contents)" >
-              <span v-if="notify.contents.length>19" v-html="notify.contents.substr(0,20)+'...'"></span>
-              <span v-else v-html="notify.contents.substr(0,20)"></span>
-            </a>
-          </td>
-          <td>{{notify.created_at}}</td>
-          <td>{{notify.target_number}}</td>
-          <td>{{notify.notify_type}}</td>
-        </tr>
-      </table>
-      <paginate
-      :page-count="getPageCount"
-      :page-range="3"
-      :margin-pages="2"
-      :click-handler="clickCallback"
-      :prev-text="'Prev'"
-      :next-text="'Next'"
-      :container-class="'pagination'"
-      :page-class="'page-item'"
-      >
-    </paginate>
-  </div>
-</transition>
-<transition name="tadaInOut">
-  <div class="detailWindow" v-show="showDetail">
-    <div class="detailPanel">
-      <a class="closeDetail" @click="closeDetail">X</a>
-      <div class="detailContents">
-        <div class="detail" readonly="readonly">
-          <span v-html="fullContents" v-if="fullContents.search('@map')<0"></span>
-          <GmapMap
-          v-else
-          :center="selected_center"
-          :zoom="12"
-          map-type-id="terrain"
-          style="width: 100%; height: 95%;"
-          >
-          <GmapMarker
-          :position="selected_center"
-          :clickable="true"
-          :draggable="false"
-          />
-        </GmapMap>
       </div>
     </div>
   </div>
-</div>
 </transition>
 </div>
 </template>

@@ -4,7 +4,7 @@ class Api::ReactionsController < ApplicationController
     @reactions = []
     if option.match_reaction.present?
       reaction_ids = option.match_reaction.split(",")
-      @reactions = Reaction.where(id: reaction_ids).order(option.match_reaction)
+      @reactions = Reaction.where(id: reaction_ids)
     end
   end
 

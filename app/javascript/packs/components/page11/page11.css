@@ -186,7 +186,7 @@ label.stampBtn:focus {
   height: 32%;
   border-radius: 8px;
   position: absolute;
-  top: 9.5em;
+  top: 14.5em;
   left: 38em;
   text-align: center;
   margin: 0 auto;
@@ -201,8 +201,8 @@ label.stampBtn:focus {
   border-radius: 8px;
   background-color: white;
   position: absolute;
-  top: 10em;
-  left: 37.3em;
+  top: 15em;
+  left: 37em;
   text-align: center;
   margin: 0 auto;
 }
@@ -291,7 +291,7 @@ label.stampBtn:focus {
   height: 12em;
   position: absolute;
   z-index: 3000;
-  top: 58.6%;
+  top: 67.6%;
   left: 19.2%;
   background-color: white;
   border-radius: 8px;
@@ -472,7 +472,7 @@ a:not([href]):not([tabindex]):hover{
   border-radius: 8px;
   background-color: white;
   position: absolute;
-  top: 20%;
+  top: 30%;
   left: 43.5%;
   text-align: center;
   margin: 0 auto;
@@ -553,10 +553,9 @@ a:not([href]):not([tabindex]):hover{
   text-align: left;
   width: 98%;
   height: 9em;
-  border: 1px solid #FFF;
+  /*border: 1px solid #FFF;
   border-radius: 8px;
-  box-shadow: 0 0 10px #666;
-  margin-top: 4em;
+  box-shadow: 0 0 10px #666;*/
 }
 .cancelBtn {
   color: grey;
@@ -591,7 +590,7 @@ div.inline-radio button:active{
   left: 18.4em;
   background: #2C3E5B;
   border-radius: 8px;
-  top: 9.5em;
+  top: 14.2em;
 }
 .carousel-box {
   height: 100%;
@@ -683,7 +682,7 @@ div.inline-radio button:active{
 }
 .control-box {
   float: left;
-  height: 64vh;
+  height: 63vh;
   width: 11em;
   z-index: 10;
   color: white;
@@ -721,7 +720,7 @@ input[type=text]:not(.browser-default) {
 }
 .empty-bubble {
   width: 97%;
-  height: 98%;
+  height: 99%;
   margin: .2em .3em;
   border: 3px dotted black;
   border-radius: 8px;
@@ -786,4 +785,81 @@ input[type=text]:not(.browser-default) {
 }
 .colorExchange:focus {
   outline: none;
+}
+.copyChu {
+  /*margin: 1em auto;
+  width: 91%;
+  background-color: #333333;
+  color: white;
+  border-radius: 8px;*/
+  margin: 1em auto;
+  width: 91%;
+  border-radius: 8px;
+  margin-bottom: 0;
+}
+.copyChu:focus {
+  outline: none;
+}
+.copy-bubble{
+  width: 49.5%;
+  color: white;
+  background: #0000FF;
+  font-weight: 600;
+  border-radius: 8px;
+  letter-spacing: 8px;
+  float: left;
+  box-shadow: 0 0 2px #666;
+}
+.copy-bubble:focus {
+  outline: none;
+}
+.remove-bubble {
+  width: 49.5%;
+  color: white;
+  background: #CC0000;
+  font-weight: 600;
+  border-radius: 8px;
+  letter-spacing: 8px;
+}
+.remove-bubble:focus {
+  outline: none;
+}
+.copy {
+  color: white;
+  background-image: linear-gradient(-90deg, #009b00, #009baa);
+}
+.paste {
+  color: #ffffff;
+  background-image: linear-gradient(-90deg, #dc3545, #fd7e14);
+}
+.image-change{
+  background-image: linear-gradient(-90deg, #009b00, #009baa);
+  border: 1px solid white;
+  font-size: 16px;
+  color: white;
+  width: 90%;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.image-change:active {
+  border: 1px solid #333333;
+  color: #333333;
+}
+.image-remove {
+  background-image: linear-gradient(-90deg, #dc3545, #fd7e14);
+  border: 1px solid white;
+  font-size: 16px;
+  color: white;
+  width: 90%;
+  border-radius: 8px;
+}
+.image-remove:focus {
+  outline: none;
+}
+.design-buttons {
+  margin-bottom: 2em;
+}
+.detail-title {
+  font-size: 20px;
+  font-weight: 600;
 }

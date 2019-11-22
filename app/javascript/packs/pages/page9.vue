@@ -1,8 +1,5 @@
 <template>
   <div class="page" id="page9">
-    <div class="title area">
-      <h2 class="title">回答フォーム<hr/></h2>
-    </div>
     <div class="col col-left">
       <div class="label">
         <i class="material-icons folder">folder_open</i>

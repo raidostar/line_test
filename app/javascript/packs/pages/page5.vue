@@ -1,10 +1,5 @@
 <template>
   <div class="page" id="page5">
-    <div>
-      <div class="title area">
-        <h2 class="title">データ分析<hr/></h2>
-      </div>
-    </div>
     <div class="service-add big-panel" >
       <div class="panel">
         <div class="top-panel">

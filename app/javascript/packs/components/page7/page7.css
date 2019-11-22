@@ -1,5 +1,8 @@
 .page {
-  height: auto;
+  height: 91vh;
+  width: 100%;
+  overflow: scroll;
+  scroll-behavior: smooth;
 }
 .label{
   border-bottom: 2px solid grey;
@@ -19,8 +22,8 @@
   text-align: left;
 }
 .col-left {
-  height: 91vh;
-  width: 32%;
+  height: 90vh;
+  width: 24.8%;
 }
 .folder {
   font-size: 40px;
@@ -87,7 +90,7 @@ button.button {
   font-size: 20px;
 }
 input[type=text] {
-  width: 50%;
+  width: 77%;
   padding: 0px 0px;
   margin: 0px 40px;
 }
@@ -162,7 +165,7 @@ div.added-folder {
 .col-right {
   height: auto;
   float: right;
-  width: 65%;
+  width: 48%;
   margin-right: 22px;
 }
 table {
@@ -176,7 +179,6 @@ input[type=checkbox]{
   display: inherit;
 }
 input[type=text] {
-  float: left;
   margin-right: 0px;
 }
 .addFolderBtn {
@@ -240,7 +242,7 @@ input[type=text] {
   animation: fadeInLeft .5s;
 }
 .fadeInOut-leave-active {
-  animation: fadeInLeft .5s reverse;
+  animation: fadeInLeft .5s;
 }
 .slideUpDown-enter-active {
   animation: slideInDown .5s;
@@ -259,7 +261,7 @@ input[type=text] {
   background-color: #EEECFF;
   padding: 30px 30px;
   width: 94%;
-  height: 60vh;
+  height: 68vh;
   border: 1px solid #C0C0C0;
   box-shadow: 0 0 2px #666;
   border-radius: 5px;
@@ -280,20 +282,24 @@ input[type=text] {
   border-radius: 8px;
   float: right;
   overflow: hidden;
+  margin-bottom: 0px;
 }
 .stamp {
   font-size: 30px;
   width: 100%;
   height: auto;
   color: grey;
+  padding: 5px;
 }
 .stamp:hover {
   font-size: 31px;
 }
 .stampBtn {
-  width: 43px;
-  height: 43px;
+  width: 42px;
+  height: 42px;
   border-radius: 8px;
+  padding-left: 0;
+  padding-right: 0;
 }
 .stampBtn:active {
   background-color: rgb(230,250,210);
@@ -306,12 +312,12 @@ input[type=text] {
   text-align: center;
 }
 .sticker-panel {
-  width: 92%;
-  height: 22.7%;
+  width: 90%;
+  height: 25.7%;
   position: absolute;
   z-index: 30;
-  top: 48vh;
-  right: 2%;
+  top: 58%;
+  right: 3%;
   background-color: white;
   border-radius: 8px;
   opacity: 0.9;
@@ -346,7 +352,7 @@ input[type=text] {
   background-color: #EEECFF;
   position: absolute;
   top: 11%;
-  right: 8%;
+  right: 13%;
   text-align: center;
   margin: 0 auto;
 }
@@ -367,9 +373,8 @@ a:not([href]):not([tabindex]):hover{
 select {
   background-color: white;
   width: 15%;
-  float: right;
   padding: 5px;
-  margin-right: 10px;
+  margin: 0 auto;
   border: 1px solid #f2f2f2;
   border-radius: 2px;
   height: 3rem;
@@ -439,9 +444,6 @@ label.stampBtn {
   box-shadow: 0 0 .1px #666;
   margin-bottom: 0px;
 }
-label .stamp {
-  padding: 5px;
-}
 label.stampBtn:hover {
   cursor: pointer;
 }
@@ -465,7 +467,7 @@ label.stampBtn:focus {
   border-radius: 8px;
   position: absolute;
   top: 10vh;
-  right: 5%;
+  right: 17%;
   text-align: center;
   margin: 0 auto;
   z-index: 3;
@@ -475,12 +477,12 @@ label.stampBtn:focus {
 }
 .googleMap {
   width: 47%;
-  height: 70%;
+  height: 71.5%;
   border-radius: 8px;
   background-color: white;
   position: absolute;
-  top: 8.5%;
-  right: 2.2%;
+  top: 11.5%;
+  right: 3.2%;
   text-align: center;
   margin: 0 auto;
 }
@@ -491,11 +493,12 @@ label.stampBtn:focus {
   z-index: 9;
 }
 .sendBtn {
+  height: 5vh;
   width: 49.2%;
   -webkit-transition-duration: 0.4s; /* Safari */
   transition-duration: 0.4s;
   border-radius: 10px;
-  padding: 9.5px 32px;
+  padding: 0px 32px;
   text-align: center;
   text-decoration: none;
   display: inline-block;
@@ -582,6 +585,9 @@ p.settingMenu {
   margin-bottom: 0px;
   background: aliceblue;
   box-shadow: 0 0 1px rgba(0, 0, 0, 0.05);
+  text-align: center;
+  font-weight: bold;
+  font-size: 18px;
 }
 #added-folderBtn {
 
@@ -642,9 +648,9 @@ input.daysInput {
 }
 div.tags {
   float: right;
-  height: 100%;
+  height: 7vh;
   width: 100%;
-  margin: 10px -22px;
+  line-height: 2.5em;
 }
 input.tagInput {
   float: left;
@@ -678,4 +684,350 @@ div.tags-bottom {
 }
 .keywordsTag:focus {
   background: white;
+}
+.option-setting {
+  width: 99%;
+}
+.option-buttons {
+  height: 2em;
+  width: 100%;
+  float: right;
+  display: flow-root;
+}
+.scroll-button {
+  width: fit-content;
+  position: absolute;
+  top: 50%;
+  border-radius: 100%;
+  opacity: 0.8;
+}
+.scroll-button:focus {
+  outline: none;
+  background-color: white;
+}
+.scroll-right {
+  right: 2%;
+}
+.scroll-left {
+  left: 16%;
+}
+.move-scroll {
+  font-size: 50px;
+  color: #999999;
+}
+.carouselArea {
+  height: 75.5%;
+  position: absolute;
+  right: 1em;
+  background: #2C3E5B;
+  border-radius: 8px;
+  top: 4em;
+  z-index: 4;
+}
+.carousel-box {
+  height: 100%;
+  float: left;
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+.bubble {
+  background: white;
+  width: 280px;
+  height: 94%;
+  border-radius: 8px;
+  margin: .1em .3em;
+  display: inline-block;
+  vertical-align: text-top;
+}
+.add-button {
+  float: left;
+  height: 64vh;
+  width: 3%;
+  z-index: 10;
+  color: white;
+}
+.open-circle {
+  font-size: 30px;
+  color: white;
+  margin-top: 30vh;
+}
+.open-circle:hover {
+  font-size: 33px;
+  cursor: pointer;
+}
+.open-circle:active {
+  font-size: 30px;
+}
+.bubble-box {
+  width: max-content;
+  height: 100%;
+}
+.header-block {
+  min-height: 16%;
+  text-align: left;
+}
+.hero-block {
+  height: 54%;
+}
+.body-block {
+  min-height: 16%;
+  text-align: left;
+}
+.footer-block {
+  min-height: 12%;
+  text-align: center;
+}
+.blocks {
+  margin: 2px 1px;
+  border-radius: 8px;
+  border: 3px dotted #111;
+}
+.blocks:focus {
+  outline: none;
+}
+.close-block {
+  color: grey;
+  font-size: 15px;
+  float: right;
+  margin: 3px 3px;
+}
+.copy-bubble {
+  width: 49.5%;
+  color: white;
+  background: #0000FF;
+  font-weight: 600;
+  border-radius: 8px;
+  letter-spacing: 8px;
+  float: left;
+  box-shadow: 0 0 2px #666;
+}
+.copy-bubble:focus {
+  outline: none;
+}
+.remove-bubble {
+  width: 49.5%;
+  color: white;
+  background: #CC0000;
+  font-weight: 600;
+  border-radius: 8px;
+  letter-spacing: 8px;
+}
+.remove-bubble:focus {
+  outline: none;
+}
+.add-label {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  margin-bottom: 0;
+}
+.add-label:hover {
+  cursor: pointer;
+}
+.control-box {
+  float: left;
+  height: 100%;
+  width: 11em;
+  z-index: 10;
+  color: white;
+  overflow: scroll;
+  text-align: center;
+}
+.css-option {
+  height: 2em;
+  width: 80%;
+}
+.add-bubble-image {
+  font-size: 30px;
+  width: auto;
+  height: auto;
+  color: grey;
+  margin: 11vh 4em;
+}
+.add-bubble-image:hover {
+  color: darkgrey;
+}
+.add-bubble-image:active {
+  font-size: 30px;
+}
+.color{
+  height: 4.3em;
+}
+input[type=text]:not(.browser-default) {
+  width: 75%;
+  text-align: center;
+  height: 2.5em;
+}
+.bubble-setting {
+  height: 4em;
+}
+.empty-bubble {
+  width: 97%;
+  height: 99%;
+  margin: .2em .3em;
+  border: 3px dotted black;
+  border-radius: 8px;
+  background-color: lightgrey;
+}
+.add-circle {
+  font-size: 30px;
+  margin-top: 27vh;
+  margin-left: 4em;
+  color: #2C3E5B;
+}
+.add-circle:hover {
+  cursor: pointer;
+  color: white;
+}
+.carousel-img-area {
+  width: 100%;
+  height: 95%;
+  position: relative;
+  bottom: 100%;
+}
+.carousel-img {
+  max-width: 100%;
+  max-height: 100%;
+}
+.result-blocks {
+  margin: 2px 1px;
+  border-radius: 8px;
+}
+.component{
+  width: fit-content;
+  min-width: 4em;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: scroll;
+  border: 1px dotted grey;
+  border-radius: 8px;
+  text-align: center;
+  padding: 0 15px;
+  line-height: 100%;
+}
+.component:focus {
+  outline: none;
+}
+.color-sample {
+  width: 77%;
+  margin: 0 auto;
+  height: 1.5em;
+}
+.rounder1 {
+  border-radius: 8px 8px 0px 0px;
+}
+.rounder2 {
+  border-radius: 8px;
+}
+.colorExchange {
+  margin: 1em auto;
+  width: 91%;
+  background-image: linear-gradient(-90deg, #e83e8c, #ffc107);
+  color: white;
+  border-radius: 8px;
+}
+.colorExchange:focus {
+  outline: none;
+}
+.copyChu {
+  margin: 1em auto;
+  width: 91%;
+  border-radius: 8px;
+  margin-bottom: 0;
+}
+.copyChu:focus {
+  outline: none;
+}
+.balloon-image{
+  float: right;
+  display: inline-block;
+  position: relative;
+  height: auto;
+  width: max-content;
+  /*max-width: 50vh;*/
+  margin: 0 auto 10px;
+  border-radius: 10px;
+  z-index: 3;
+  float: right;
+  color: white;
+  margin-left: 90%;
+}
+.copy {
+  color: white;
+  background-image: linear-gradient(-90deg, #009b00, #009baa);
+}
+.paste {
+  color: #ffffff;
+  background-image: linear-gradient(-90deg, #dc3545, #fd7e14);
+}
+.image-change{
+  background-image: linear-gradient(-90deg, #009b00, #009baa);
+  border: 1px solid white;
+  font-size: 16px;
+  color: white;
+  width: 90%;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.image-change:active {
+  border: 1px solid #333333;
+  color: #333333;
+}
+.image-remove {
+  background-image: linear-gradient(-90deg, #dc3545, #fd7e14);
+  border: 1px solid white;
+  font-size: 16px;
+  color: white;
+  width: 90%;
+  border-radius: 8px;
+}
+.image-remove:focus {
+  outline: none;
+}
+.design-buttons {
+  margin-bottom: 2em;
+}
+input.color-input{
+  margin: 0 auto;
+  margin-bottom: 0.5em;
+  height: 2em;
+}
+.reaction-title{
+  font-size: 18px;
+  font-weight: 500;
+}
+.mode-show{
+  float: right;
+  color: #00b900;
+  margin-right: 2em;
+}
+.mode-button {
+  border: .8px solid #555555;
+  border-radius: 18px;
+  opacity: 0.8;
+  background: #ffffff;
+  color: #333333;
+  font-weight: 600;
+}
+.mode-button:focus {
+  outline: none;
+}
+.mode-button:active {
+  border: .8px solid #555555;
+  border-radius: 18px;
+  opacity: 0.8;
+  background: #333333;
+  color: #ffffff;
+}
+input.uri-text {
+  margin: 0 auto;
+}
+.read-title {
+  line-height: 3em;
+  text-align: center;
+  height: 2.7em;
+  margin-left: 2em;
+  width: 20em;
+  float: left;
+  border-bottom: 2px solid grey;
 }
