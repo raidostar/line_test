@@ -10,14 +10,74 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_10_31_022030) do
+ActiveRecord::Schema.define(version: 2019_11_25_082320) do
 
   create_table "bubbles", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "header"
-    t.string "hero"
+    t.string "image"
     t.text "body"
     t.string "footer_type"
     t.string "footer"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "header_size"
+    t.string "header_gravity"
+    t.string "header_align"
+    t.string "header_bold"
+    t.string "header_color"
+    t.string "header_background"
+    t.string "hero_size"
+    t.string "hero_align"
+    t.string "hero_ratio"
+    t.string "hero_background"
+    t.string "body_size"
+    t.string "body_gravity"
+    t.string "body_align"
+    t.string "body_bold"
+    t.string "body_color"
+    t.string "body_background"
+    t.string "footer_size"
+    t.string "footer_gravity"
+    t.string "footer_align"
+    t.string "footer_bold"
+    t.string "footer_color"
+    t.string "footer_background"
+    t.string "footer_button"
+    t.string "footer_uri"
+    t.string "footer_message"
+  end
+
+  create_table "bubbles_archives", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
+    t.string "header"
+    t.string "image"
+    t.text "body"
+    t.string "footer_type"
+    t.string "footer"
+    t.string "header_size"
+    t.string "header_gravity"
+    t.string "header_align"
+    t.string "header_bold"
+    t.string "header_color"
+    t.string "header_background"
+    t.string "hero_size"
+    t.string "hero_align"
+    t.string "hero_ratio"
+    t.string "hero_background"
+    t.string "body_size"
+    t.string "body_gravity"
+    t.string "body_align"
+    t.string "body_bold"
+    t.string "body_color"
+    t.string "body_background"
+    t.string "footer_size"
+    t.string "footer_gravity"
+    t.string "footer_align"
+    t.string "footer_bold"
+    t.string "footer_color"
+    t.string "footer_background"
+    t.string "footer_button"
+    t.string "footer_uri"
+    t.string "footer_message"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -111,6 +171,7 @@ ActiveRecord::Schema.define(version: 2019_10_31_022030) do
     t.boolean "bool", default: false
     t.string "remind_after"
     t.integer "hit_count", default: 0
+    t.boolean "remind_bool", default: true
   end
 
   create_table "reactions", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|

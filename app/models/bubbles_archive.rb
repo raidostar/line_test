@@ -1,4 +1,4 @@
-class Bubble < ApplicationRecord
+class BubblesArchive < ApplicationRecord
   mount_uploader :image, ImageUploader
 
   before_destroy :destroy_assets
@@ -7,5 +7,4 @@ class Bubble < ApplicationRecord
     self.image.remove! if self.image
     self.save!
   end
-
 end

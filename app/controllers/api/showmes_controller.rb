@@ -60,6 +60,7 @@ class Api::ShowmesController < ApplicationController
       messages
       )
     logger.warn res.read_body unless Net::HTTPOK === res
+    render json: messages, status: :ok
   end
 
   def callback
@@ -89,21 +90,21 @@ class Api::ShowmesController < ApplicationController
         profile = JSON.parse(profile.read_body)
 
         fr_account = event['source']['userId']
-        option = Option.find_by(user_group: @group, option_type: 'welcomeReply')
+
         friend = Friend.find_by(fr_account: fr_account)
         if friend.blank?
           friend = add_friend(fr_account,profile['displayName'],profile['pictureUrl'],profile['statusMessage'],@group_id)
         else
           unblock(fr_account)
         end
+        option = Option.find_by(user_group: @group, option_type: 'welcomeReply')
         if option.present?
-          if option.bool&&friend.block_at.blank?
+          if option.bool&&!friend.block_at.present?
             send_welcome_message(option,event)
-          elsif option.remind_after=='1'&&friend.block_at.present?
+          elsif option.remind_bool&&friend.block_at.present?
             send_welcome_message(option,event)
           end
         end
-
 
       when Line::Bot::Event::Unfollow
         logger.info "[UNFOLLOW]\n#{body}"
@@ -201,49 +202,78 @@ class Api::ShowmesController < ApplicationController
 
   def bubble_converter(bubble)
     converted_bubble = { type: "bubble" }
-
     if bubble.header.present?
-      converted_bubble[:header] = header_converter(bubble.header)
+      converted_bubble[:header] = header_converter(bubble.header, bubble.header_gravity, bubble.header_align,
+        bubble.header_size, bubble.header_bold, bubble.header_color, bubble.header_background)
     end
-    if bubble.hero.present?
-      converted_bubble[:hero] = hero_converter(bubble.hero)
+    if bubble.image.present?
+      converted_bubble[:hero] = image_converter(bubble.image, bubble.hero_align, bubble.hero_size, bubble.hero_background, bubble.hero_ratio)
     end
     if bubble.body.present?
-      converted_bubble[:body] = body_converter(bubble.body)
+      converted_bubble[:body] = body_converter(bubble.body, bubble.body_gravity, bubble.body_align, bubble.body_size,
+        bubble.body_bold, bubble.body_color, bubble.body_background)
     end
     if bubble.footer.present?
-      converted_bubble[:footer] = footer_converter(bubble.footer)
+      converted_bubble[:footer] = footer_converter(bubble.footer, bubble.footer_gravity, bubble.footer_align,
+        bubble.footer_size, bubble.footer_bold, bubble.footer_color, bubble.footer_background, bubble.footer_type,
+        bubble.footer_button, bubble.footer_uri, bubble.footer_message)
     end
 
     return converted_bubble
   end
 
-  def header_converter(header)
+  def header_converter(header,gravity,align,size,bold,color,background)
+    case gravity
+    when "top"
+      offsetBottom = "15px"
+    when "center"
+      offsetBottom = "0px"
+    when "bottom"
+      offsetBottom = "-15px"
+    end
     converted_header = {
       type: "box",
       layout: "vertical",
       contents: [
         {
           type: "text",
-          text: header
+          text: header,
+          color: color,
+          position: "relative",
+          offsetBottom: offsetBottom,
+          size: size,
+          weight: bold,
+          align: align,
+          wrap: true
         }
-      ]
+      ],
+      backgroundColor: background
     }
     return converted_header
   end
 
-  def hero_converter(hero)
-    converted_hero = {
+  def image_converter(image,align,size,background,ratio)
+    converted_image = {
       type: "image",
-      url: THUMBNAIL_URL,
-      size: "full",
-      aspectRatio: "4:4"
+      url: image.url,
+      align: align,
+      size: size,
+      aspectRatio: ratio,
+      backgroundColor: background
     }
-    return converted_hero
+    return converted_image
   end
 
-  def body_converter(body)
+  def body_converter(body,gravity,align,size,bold,color,background)
     body = contents_converter(body)
+    case gravity
+    when "top"
+      offsetBottom = "20px"
+    when "center"
+      offsetBottom = "5px"
+    when "bottom"
+      offsetBottom = "-10px"
+    end
     converted_body = {
       type: "box",
       layout: "vertical",
@@ -251,24 +281,87 @@ class Api::ShowmesController < ApplicationController
         {
           type: "text",
           text: body,
+          position: "relative",
+          offsetBottom: offsetBottom,
+          align: align,
+          size: size,
+          weight: bold,
+          color: color,
           wrap: true
         }
-      ]
+      ],
+      backgroundColor: background
     }
     return converted_body
   end
 
-  def footer_converter(footer)
-    data = {
-      type: "text",
-      text: footer,
-      align: "center"
-    }
-    converted_footer = {
-      type: "box",
-      layout: "horizontal",
-      contents: [data]
-    }
+  def footer_converter(footer,gravity,align,size,bold,color,background,type,button,uri,message)
+    if type == 'button'
+      if color=='#ffffff'
+        color = "primary"
+      else
+        color = "secondary"
+      end
+
+      if button == 'uri'
+        if !uri.include? "http"
+          uri = "https://"+uri
+        end
+        data = {
+          type: "button",
+          style: color,
+          action: {
+            type: "uri",
+            label: footer,
+            uri: uri,
+          },
+          color: background
+        }
+      elsif button=='message'
+        data = {
+          type: "button",
+          style: color,
+          action: {
+            type: "message",
+            label: footer,
+            text: message
+          },
+          color: background
+        }
+      end
+      converted_footer = {
+        type: "box",
+        layout: "horizontal",
+        contents: [data]
+      }
+    else
+      case gravity
+      when "top"
+        offsetBottom = "10px"
+      when "center"
+        offsetBottom = "0px"
+      when "bottom"
+        offsetBottom = "-10px"
+      end
+      data = {
+        type: "text",
+        text: footer,
+        align: align,
+        position: "relative",
+        offsetBottom: offsetBottom,
+        size: size,
+        weight: bold,
+        color: color,
+        wrap: true
+      }
+      converted_footer = {
+        type: "box",
+        layout: "horizontal",
+        contents: [data],
+        backgroundColor: background
+      }
+    end
+
     return converted_footer
   end
 
@@ -297,6 +390,7 @@ class Api::ShowmesController < ApplicationController
   end
 
   def handle_message(event)
+    check_user(event)
     case event.type
     when Line::Bot::Event::MessageType::Image
       message_id = event.message['id']
@@ -380,17 +474,23 @@ class Api::ShowmesController < ApplicationController
                 {
                   type: "text",
                   text: "Header text",
-                  gravity: "top",
-                  size: "xs",
-                  align: "end"
+                  size: "md",
+                  weight: "regular",
+                  align: "center",
+                  position: "relative",
+                  offsetBottom: "-15px",
+                  color: "#111111",
+                  wrap: true
                 }
-              ]
+              ],
+              backgroundColor: "#dc3545"
             },
             hero: {
               type: "image",
               url: THUMBNAIL_URL,
-              size: "full",
-              aspectRatio: "3:1",
+              size: "4xl",
+              aspectRatio: "1:1",
+              align: "start",
               backgroundColor: "#00b900"
             },
             body: {
@@ -399,20 +499,27 @@ class Api::ShowmesController < ApplicationController
               contents: [
                 {
                   type: "text",
-                  text: "Body text",
+                  text: "Body text\nBody text\nBody text",
+                  position: "relative",
+                  offsetBottom: "-10px",
+                  align: "center",
+                  wrap: true
                 }
               ],
               backgroundColor: "#CC0000"
             },
             footer: {
               type: "box",
-              layout: "vertical",
+              layout: "horizontal",
               contents: [
                 {
                   type: "text",
-                  text: "Footer text",
+                  text: "footer",
+                  position: "relative",
+                  offsetBottom: "0px",
                   align: "center",
-                  color: "#888888"
+                  size: "xxl",
+                  wrap: true
                 }
               ]
             }
@@ -439,12 +546,12 @@ class Api::ShowmesController < ApplicationController
           reply_token = event['replyToken']
 
           @message = Message.new({sender: profile['displayName'], receiver: @group, contents: event.message['text'], message_type: 'text', message_id: event.message['id'], sticker_id: nil, package_id: nil, fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'unchecked'})
+          message = Message.new({sender: @group, receiver: profile['displayName'], message_id: event.message['id'],fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'answered'})
+
           save_message(@message)
           update_friend_info(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],group_id,@message.contents)
           event.message['text'] = unicodeConverter(event.message['text'])
-          message = Message.new({sender: @group, receiver: profile['displayName'], message_id: event.message['id'],fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'answered'})
           auto_reply = option_checker(event,message)
-
           # reply_text(event, "ありがとうございます。")
         else
           reply_text(event, "Bot can't use profile API without user ID")
@@ -453,6 +560,27 @@ class Api::ShowmesController < ApplicationController
     else
       logger.info "Unknown message type: #{event.type}"
       reply_text(event, "[UNKNOWN]\n#{event.type}")
+    end
+  end
+
+  def check_user(event)
+    fr_account = event['source']['userId']
+    group_id = @group_id
+    friend = Friend.find_by(fr_account: fr_account)
+    if friend.present?
+      puts "user check success"
+    else
+      response = client.get_profile(fr_account)
+      case response
+      when Net::HTTPSuccess then
+        contact = JSON.parse(response.body)
+        fr_name = contact['displayName']
+        profile_pic = contact['pictureUrl']
+        profile_msg = contact['statusMessage']
+        add_friend(fr_account,fr_name,profile_pic,profile_msg,group_id)
+      else
+        p "#{response.code} #{response.body}"
+      end
     end
   end
 
@@ -477,7 +605,7 @@ class Api::ShowmesController < ApplicationController
     reply_token = event['replyToken']
     sticker_id = event.message['stickerId']
     package_id = event.message['packageId']
-    @message = Message.new({sender: profile['displayName'], receiver: @group, contents: "https://cdn.lineml.jp/api/media/sticker/#{package_id}_#{sticker_id}", message_type: 'stamp', message_id: event.message['id'], sticker_id: sticker_id, package_id: package_id, fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'unchecked'})
+    @message = Message.new({sender: profile['displayName'], receiver: @group, contents: "#{package_id}_#{sticker_id}", message_type: 'stamp', message_id: event.message['id'], sticker_id: sticker_id, package_id: package_id, fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'unchecked'})
     save_message(@message)
 
     update_friend_info(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],group_id,@message.contents)
@@ -498,7 +626,8 @@ class Api::ShowmesController < ApplicationController
 
   def save_message(message)
     if message.save
-      render :index, status: :ok
+      # render :index, status: :ok
+      puts "message saved"
     else
       render json: @message.errors, status: :unprocessable_entity
     end
@@ -524,33 +653,37 @@ class Api::ShowmesController < ApplicationController
   end
 
   def unblock(fr_account)
-    friend = Friend.where(fr_account: fr_account)
+    @friend = Friend.where(fr_account: fr_account)
     now = Time.new
-    if friend.update(block: 0, follow_at: now)
-      render html: '/api/friends', status: :ok
+    if @friend.update(block: 0, follow_at: now)
+      return @friend
     else
       render json: @message.errors, status: :unprocessable_entity
     end
   end
 
   def update_friend_info(fr_account,fr_name,profile_pic,profile_msg,group_id,contents)
+    @group = Group.find_by(group_id: group_id)
+    @group = @group.group
     @friend = Friend.find_by(fr_account: fr_account)
     time = Time.new
-    puts time
     if @friend.update(fr_name: fr_name, profile_pic: profile_pic, profile_msg: profile_msg,group_id: group_id,last_message_time: time,last_message: contents)
-      update_message_profile(fr_account,fr_name)
+      update_message_profile(fr_account,fr_name,@group)
     else
       render json: @message.errors, status: :unprocessable_entity
     end
   end
 
-  def update_message_profile(fr_account,fr_name)
-    @messages = Message.where(fr_account: fr_account)
-    @messages.each do |message|
-      message
-    end
+  def update_message_profile(fr_account,fr_name,group)
+    @messages = Message.where(fr_account: fr_account, receiver: group)
     if @messages.update(sender: fr_name)
-      puts "profile updated"
+      # puts "profile updated"
+      messages = Message.where(fr_account: fr_account, sender: group)
+      if messages.update(receiver: fr_name)
+        puts "profile updated"
+      else
+        render json: @message.errors, status: :unprocessable_entity
+      end
     else
       render json: @message.errors, status: :unprocessable_entity
     end
@@ -580,6 +713,8 @@ class Api::ShowmesController < ApplicationController
       address_array = map_converter(contents)
       broadcast_map(sender,address_array)
       @notify.contents = address_array[0]
+    elsif @notify.notify_type == "carousel"
+      broadcast_carousel(sender,contents)
     end
     if @notify.save
       render json: @notify, status: :ok
@@ -646,6 +781,25 @@ class Api::ShowmesController < ApplicationController
       "latitude": mapArray[0],
       "longitude": mapArray[1]
     };
+    client = client_selecter(sender)
+    client.broadcast(message)
+  end
+
+  def broadcast_carousel(sender,contents)
+    bubble_list = []
+    bubble_ids = contents.split(",")
+    bubble_ids.each do |id|
+      bubble = BubblesArchive.find(id)
+      bubble_list.push(bubble_converter(bubble))
+    end
+    message = {
+      type: "flex",
+      altText: "this is a flex carousel",
+      contents: {
+        type: "carousel",
+        contents: bubble_list
+      }
+    }
     client = client_selecter(sender)
     client.broadcast(message)
   end
@@ -962,7 +1116,7 @@ class Api::ShowmesController < ApplicationController
         reply_contents.push(contents)
       when "stamp"
         stamp_id = reaction.attributes["contents"]
-        contents = "https://cdn.lineml.jp/api/media/sticker/"+stamp_id
+        contents = stamp_id
         auto_message.contents = contents
         auto_message.message_type = 'stamp'
         auto_message.package_id = 1
@@ -1018,6 +1172,36 @@ class Api::ShowmesController < ApplicationController
         auto_message.image = image
         reply_contents.push(contents)
         reply_contents.push(image)
+      when "carousel"
+        contents = ""
+        bubble_list = []
+        bubble_ids = reaction.contents.split(",")
+        bubble_ids.each do |id|
+          bubble = Bubble.find(id)
+          bubble_list.push(bubble_converter(bubble))
+          bubble_attributes = bubble.attributes
+          bubble_attributes.delete("id")
+          bubble_attributes.delete("created_at")
+          bubble_attributes.delete("updated_at")
+          @bubbles_archive = BubblesArchive.new(bubble_attributes)
+          @bubbles_archive.save
+          bubbles_archive = BubblesArchive.last
+          contents = contents + bubbles_archive.id.to_s
+        end
+
+        auto_message.contents = contents
+        auto_message.message_type = 'carousel'
+        auto_message.save
+
+        contents = {
+          type: "flex",
+          altText: "this is a flex carousel",
+          contents: {
+            type: "carousel",
+            contents: bubble_list
+          }
+        }
+        reply_contents.push(contents)
       end
     end
     update_msg = Message.where(sender: message.receiver, receiver: message.sender, reply_token: message.reply_token)
@@ -1035,7 +1219,23 @@ class Api::ShowmesController < ApplicationController
       contents = contents.gsub(/<br>/,'')
     end
     if contents.include?"&nbsp;"
-      contents = contents.gsub(/&nbsp;/,'')
+      contents = contents.gsub(/&nbsp;/,' ')
+    end
+    if contents.include?"&amp;"
+      contents = contents.gsub(/&amp;/,'&')
+    end
+    if contents.include?"&quot;"
+      contents = contents.gsub(/&quot;/,'"')
+    end
+    if contents.include?"&lt;"
+      contents = contents.gsub(/&lt;/,'<')
+    end
+    if contents.include?"&gt;"
+      contents = contents.gsub(/&gt;/,'>')
+    end
+    if contents.include?"<span"
+      contents = contents.gsub(/<span style="font-size: 20px;">/,'')
+      contents = contents.gsub(/<\/span>/,'')
     end
     if contents.include?("<img src=")
       tempText = contents.gsub(/<img src="/,'^').gsub(/" style="width: 30px;">/,'^').gsub(/" style="font-size: 1rem; width: 30px;">/,'^')
@@ -1062,11 +1262,13 @@ class Api::ShowmesController < ApplicationController
     contents = params[:contents]
     image = params[:image]
     contents_array = []
+    receiver = message.sender
+    sender = message.receiver
 
     if image.present?
-      message = Message.new({sender: message.receiver, receiver: message.sender, message_id: message.message_id+'a', fr_account: message.fr_account, group_id: message.group_id, reply_token: message.reply_token, check_status: 'answered', image: image})
+      message = Message.new({sender: sender, receiver: receiver, message_id: message.message_id+'a', fr_account: message.fr_account, group_id: message.group_id, reply_token: message.reply_token, check_status: 'answered', image: image})
     else
-      message = Message.new({sender: message.receiver, receiver: message.sender, message_id: message.message_id+'a', fr_account: message.fr_account, group_id: message.group_id, reply_token: message.reply_token, check_status: 'answered', image: nil})
+      message = Message.new({sender: sender, receiver: receiver, message_id: message.message_id+'a', fr_account: message.fr_account, group_id: message.group_id, reply_token: message.reply_token, check_status: 'answered', image: nil})
     end
 
     case message_type
@@ -1115,6 +1317,25 @@ class Api::ShowmesController < ApplicationController
         address: map_array[0],
         latitude: latlng_array[0],
         longitude: latlng_array[1]
+      }
+      contents_array.push(contents)
+    when "carousel"
+      message.contents = contents
+      message.message_type = 'carousel'
+      message.save
+      bubble_list = []
+      bubble_ids = contents.split(",")
+      bubble_ids.each do |id|
+        bubble = BubblesArchive.find(id)
+        bubble_list.push(bubble_converter(bubble))
+      end
+      contents = {
+        type: "flex",
+        altText: "this is a flex carousel",
+        contents: {
+          type: "carousel",
+          contents: bubble_list
+        }
       }
       contents_array.push(contents)
     end

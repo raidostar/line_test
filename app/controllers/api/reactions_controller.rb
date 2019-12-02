@@ -4,7 +4,11 @@ class Api::ReactionsController < ApplicationController
     @reactions = []
     if option.match_reaction.present?
       reaction_ids = option.match_reaction.split(",")
-      @reactions = Reaction.where(id: reaction_ids).order(option.match_reaction)
+      reaction_ids.each do |id|
+        reaction = Reaction.find_by(id: id)
+        @reactions.push(reaction)
+      end
+      render json: @reactions, status: :ok
     end
   end
 
@@ -12,9 +16,11 @@ class Api::ReactionsController < ApplicationController
     group = current_user.group
     option = Option.find_by(user_group: group, option_type: 'welcomeReply')
     @reactions = []
-    if option.match_reaction.present?
-      reaction_ids = option.match_reaction.split(",")
-      @reactions = Reaction.where(id: reaction_ids)
+    if option.present?
+      if option.match_reaction.present?
+        reaction_ids = option.match_reaction.split(",")
+        @reactions = Reaction.where(id: reaction_ids)
+      end
     end
     render json: @reactions, status: :ok
   end

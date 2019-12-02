@@ -82,10 +82,16 @@ select {
   box-shadow: 0 0 1px rgba(0, 0, 0, 0.15);
 }
 .fadeInOut-enter-active {
-  animation: fadeInLeft .5s;
+  animation: fadeInDown .5s;
 }
 .fadeInOut-leave-active {
-  animation: fadeInLeft .5s reverse;
+  animation: fadeInDown .5s reverse;
+}
+.showInOut-enter-active {
+  animation: fadeIn .5s;
+}
+.showInOut-leave-active {
+  animation: fadeIn .5s reverse;
 }
 .right-panel {
   margin: 16px 10px;
@@ -180,7 +186,7 @@ label.stampBtn:focus {
   height: 32%;
   border-radius: 8px;
   position: absolute;
-  top: 9.5em;
+  top: 14.5em;
   left: 38em;
   text-align: center;
   margin: 0 auto;
@@ -195,8 +201,8 @@ label.stampBtn:focus {
   border-radius: 8px;
   background-color: white;
   position: absolute;
-  top: 10em;
-  left: 37.3em;
+  top: 15em;
+  left: 37em;
   text-align: center;
   margin: 0 auto;
 }
@@ -285,7 +291,7 @@ label.stampBtn:focus {
   height: 12em;
   position: absolute;
   z-index: 3000;
-  top: 58.6%;
+  top: 67.6%;
   left: 19.2%;
   background-color: white;
   border-radius: 8px;
@@ -466,7 +472,7 @@ a:not([href]):not([tabindex]):hover{
   border-radius: 8px;
   background-color: white;
   position: absolute;
-  top: 20%;
+  top: 30%;
   left: 43.5%;
   text-align: center;
   margin: 0 auto;
@@ -530,12 +536,6 @@ a:not([href]):not([tabindex]):hover{
   top: 6.7em;
   right: 4.5em;
 }
-.fadeInOut-enter-active {
-  animation: fadeInDown .5s;
-}
-.fadeInOut-leave-active {
-  animation: fadeInDown .5s reverse;
-}
 .setting-icon {
   color: grey;
   font-size: 30px;
@@ -553,10 +553,9 @@ a:not([href]):not([tabindex]):hover{
   text-align: left;
   width: 98%;
   height: 9em;
-  border: 1px solid #FFF;
+  /*border: 1px solid #FFF;
   border-radius: 8px;
-  box-shadow: 0 0 10px #666;
-  margin-top: 4em;
+  box-shadow: 0 0 10px #666;*/
 }
 .cancelBtn {
   color: grey;
@@ -586,51 +585,47 @@ div.inline-radio button:active{
   background: white;
 }
 .carouselArea {
-  width: 40.4%;
   height: 63.8%;
   position: absolute;
   left: 18.4em;
   background: #2C3E5B;
   border-radius: 8px;
-  top: 9.5em;
+  top: 14.2em;
+  z-index: 4;
 }
 .carousel-box {
-  width: 57%;
   height: 100%;
   float: left;
   overflow-x: scroll;
   overflow-y: hidden;
-  margin-right: 15px;
 }
 .bubble {
   background: white;
   width: 280px;
-  height: 95%;
+  height: 94%;
   border-radius: 8px;
   margin: .1em .3em;
   display: inline-block;
   vertical-align: text-top;
 }
-.bubble {
 
-}
 .add-button {
   float: left;
   height: 64vh;
-  width: auto;
+  width: 3%;
   z-index: 10;
   color: white;
 }
-.add-circle {
+.open-circle {
   font-size: 30px;
   color: white;
   margin-top: 30vh;
 }
-.add-circle:hover {
+.open-circle:hover {
   font-size: 33px;
   cursor: pointer;
 }
-.add-circle:active {
+.open-circle:active {
   font-size: 30px;
 }
 .bubble-box {
@@ -638,31 +633,24 @@ div.inline-radio button:active{
   height: 100%;
 }
 .header-block {
-  border-radius: 8px;
-  text-align: center;
-  height: 15%;
-  border: 3px dotted #111;
+  min-height: 16%;
+  text-align: left;
 }
 .hero-block {
-  border-radius: 8px;
-  text-align: center;
-  height: 39%;
-  border: 3px dotted #111;
+  height: 54%;
 }
 .body-block {
-  border-radius: 8px;
-  text-align: center;
-  height: 34%;
-  border: 3px dotted #111;
+  min-height: 16%;
+  text-align: left;
 }
 .footer-block {
-  border-radius: 8px;
+  min-height: 12%;
   text-align: center;
-  height: 10%;
-  border: 3px dotted #111;
 }
 .blocks {
   margin: 2px 1px;
+  border-radius: 8px;
+  border: 3px dotted #111;
 }
 .blocks:focus {
   outline: none;
@@ -685,17 +673,21 @@ div.inline-radio button:active{
   outline: none;
 }
 .add-label {
-  width: 11%;
-  height: 15%;
+  width: 100%;
+  height: 100%;
   border-radius: 8px;
-  margin-top: 10vh;
+  margin-bottom: 0;
+}
+.add-label:hover {
+  cursor: pointer;
 }
 .control-box {
   float: left;
-  height: 64vh;
-  width: 33%;
+  height: 63vh;
+  width: 11em;
   z-index: 10;
   color: white;
+  overflow: scroll;
 }
 .css-option {
   height: 2em;
@@ -703,27 +695,172 @@ div.inline-radio button:active{
 }
 .add-bubble-image {
   font-size: 30px;
-  width: 100%;
+  width: auto;
   height: auto;
   color: grey;
-  margin: 0px 0px;
+  margin: 11vh 4em;
 }
 .add-bubble-image:hover {
-  cursor: pointer;
-  font-size: 33px;
+  color: darkgrey;
 }
 .add-bubble-image:active {
   font-size: 30px;
 }
 .color{
   height: 4.3em;
+  margin-bottom: 2em;
 }
 input[type=text]:not(.browser-default) {
   width: 75%;
   text-align: center;
-  height: 2em;
+  height: 1.5em;
   color: white;
 }
 .bubble-setting {
   margin-bottom: 1em;
+}
+.empty-bubble {
+  width: 97%;
+  height: 99%;
+  margin: .2em .3em;
+  border: 3px dotted black;
+  border-radius: 8px;
+  background-color: lightgrey;
+}
+.add-circle {
+  font-size: 30px;
+  margin-top: 27vh;
+  margin-left: 4em;
+  color: #2C3E5B;
+}
+.add-circle:hover {
+  cursor: pointer;
+  color: white;
+}
+.carousel-img-area {
+  width: 100%;
+  height: 95%;
+  position: relative;
+  bottom: 100%;
+}
+.carousel-img {
+  max-width: 100%;
+  max-height: 100%;
+}
+.result-blocks {
+  margin: 2px 1px;
+  border-radius: 8px;
+}
+.component{
+  width: fit-content;
+  min-width: 4em;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: scroll;
+  border: 1px dotted grey;
+  border-radius: 8px;
+  text-align: center;
+  padding: 0 15px;
+  line-height: 100%;
+}
+.component:focus {
+  outline: none;
+}
+.color-sample {
+  width: 77%;
+  margin: 0 auto;
+  height: 1.5em;
+}
+.rounder1 {
+  border-radius: 8px 8px 0px 0px;
+}
+.rounder2 {
+  border-radius: 8px;
+}
+.colorExchange {
+  margin: 1em auto;
+  width: 91%;
+  background-image: linear-gradient(-90deg, #e83e8c, #ffc107);
+  color: white;
+  border-radius: 8px;
+}
+.colorExchange:focus {
+  outline: none;
+}
+.copyChu {
+  /*margin: 1em auto;
+  width: 91%;
+  background-color: #333333;
+  color: white;
+  border-radius: 8px;*/
+  margin: 1em auto;
+  width: 91%;
+  border-radius: 8px;
+  margin-bottom: 0;
+}
+.copyChu:focus {
+  outline: none;
+}
+.copy-bubble{
+  width: 49.5%;
+  color: white;
+  background: #0000FF;
+  font-weight: 600;
+  border-radius: 8px;
+  letter-spacing: 8px;
+  float: left;
+  box-shadow: 0 0 2px #666;
+}
+.copy-bubble:focus {
+  outline: none;
+}
+.remove-bubble {
+  width: 49.5%;
+  color: white;
+  background: #CC0000;
+  font-weight: 600;
+  border-radius: 8px;
+  letter-spacing: 8px;
+}
+.remove-bubble:focus {
+  outline: none;
+}
+.copy {
+  color: white;
+  background-image: linear-gradient(-90deg, #009b00, #009baa);
+}
+.paste {
+  color: #ffffff;
+  background-image: linear-gradient(-90deg, #dc3545, #fd7e14);
+}
+.image-change{
+  background-image: linear-gradient(-90deg, #009b00, #009baa);
+  border: 1px solid white;
+  font-size: 16px;
+  color: white;
+  width: 90%;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.image-change:active {
+  border: 1px solid #333333;
+  color: #333333;
+}
+.image-remove {
+  background-image: linear-gradient(-90deg, #dc3545, #fd7e14);
+  border: 1px solid white;
+  font-size: 16px;
+  color: white;
+  width: 90%;
+  border-radius: 8px;
+}
+.image-remove:focus {
+  outline: none;
+}
+.design-buttons {
+  margin-bottom: 2em;
+}
+.detail-title {
+  font-size: 20px;
+  font-weight: 600;
 }

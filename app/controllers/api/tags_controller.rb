@@ -15,34 +15,51 @@ class Api::TagsController < ApplicationController
     end
   end
 
-  def edit
-
+  def update
+    @tag = Tag.find(params[:id])
+    new_name = params[:name]
+    if @tag.update(name: new_name)
+      render :show, status: :ok
+    else
+      render json: @tag.errors, status: :unprocessable_entity
+    end
   end
 
   def destroy
     @tag = Tag.find(params[:id])
-    tag_name = @tag.attributes['name']+','
-    case @tag.tag_group
-    when 'option'
-      options = Option.where("tag like '%"+tag_name+"%'")
-      options.each do |opt|
-        puts "1번"
-        tag = opt.tag.gsub(tag_name,'')
-        puts "2번"
-        opt.update(tag: tag)
-        puts "3번"
+    tag_name = @tag.attributes['name']
+    if tag_name != "ALL"
+      case @tag.tag_group
+      when 'option'
+        options = Option.where("tag like '%"+tag_name+"%'")
+        options.each do |opt|
+          option_tag = opt.tag.split(",")
+          option_tag = option_tag.delete(tag_name)
+          tag = option_tag.join(",")
+          opt.update(tag: tag)
+        end
+      when 'reaction'
+        reactions = Reaction.where("tag like '%"+tag_name+"%'")
+        reactions.each do |act|
+          reaction_tag = act.tag.split(",")
+          reaction_tag = reaction_tag.delete(tag_name)
+          tag = reaction_tag.join(",")
+          act.update(tag: tag)
+        end
+      when 'friend'
+        friends = Friend.where("tags like '%"+tag_name+"%'")
+        friends.each do |friend|
+          friend_tag = friend.tags.split(",")
+          friend_tag = friend_tag.delete(tag_name)
+          tag = friend_tag.join(",")
+          friend.update(tag: tag)
+        end
       end
-    when 'reaction'
-      reactions = Reaction.where("tag like '%"+tag_name+"%'")
-      reactions.each do |act|
-        tag = act.tag.gsub(tag_name,'')
-        act.update(tag: tag)
+      if @tag.destroy
+        render :index, status: :ok
+      else
+        render json: @tag.errors, status: :unprocessable_entity
       end
-    end
-    if @tag.destroy
-      render :index, status: :ok
-    else
-      render json: @tag.errors, status: :unprocessable_entity
     end
   end
 

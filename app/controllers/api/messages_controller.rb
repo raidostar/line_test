@@ -87,6 +87,12 @@ class Api::MessagesController < ApplicationController
     render json: message, status: :ok
   end
 
+  def fetch_reply
+    reply_token = params[:reply_token]
+    @messages = Message.where(reply_token: reply_token)
+    render :index, status: :ok
+  end
+
   def fetch_messages_data
     infos = []
     datetime = DateTime.now

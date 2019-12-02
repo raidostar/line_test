@@ -5,6 +5,7 @@ html, body {
 
 h3{
   padding-top: 20px;
+  margin-bottom: 0px;
 }
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
@@ -111,8 +112,8 @@ div.container{
   text-align: center;
 }
 nav, nav .nav-wrapper i, nav a.sidenav-trigger, nav a.sidenav-trigger i {
-    height: 64px;
-    line-height: 45px;
+  height: 64px;
+  line-height: 45px;
 }
 button:focus {
   outline: none;
@@ -140,4 +141,18 @@ a:focus {
 }
 .hide-on-med-and-down {
   height: 100%;
+}
+.selected-mode{
+  text-align: center;
+  font-size: large;
+  background: #ffffff;
+  color: #000000;
+}
+::-moz-selection {
+   background: #00B900;
+   color: #ffffff;
+}
+::selection {
+   background: #00B900;
+   color: #ffffff;
 }

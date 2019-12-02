@@ -1,0 +1,74 @@
+.page {
+  height: 92vh;
+  width: 100%;
+  overflow: scroll;
+  scroll-behavior: smooth;
+  margin-top: 51px;
+}
+h3 {
+  margin-bottom: 0px;
+}
+.col-left{
+  width: 38%;
+  float: left;
+  height: 91vh;
+}
+.col-right{
+  width: 62%;
+  float:right;
+  height: 91vh;
+}
+.richmenu-image {
+  position: absolute;
+  top: 51px;
+  right: 0px;
+  z-index: 5;
+  width: 50em;/* 37.5% */
+  height: 33.8em;/* 37.5% */
+  float: right;
+  background-color: yellow;
+  border: 3px solid #777777;
+}
+.original-point {
+  position: absolute;
+  background: white;
+  border: .5px solid #111111;
+  width: 8px;
+  height: 8px;
+}
+.selected-range {
+  position: absolute;
+  border: 3px dotted #999999;
+  background-color: #99CCFF;
+  opacity: 0.5;
+  max-width: 937.5px;
+  max-height: 632px;
+}
+.richmenu-list{
+  background-color: #20c997;
+  width: 48.8%;
+  height: 100%;
+  float: left;
+  margin-right: .3em;
+}
+.mouse-location{
+  width: 100%;
+  background-color: #007bff;
+  float: right;
+}
+.imageBtn {
+  display: none;
+}
+.rich-image {
+  z-index: 3;
+}
+.rich-select{
+  z-index: 5;
+}
+.richmenu-img {
+  position: absolute;
+  width: 100%;
+  top: 0px;
+  right: 0px;
+  z-index: 3;
+}

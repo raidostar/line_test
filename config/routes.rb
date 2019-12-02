@@ -30,6 +30,10 @@ Rails.application.routes.draw do
   end
 
   namespace :api, format: 'json' do
+    resources :bubbles_archives
+  end
+
+  namespace :api, format: 'json' do
     resources :follows
   end
 
@@ -94,4 +98,8 @@ Rails.application.routes.draw do
   post 'api/update_option_bool' => 'api/options#update_option_bool'
   post 'api/update_option_remind' => 'api/options#update_option_remind'
   post 'api/notify_again' => 'api/showmes#notify_again'
+  post 'api/fetch_bubbles' => 'api/bubbles#fetch_bubbles'
+  post 'api/fetch_bubbles_archives' => 'api/bubbles_archives#fetch_bubbles_archives'
+  post 'api/fetch_reply' => 'api/messages#fetch_reply'
+  post 'api/update_bubbles' => 'api/bubbles#update_bubbles'
 end
