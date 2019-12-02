@@ -60,6 +60,7 @@ class Api::ShowmesController < ApplicationController
       messages
       )
     logger.warn res.read_body unless Net::HTTPOK === res
+    render json: messages, status: :ok
   end
 
   def callback
@@ -89,17 +90,18 @@ class Api::ShowmesController < ApplicationController
         profile = JSON.parse(profile.read_body)
 
         fr_account = event['source']['userId']
-        option = Option.find_by(user_group: @group, option_type: 'welcomeReply')
+
         friend = Friend.find_by(fr_account: fr_account)
         if friend.blank?
           friend = add_friend(fr_account,profile['displayName'],profile['pictureUrl'],profile['statusMessage'],@group_id)
         else
           unblock(fr_account)
         end
+        option = Option.find_by(user_group: @group, option_type: 'welcomeReply')
         if option.present?
-          if option.bool&&friend.block_at.blank?
+          if option.bool&&!friend.block_at.present?
             send_welcome_message(option,event)
-          elsif option.remind_after=='1'&&friend.block_at.present?
+          elsif option.remind_bool&&friend.block_at.present?
             send_welcome_message(option,event)
           end
         end
@@ -200,7 +202,6 @@ class Api::ShowmesController < ApplicationController
 
   def bubble_converter(bubble)
     converted_bubble = { type: "bubble" }
-
     if bubble.header.present?
       converted_bubble[:header] = header_converter(bubble.header, bubble.header_gravity, bubble.header_align,
         bubble.header_size, bubble.header_bold, bubble.header_color, bubble.header_background)
@@ -389,6 +390,7 @@ class Api::ShowmesController < ApplicationController
   end
 
   def handle_message(event)
+    check_user(event)
     case event.type
     when Line::Bot::Event::MessageType::Image
       message_id = event.message['id']
@@ -545,14 +547,11 @@ class Api::ShowmesController < ApplicationController
 
           @message = Message.new({sender: profile['displayName'], receiver: @group, contents: event.message['text'], message_type: 'text', message_id: event.message['id'], sticker_id: nil, package_id: nil, fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'unchecked'})
           message = Message.new({sender: @group, receiver: profile['displayName'], message_id: event.message['id'],fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'answered'})
+
           save_message(@message)
           update_friend_info(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],group_id,@message.contents)
           event.message['text'] = unicodeConverter(event.message['text'])
-          puts "WhY???????????"
-          puts @group
-
           auto_reply = option_checker(event,message)
-
           # reply_text(event, "ありがとうございます。")
         else
           reply_text(event, "Bot can't use profile API without user ID")
@@ -561,6 +560,27 @@ class Api::ShowmesController < ApplicationController
     else
       logger.info "Unknown message type: #{event.type}"
       reply_text(event, "[UNKNOWN]\n#{event.type}")
+    end
+  end
+
+  def check_user(event)
+    fr_account = event['source']['userId']
+    group_id = @group_id
+    friend = Friend.find_by(fr_account: fr_account)
+    if friend.present?
+      puts "user check success"
+    else
+      response = client.get_profile(fr_account)
+      case response
+      when Net::HTTPSuccess then
+        contact = JSON.parse(response.body)
+        fr_name = contact['displayName']
+        profile_pic = contact['pictureUrl']
+        profile_msg = contact['statusMessage']
+        add_friend(fr_account,fr_name,profile_pic,profile_msg,group_id)
+      else
+        p "#{response.code} #{response.body}"
+      end
     end
   end
 
@@ -606,7 +626,8 @@ class Api::ShowmesController < ApplicationController
 
   def save_message(message)
     if message.save
-      render :index, status: :ok
+      # render :index, status: :ok
+      puts "message saved"
     else
       render json: @message.errors, status: :unprocessable_entity
     end
@@ -632,10 +653,10 @@ class Api::ShowmesController < ApplicationController
   end
 
   def unblock(fr_account)
-    friend = Friend.where(fr_account: fr_account)
+    @friend = Friend.where(fr_account: fr_account)
     now = Time.new
-    if friend.update(block: 0, follow_at: now)
-      render html: '/api/friends', status: :ok
+    if @friend.update(block: 0, follow_at: now)
+      return @friend
     else
       render json: @message.errors, status: :unprocessable_entity
     end
@@ -692,6 +713,8 @@ class Api::ShowmesController < ApplicationController
       address_array = map_converter(contents)
       broadcast_map(sender,address_array)
       @notify.contents = address_array[0]
+    elsif @notify.notify_type == "carousel"
+      broadcast_carousel(sender,contents)
     end
     if @notify.save
       render json: @notify, status: :ok
@@ -758,6 +781,25 @@ class Api::ShowmesController < ApplicationController
       "latitude": mapArray[0],
       "longitude": mapArray[1]
     };
+    client = client_selecter(sender)
+    client.broadcast(message)
+  end
+
+  def broadcast_carousel(sender,contents)
+    bubble_list = []
+    bubble_ids = contents.split(",")
+    bubble_ids.each do |id|
+      bubble = BubblesArchive.find(id)
+      bubble_list.push(bubble_converter(bubble))
+    end
+    message = {
+      type: "flex",
+      altText: "this is a flex carousel",
+      contents: {
+        type: "carousel",
+        contents: bubble_list
+      }
+    }
     client = client_selecter(sender)
     client.broadcast(message)
   end
@@ -1131,16 +1173,26 @@ class Api::ShowmesController < ApplicationController
         reply_contents.push(contents)
         reply_contents.push(image)
       when "carousel"
-        contents = reaction.attributes["contents"]
-        auto_message.contents = contents
-        auto_message.message_type = 'carousel'
-        auto_message.save
+        contents = ""
         bubble_list = []
         bubble_ids = reaction.contents.split(",")
         bubble_ids.each do |id|
           bubble = Bubble.find(id)
           bubble_list.push(bubble_converter(bubble))
+          bubble_attributes = bubble.attributes
+          bubble_attributes.delete("id")
+          bubble_attributes.delete("created_at")
+          bubble_attributes.delete("updated_at")
+          @bubbles_archive = BubblesArchive.new(bubble_attributes)
+          @bubbles_archive.save
+          bubbles_archive = BubblesArchive.last
+          contents = contents + bubbles_archive.id.to_s
         end
+
+        auto_message.contents = contents
+        auto_message.message_type = 'carousel'
+        auto_message.save
+
         contents = {
           type: "flex",
           altText: "this is a flex carousel",
@@ -1274,7 +1326,7 @@ class Api::ShowmesController < ApplicationController
       bubble_list = []
       bubble_ids = contents.split(",")
       bubble_ids.each do |id|
-        bubble = Bubble.find(id)
+        bubble = BubblesArchive.find(id)
         bubble_list.push(bubble_converter(bubble))
       end
       contents = {

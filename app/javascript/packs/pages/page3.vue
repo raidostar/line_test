@@ -114,7 +114,7 @@
           </button>
         </div>
         <div class="chattingArea">
-          <div v-show="uploadedImage"  class="attachedImgPanel">
+          <div v-show="uploadedImage" class="attachedImgPanel">
             <a class="closeStamp" @click="closeImage" style="margin-right: 1em;">X</a>
             <p>[イメージ]</p>
             <img class="attachedImg" :src="uploadedImage">
@@ -153,7 +153,7 @@
               <span class="left-time">{{msg.created_at}}</span>
             </div>
             <div v-else-if="msg.check_status=='answered'">
-              <div class="balloon-right" v-if="msg.message_type=='text'" style="max-width: 10em;">
+              <div class="balloon-right" v-if="msg.message_type=='text'">
                 <span v-html="msg.contents">{{msg.contents}}</span>
               </div>
               <div class="balloon-image" v-else-if="msg.message_type=='stamp'">
@@ -174,7 +174,7 @@
                           </div>
                           <div class="result-blocks hero-block">
                             <div class="carousel-img-area" v-show="bubble.image.url" style="bottom: -1%; display: grid; align-items: center;justify-content: center;">
-                              <img class="carousel-img" :src="bubble.image.url">
+                              <img class="carousel-img" :src="bubble.image.url" style="width: 100%;">
                             </div>
                           </div>
                           <div class="result-blocks body-block">
@@ -209,7 +209,6 @@
           </div>
         </div>
       </div>
-
 
       <!-- stamp image area -->
       <div class="stampArea" v-show="stampAreaShow">
@@ -404,11 +403,11 @@
             </div>
           </div>
         </div>
-        <div class="add-button">
-          <i class="material-icons open-circle" @click="stretchCarouselToggle" v-if="!carouselOpen">
+        <div class="add-button" @click="stretchCarouselToggle">
+          <i class="material-icons open-circle" v-if="!carouselOpen">
             keyboard_arrow_right
           </i>
-          <i class="material-icons open-circle" @click="stretchCarouselToggle" v-if="carouselOpen">
+          <i class="material-icons open-circle" v-if="carouselOpen">
             keyboard_arrow_left
           </i>
         </div>
@@ -579,10 +578,7 @@
         axios.get('/api/messages').then((res) => {
           this.messageList = []
           this.reverseMessageList = []
-          this.bubbles = []
-          this.resultHeaderCSS = []
-          this.resultBodyCSS = []
-          this.resultFooterCSS = []
+
           for(let message of res.data.messages){
             let time = message.created_at+""
             message.created_at = time.substr(0,19).replace('T'," ")
@@ -614,19 +610,12 @@
         this.currentPage = 1;
       },
       messageToggle(){
-        this.bubble_array = [{
-          header: 'header', hero: null, body: 'body', footer: 'footer',
-          header_gravity: 'top', header_align: 'start', header_size: 'md', header_bold: 'regular', header_color: '#111111',
-          header_background: '#ffffff', hero_size: 'full', hero_align: 'center', hero_background: '#ffffff', hero_ratio: '1:1'
-          ,body_gravity: 'top', body_align: 'start', body_size: 'md', body_bold: 'regular', body_color: '#111111',
-          body_background: '#ffffff', footer_gravity: 'top', footer_align: 'center', footer_size: 'md', footer_bold: 'regular'
-          ,footer_color: '#111111', footer_background: '#ffffff', footer_type: 'text', footer_button: 'uri',footer_uri: '',
-          footer_message: ''
-        }]
+        this.clearCarousel();
         this.carouselAreaShow = false
         this.replyShow = !this.replyShow
         if(this.replyShow==false){
           this.emptyAll();
+          this.fetchMessage();
         }
       },
       emptyAll(){
@@ -697,6 +686,10 @@
       },
       toggleCarousel(){
         this.emptyAll();
+        this.clearCarousel();
+        this.carouselAreaShow = !this.carouselAreaShow
+      },
+      clearCarousel(){
         this.bubble_array = [{
           header: 'header', hero: null, body: 'body', footer: 'footer',
           header_gravity: 'top', header_align: 'start', header_size: 'md', header_bold: 'regular', header_color: '#111111',
@@ -706,8 +699,36 @@
           ,footer_color: '#111111', footer_background: '#ffffff', footer_type: 'text', footer_button: 'uri',footer_uri: '',
           footer_message: ''
         }]
+        this.header = ['header']
+        this.body = ['body']
+        this.footer = ['footer']
         this.heros = []
-        this.carouselAreaShow = !this.carouselAreaShow
+
+        this.headerCSS = [{'margin-left':'0', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}]
+        this.heroCSS = [{'text-align':'center','background-color':'#ffffff'}]
+        this.imageCSS = [{'width':'100%', 'height': 'auto'}]
+        this.imageSize = ['100%']
+        this.bodyCSS = [{'margin-left':'0', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}]
+        this.footerCSS = [{'margin-left':'auto', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}]
+        this.headerBackground = [{'background-color':'#ffffff'}]
+        this.bodyBackground = [{'background-color':'#ffffff'}]
+        this.footerBackground = [{'background-color':'#ffffff'}]
+
+        this.gravity = 'top'
+        this.align = 'start'
+        this.color = '#111111'
+        this.background = '#ffffff'
+        this.size = 'md'
+        this.bold = 'regular'
+        this.heroWidth = 1
+        this.heroHeight = 1
+        this.footer_type = 'text'
+        this.footer_button = 'uri'
+        this.footer_uri = ''
+        this.footer_message = ''
+        this.selectedBubble = null
+        this.selectedComponent = null
+        this.carouselOpen = false
       },
       toggleMap(){
         this.uploadedImage = ""
@@ -945,9 +966,9 @@
             data.append('footer_message[]', this.bubble_array[i].footer_message)
           }
           data.append('bubble_num',this.bubble_array.length)
-          axios.post('api/bubbles',data)
+          axios.post('api/bubbles_archives',data)
           .then((res)=>{
-            console.log(res.data)
+            //console.log(res.data)
             const data = res.data.toString()
             axios.post('/api/direct_reply',{
               message_id: this.selectedMessage.id,
@@ -1062,6 +1083,10 @@
         this.replyToken = msg.reply_token
         this.selectedMessage = msg
         this.loadProfile(msg.fr_account)
+        this.bubbles = []
+        this.resultHeaderCSS = []
+        this.resultBodyCSS = []
+        this.resultFooterCSS = []
         axios.post('api/read_message',{
           id: msg.id
         }).then((res)=>{
@@ -1075,7 +1100,7 @@
         axios.post('api/fetch_reply',{
           reply_token: data
         }).then((res)=>{
-          console.log(res.data)
+          //console.log(res.data)
           this.reverseMessageList = res.data.messages
           for(var msg of this.reverseMessageList){
             let time = msg.created_at+""
@@ -1192,13 +1217,13 @@
         this.bubble_array.pop();
       },
       syncHeader(index){
-        this.bubble_array[index].header = this.header[index]
+        this.bubble_array[index].header = this.$refs.header[index].innerHTML
       },
       syncBody(index){
-        this.bubble_array[index].body = this.body[index]
+        this.bubble_array[index].body = this.$refs.body[index].innerHTML
       },
       syncFooter(index){
-        this.bubble_array[index].footer = this.footer[index]
+        this.bubble_array[index].footer = this.$refs.footer[index].innerHTML
       },
       syncGravity(){
         var i = this.selectedBubble
@@ -1622,7 +1647,7 @@
         }
       },
       fetchBubbles(ids){
-        axios.post('api/fetch_bubbles',{
+        axios.post('api/fetch_bubbles_archives',{
           ids: ids
         }).then((res)=>{
           // console.log("bubble수집")

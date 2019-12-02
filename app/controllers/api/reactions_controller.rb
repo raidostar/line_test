@@ -4,7 +4,11 @@ class Api::ReactionsController < ApplicationController
     @reactions = []
     if option.match_reaction.present?
       reaction_ids = option.match_reaction.split(",")
-      @reactions = Reaction.where(id: reaction_ids)
+      reaction_ids.each do |id|
+        reaction = Reaction.find_by(id: id)
+        @reactions.push(reaction)
+      end
+      render json: @reactions, status: :ok
     end
   end
 
@@ -139,13 +143,6 @@ class Api::ReactionsController < ApplicationController
         else
           render json: option.errors, status: :unprocessable_entity
         end
-      end
-    end
-    if @reaction.reaction_type=='carousel'
-      bubble_ids = @reaction.contents.split(",")
-      bubble_ids.each do |id|
-        @bubble = Bubble.find(id)
-        @bubble.destroy
       end
     end
     @reaction.destroy

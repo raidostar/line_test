@@ -5,6 +5,7 @@ html, body {
 
 h3{
   padding-top: 20px;
+  margin-bottom: 0px;
 }
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
@@ -146,4 +147,12 @@ a:focus {
   font-size: large;
   background: #ffffff;
   color: #000000;
+}
+::-moz-selection {
+   background: #00B900;
+   color: #ffffff;
+}
+::selection {
+   background: #00B900;
+   color: #ffffff;
 }

@@ -323,6 +323,7 @@
         }).then((res)=>{
           // console.log("bubble수집")
           // console.log(res.data)
+          console.log(this.bubbles)
           for(var bubble of res.data){
             this.bubbles.push(bubble)
             var headerResult = {'display':'grid', 'height': '7vh'}
@@ -361,11 +362,7 @@
           let height = this.$refs.result.clientHeight
           let scrollTop = this.$refs.result.scrollTop
           let scrollHeight = this.$refs.result.scrollHeight
-          console.log(height)
-          console.log(scrollTop)
-          console.log(scrollHeight)
           scrollTop = scrollHeight - height
-          console.log(scrollTop)
           this.$refs.result.scrollTop = scrollTop
         },(error)=>{
           console.log(error)
@@ -583,5 +580,4 @@ input.tagInput {
   font-weight: 500;
   float: left;
 }
-
 </style>

@@ -9,7 +9,7 @@
         <div class="personDetails">
           <div class="detail panel-left" v-model="welcome_bool">
             <p class="detail-title">友達新規登録メッセージ配信</p>
-            <div class="inline-radio" v-if="!welcome_bool">
+            <div class="inline-radio" v-if="welcome_bool">
               <div><button type="button" style="background: #28a745;">ON</button></div>
               <div><button type="button" @click="welcomeToggle">OFF</button></div>
             </div>
@@ -20,7 +20,7 @@
           </div>
           <div class="detail panel-right" v-model="remind_bool">
             <p class="detail-title">友達再登録メッセージ配信</p>
-            <div class="inline-radio" v-if="!remind_bool">
+            <div class="inline-radio" v-if="remind_bool">
               <div><button type="button" style="background: #28a745;">ON</button></div>
               <div><button type="button" @click="remindToggle">OFF</button></div>
             </div>
@@ -166,10 +166,7 @@
         <p>[スタンプ]</p>
         <img class="selectStamp" :src="selectStampUrl">
       </div>
-      <!----------------------------------------------------------------------->
-      <!----------------------------------------------------------------------->
-      <!----------------------------------------------------------------------->
-      <!----------------------------------------------------------------------->
+
       <!-- carousel area -->
       <transition name="showInOut">
         <div class="carouselArea" v-show="carouselAreaShow" :style="carouselAreaWidth">
@@ -282,12 +279,12 @@
               <div class="bubble" v-for="(bubble,index) in bubble_array" :key="bubble.id">
                 <!-- header -->
                 <div class="blocks header-block" v-if="selectedComponent=='header'&&selectedBubble==index" style="border: 5px solid red" :style="headerBackground[index]">
-                  <div class="component header-text" ref="header" contenteditable="true" v-html="header" @input="syncHeader(index)" :style="headerCSS[index]">
+                  <div class="component header-text" ref="header" contenteditable="true" v-html="header[index]" @input="syncHeader(index)" :style="headerCSS[index]">
                   </div>
                 </div>
                 <div class="blocks header-block" @click="selectComponent('header', index)" v-else
                 :style="headerBackground[index]">
-                <div class="component header-text" ref="header" contenteditable="true" v-html="header" @input="syncHeader(index)" :style="headerCSS[index]">
+                <div class="component header-text" ref="header" contenteditable="true" v-html="header[index]" @input="syncHeader(index)" :style="headerCSS[index]">
                 </div>
               </div>
               <input type="text" v-model="bubble.header" style="display: none;">
@@ -314,22 +311,22 @@
 
               <!-- body -->
               <div class="blocks body-block" v-if="selectedComponent=='body'&&selectedBubble==index" style="border: 5px solid red" :style="bodyBackground[index]">
-                <div class="component body-text" ref="body" contenteditable="true" v-html="body" @input="syncBody(index)" :style="bodyCSS[index]">
+                <div class="component body-text" ref="body" contenteditable="true" v-html="body[index]" @input="syncBody(index)" :style="bodyCSS[index]">
                 </div>
               </div>
               <div class="blocks body-block" @click="selectComponent('body', index)" v-else :style="bodyBackground[index]">
-                <div class="component body-text" ref="body" contenteditable="true" v-html="body" @input="syncBody(index)" :style="bodyCSS[index]">
+                <div class="component body-text" ref="body" contenteditable="true" v-html="body[index]" @input="syncBody(index)" :style="bodyCSS[index]">
                 </div>
               </div>
               <input type="text" v-model="bubble.body" style="display: none;">
 
               <!-- footer -->
               <div class="blocks footer-block" v-if="selectedComponent=='footer'&&selectedBubble==index" style="border: 5px solid red" :style="footerBackground[index]">
-                <div class="component footer-text" ref="footer" contenteditable="true" v-html="footer" @input="syncFooter(index)" :style="footerCSS[index]">
+                <div class="component footer-text" ref="footer" contenteditable="true" v-html="footer[index]" @input="syncFooter(index)" :style="footerCSS[index]">
                 </div>
               </div>
               <div class="blocks footer-block" @click="selectComponent('footer', index)" v-else :style="footerBackground[index]">
-                <div class="component footer-text" ref="footer" contenteditable="true" v-html="footer" @input="syncFooter(index)" :style="footerCSS[index]">
+                <div class="component footer-text" ref="footer" contenteditable="true" v-html="footer[index]" @input="syncFooter(index)" :style="footerCSS[index]">
                 </div>
               </div>
               <input type="text" v-model="bubble.footer" style="display: none;">
@@ -440,10 +437,10 @@
           footer_message: ''
         }
         ],
-        header: 'header',
+        header: ['header'],
         heros: [],
-        body: 'body',
-        footer: 'footer',
+        body: ['body'],
+        footer: ['footer'],
         gravity: 'top',
         align: 'start',
         color: '#111111',
@@ -492,13 +489,10 @@
         axios.get('api/options?option_type=welcomeReply').then((res)=>{
           console.log(res.data.options[0].bool)
           console.log(res.data.options[0].remind_after)
-          if(res.data.length>0){
-            this.welcome_bool = res.data.options[0].bool
-            if(res.data.options[0].remind_after=='1'){
-              this.remind_bool = true
-            } else{
-              this.remind_bool = false
-            }
+          var option = res.data.options[0]
+          if(option != null){
+            this.welcome_bool = option.bool
+            this.remind_bool = option.remind_bool
           }
         },(error)=>{
           console.log(error)
@@ -528,6 +522,7 @@
       },
       toggleStamp(){
         this.mapShow = false
+        this.clearCarousel();
         this.carouselAreaShow = false
         this.emojiShow = false
         this.stampShow = !this.stampShow
@@ -536,6 +531,7 @@
         this.stampShow = false
         this.stampAreaShow = false
         this.mapShow = false
+        this.clearCarousel();
         this.carouselAreaShow = false
         this.emojiShow = !this.emojiShow
       },
@@ -584,21 +580,14 @@
       },
       toggleCarousel(){
         this.reactionClear();
-        this.bubble_array = [{
-          header: 'header', hero: null, body: 'body', footer: 'footer',
-          header_gravity: 'top', header_align: 'start', header_size: 'md', header_bold: 'regular', header_color: '#111111',
-          header_background: '#ffffff', hero_size: 'full', hero_align: 'center', hero_background: '#ffffff', hero_ratio: '1:1'
-          ,body_gravity: 'top', body_align: 'start', body_size: 'md', body_bold: 'regular', body_color: '#111111',
-          body_background: '#ffffff', footer_gravity: 'top', footer_align: 'center', footer_size: 'md', footer_bold: 'regular'
-          ,footer_color: '#111111', footer_background: '#ffffff', footer_type: 'text', footer_button: 'uri',footer_uri: '',
-          footer_message: ''
-        }]
+        this.clearCarousel();
         this.carouselAreaShow = !this.carouselAreaShow
       },
       toggleMap(){
         this.uploadedImage = ""
         this.stampShow = false
         this.stampAreaShow = false
+        this.clearCarousel();
         this.carouselAreaShow = false
         this.emojiShow = false
         this.mapShow = !this.mapShow
@@ -657,6 +646,7 @@
           target_day: '0,1,2,3,4,5,6',
           target_time: '00:00,00:00',
           option_type: 'welcomeReply',
+          remind_after: 0,
         }).then((res)=>{
           this.selectedId = res.data.option.id
           this.createReaction();
@@ -678,7 +668,6 @@
             alert("最大メッセージは５つです。");
             return;
           }
-          alert(this.contents)
           axios.post('/api/reactions', {
             name: "text_welcome_message",
             reaction_type: 'text',
@@ -1013,6 +1002,47 @@
           let add = '1_'+i
           this.stampNums.push(add)
         }
+      },
+      clearCarousel(){
+        this.bubble_array = [{
+          header: 'header', hero: null, body: 'body', footer: 'footer',
+          header_gravity: 'top', header_align: 'start', header_size: 'md', header_bold: 'regular', header_color: '#111111',
+          header_background: '#ffffff', hero_size: 'full', hero_align: 'center', hero_background: '#ffffff', hero_ratio: '1:1'
+          ,body_gravity: 'top', body_align: 'start', body_size: 'md', body_bold: 'regular', body_color: '#111111',
+          body_background: '#ffffff', footer_gravity: 'top', footer_align: 'center', footer_size: 'md', footer_bold: 'regular'
+          ,footer_color: '#111111', footer_background: '#ffffff', footer_type: 'text', footer_button: 'uri',footer_uri: '',
+          footer_message: ''
+        }]
+        this.header = ['header']
+        this.body = ['body']
+        this.footer = ['footer']
+        this.heros = []
+
+        this.headerCSS = [{'margin-left':'0', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}]
+        this.heroCSS = [{'text-align':'center','background-color':'#ffffff'}]
+        this.imageCSS = [{'width':'100%', 'height': 'auto'}]
+        this.imageSize = ['100%']
+        this.bodyCSS = [{'margin-left':'0', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}]
+        this.footerCSS = [{'margin-left':'auto', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}]
+        this.headerBackground = [{'background-color':'#ffffff'}]
+        this.bodyBackground = [{'background-color':'#ffffff'}]
+        this.footerBackground = [{'background-color':'#ffffff'}]
+
+        this.gravity = 'top'
+        this.align = 'start'
+        this.color = '#111111'
+        this.background = '#ffffff'
+        this.size = 'md'
+        this.bold = 'regular'
+        this.heroWidth = 1
+        this.heroHeight = 1
+        this.footer_type = 'text'
+        this.footer_button = 'uri'
+        this.footer_uri = ''
+        this.footer_message = ''
+        this.selectedBubble = null
+        this.selectedComponent = null
+        this.carouselOpen = false
       },
       selectStamp(num){
         this.uploadedImage = "";

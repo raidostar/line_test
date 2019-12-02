@@ -1,3 +1,4 @@
+<!--自動応答-->
 <template>
   <div class="page" id="page7" @scroll="mouseScroll" ref="result">
     <div class="inner-area" style="width: 200%">
@@ -7,7 +8,7 @@
             <i class="material-icons folder">folder_open</i>
             条件タグ
           </div>
-          <div :style="flexableMargin">
+          <div>
             <div v-for="(tag,index) in tags" class="added-folder">
               <span v-if="tag.id==selectedTagId">
                 <button
@@ -83,9 +84,9 @@
                           <i class="material-icons keyword_cancel">cancel</i>
                         </a>
                       </div>
-                      <hr style="margin-top: 60px;" />
+                      <hr style="margin-top: 15px;" />
                       <div>
-                        <span style="font-size: 14px;">条件語(クリックすると削除)</span>
+                        <span style="font-size: 14px;">条件語</span>
                         <span v-for="(key,index) in keywords" v-model="keywords" style="margin-top: 10px;">
                           <button class="keywordsTag" @click="removeKeyword(index)">{{key}}</button>
                         </span>
@@ -153,7 +154,7 @@
                       <label class="setting" >全ユーザー</label>
                       <input type="radio" class="settingRadio" @click="callTarget" id="setReceiver" value="setTarget" v-model="setTarget">
                       <label class="setting" >送信対象選択</label>
-                      <hr :style="targetMargin" />
+                      <hr style="margin-top: 6.2px;"/>
                       <div v-if="setTarget=='setTarget'">
                         <span style="font-size: 14px;">送信対象タグ</span>
                         <span v-for="(target,index) in targets" style="margin-top: 10px;">
@@ -222,8 +223,9 @@
         <div class="label">
           <i class="material-icons folder">tap_and_play</i>
           アクションリスト
+          <button class="former-reaction" @click="reactionListToggle">既存アクション</button>
         </div>
-        <div class="right-panel" style="border: none;" v-show="!reactionListShow">
+        <div class="right-panel" style="border: none;">
           <table class="actionList">
             <thead>
               <tr>
@@ -299,7 +301,7 @@
           <span class="mode-show" v-model="editMode">
             MODE
             <button class="mode-button" @click="changeEditMode('new')" v-if="editMode=='read'">プレビュー</button>
-            <button class="mode-button" @click="changeEditMode('read')" v-if="editMode=='new'">新規作成</button>
+            <button class="mode-button" v-if="editMode=='new'">新規作成</button>
             <button class="mode-button" @click="changeEditMode('new')" v-if="editMode=='edit'">修正中</button>
           </span>
         </div>
@@ -354,26 +356,32 @@
             </div>
 
             <!-- stamp list bottom -->
-            <div class="sticker-panel" v-show="stampShow">
-              <button class="stampBtn" v-for="num in stampNums" @click="selectStamp(num)">
-                <img class="stampBtnImg" :src="getImgUrl(num)"/>
-              </button>
-            </div>
+            <transition name="showInOut">
+              <div class="sticker-panel" v-show="stampShow">
+                <button class="stampBtn" v-for="num in stampNums" @click="selectStamp(num)">
+                  <img class="stampBtnImg" :src="getImgUrl(num)"/>
+                </button>
+              </div>
+            </transition>
 
             <!-- emoji list bottom -->
-            <div class="sticker-panel" v-show="emojiShow">
-              <button class="emojiBtn stampBtn" v-for="emoji in emojis" @click="addEmoji(emoji.img_url)">
-                <img class="stampBtnImg" :src="emoji.img_url">
-              </button>
-            </div>
+            <transition name="showInOut">
+              <div class="sticker-panel" v-show="emojiShow">
+                <button class="emojiBtn stampBtn" v-for="emoji in emojis" @click="addEmoji(emoji.img_url)">
+                  <img class="stampBtnImg" :src="emoji.img_url">
+                </button>
+              </div>
+            </transition>
           </div>
 
           <!-- stamp image area -->
+
           <div class="stampArea" v-show="stampAreaShow">
             <a class="closeStamp" @click="closeStamp">X</a>
             <p>[スタンプ]</p>
             <img class="selectStamp" :src="selectStampUrl">
           </div>
+
 
           <!-- carousel area -->
           <transition name="showInOut">
@@ -481,14 +489,6 @@
                   イメージ削除
                 </button>
               </div>
-              <!-- main bubble -->
-              <!-- main bubble -->
-
-              <!-- main bubble -->
-              <!-- main bubble -->
-              <!-- main bubble -->
-              <!-- main bubble -->
-              <!-- main bubble -->
 
               <!-- main bubble -->
               <div class="carousel-box" :style="carouselBoxWidth">
@@ -582,32 +582,99 @@
         </transition>
 
         <!--GoogleMap-->
-        <div class="googleMap" v-show="mapShow">
-          <div class="placeSearch">
-            <GmapAutocomplete @place_changed="setPlace"/>
-          </div>
-          <button style="width: 100%; height: 5%;" id="location" @click="getAddress">
-            住所取得
-          </button>
-          <GmapMap
-          :center="default_center"
-          :zoom="12"
-          map-type-id="terrain"
-          style="width: 100%; height: 95%;"
-          @center_changed="onCenterChanged"
-          >
-          <GmapMarker
-          :position="marker_center"
-          :clickable="true"
-          :draggable="false"
-          />
-        </GmapMap>
-      </div>
+        <transition name="showInOut">
+          <div class="googleMap" v-show="mapShow">
+            <div class="placeSearch">
+              <GmapAutocomplete @place_changed="setPlace"/>
+            </div>
+            <button style="width: 100%; height: 5%;" id="location" @click="getAddress">
+              住所取得
+            </button>
+            <GmapMap
+            :center="default_center"
+            :zoom="12"
+            map-type-id="terrain"
+            style="width: 100%; height: 95%;"
+            @center_changed="onCenterChanged"
+            >
+            <GmapMarker
+            :position="marker_center"
+            :clickable="true"
+            :draggable="false"
+            />
+          </GmapMap>
+        </div>
+      </transition>
       <!-- submit button -->
       <button class="sendBtn okBtn" @click="createReaction" v-if="editMode=='new'">セーブ</button>
       <button class="sendBtn okBtn" @click="updateReaction" v-else-if="editMode=='edit'">修正</button>
       <button class="sendBtn cancelBtn" @click="reactionToggle"v-if="editMode!='read'" style="float: right;">再作成</button>
     </div>
+
+    <!-- 여기는 전체 액션을 보여주는 곳 -->
+    <transition name="slideUpDown">
+      <div class="reactionAll" v-if="reactionListShow">
+        <div class="right-panel-small" style="border: none;">
+          <table class="actionList">
+            <thead>
+              <tr>
+                <th class="reactionAll-title">
+                  <input type="checkbox" class="checkbox" v-model="reactionLeftAllCheck" @click="reactionLeftAllChecker">
+                </th>
+                <th class="reactionAll-title">アクション名</th>
+                <th class="reactionAll-title">アクション内容</th>
+                <th class="reactionAll-title">ヒット数</th>
+                <th class="reactionAll-title">タイプ</th>
+                <th class="reactionAll-title">連動</th>
+              </tr>
+            </thead>
+            <tbody style="overflow:scroll;">
+              <tr v-for="(reaction,index) in reactionsLeft" v-model="reactionsLeft">
+                <td class="check">
+                  <input type="checkbox" class="checkbox" :checked="reaction.bool" @click="reactionLeftChecker(index)">
+                </td>
+                <td>
+                  {{reaction.name}}
+                </td>
+                <td v-if="reaction.reaction_type=='stamp'">
+                  <a @click="detailImage(getImgUrl(reaction.contents))">
+                    <img class="stampBtnImg" :src="getImgUrl(reaction.contents)"/>
+                  </a>
+                </td>
+                <td v-else-if="reaction.reaction_type=='image'">
+                  <a @click="detailImage(reaction.image.url)">
+                    <img class="imageResult" :src="reaction.image.url"/>
+                  </a>
+                </td>
+                <td v-else-if="reaction.reaction_type=='carousel'">
+                  <a @click="detailCarousel(reaction.contents)">
+                    <span>キャルセル</span>
+                  </a>
+                </td>
+                <td v-else>
+                  <a v-if="reaction.contents.search('<img src=')>=0"
+                    @click="showFullContents(reaction.contents)"
+                    v-html="reaction.contents.substr(0,100)"
+                    >
+                  </a>
+                  <a v-else @click="showFullContents(reaction.contents)" >
+                    <span v-if="reaction.contents.length>19" v-html="reaction.contents.substr(0,20)+'...'"></span>
+                    <span v-else v-html="reaction.contents.substr(0,20)"></span>
+                  </a>
+                </td>
+                <td class="hitcount">{{reaction.target_number}}</td>
+                <td>{{reaction.reaction_type}}</td>
+                <td>
+                  <button class="edit-button" v-if="reaction.bool" @click="linkOptionReaction(reaction.id)">
+                    選択
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </transition>
   </div>
 
   <div>
@@ -624,6 +691,62 @@
   </div>
 </div>
 </div>
+<transition name="tadaInOut">
+  <div class="detailWindow" v-show="showDetail" @click="closeDetail">
+    <div class="detailPanel">
+      <div class="detailContents">
+        <div class="detail" readonly="readonly">
+          <span v-html="fullContents" v-if="fullContents.search('@map')<0"></span>
+          <GmapMap
+          v-else
+          :center="selected_center"
+          :zoom="12"
+          map-type-id="terrain"
+          style="width: 100%; height: 95%;"
+          >
+          <GmapMarker
+          :position="selected_center"
+          :clickable="true"
+          :draggable="false"
+          />
+        </GmapMap>
+      </div>
+    </div>
+  </div>
+</div>
+</transition>
+
+<transition name="tadaInOut">
+  <div class="detailWindow" v-show="showCarousel" @click="closeDetail">
+    <div class="result-carousel-box">
+      <div class="bubble-box" style="height: 100%; display: inline-flex;">
+        <div v-for="(bubble,index) in bubbles">
+          <div class="bubble" style="height: 100%;">
+            <div style="height: 100%;">
+              <div class="result-blocks header-block rounder1">
+                <div class="header-text rounder1" v-html="bubble.header" :style="resultHeaderCSS[index]">
+                </div>
+              </div>
+              <div class="result-blocks hero-block">
+                <div class="carousel-img-area" v-show="bubble.image.url" style="bottom: -1%; display: grid; align-items: center;justify-content: center;">
+                  <img class="carousel-img" :src="bubble.image.url" style="width: 100%;">
+                </div>
+              </div>
+              <div class="result-blocks body-block">
+                <div class="body-text" v-html="bubble.body" :style="resultBodyCSS[index]">
+                </div>
+              </div>
+              <div class="result-blocks footer-block" style="line-height: 4.5vh">
+                <div class="footer-text rounder2" v-html="bubble.footer" :style="resultFooterCSS[index]">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</transition>
 </div>
 </template>
 <script>
@@ -659,7 +782,7 @@
           target_friend: '',
           option_type: 'autoReply'
         },
-        flexableMargin: {'margin-top': '0px'},
+        // flexableMargin: {'margin-top': '0px'},
         flexableHeight: {'height': '0vh'},
         contents: '',
         innerContent:'',
@@ -674,6 +797,7 @@
         parPage: 5,
         currentPage: 1,
         showDetail: false,
+        showCarousel: false,
         fullContents: '',
         emojis:[],
         emojiShow: false,
@@ -762,13 +886,12 @@
         headerBackground: [{'background-color':'#ffffff'}],
         bodyBackground: [{'background-color':'#ffffff'}],
         footerBackground: [{'background-color':'#ffffff'}],
+        copied: {},
+        copiedType: '',
         resultHeaderCSS: [],
         resultHeroCSS: [],
         resultBodyCSS: [],
         resultFooterCSS: [],
-        copied: {},
-        copiedType: '',
-        baseTop: 0,
       }
     },
     mounted: function(){
@@ -822,7 +945,7 @@
         this.addShow = !this.addShow;
         this.selected = null
         if(!this.addShow){
-          this.flexableMargin = {'margin-top': '0px'}
+          // this.flexableMargin = {'margin-top': '0px'}
           this.newOption = {
             name: '',
             match_reaction: '',
@@ -843,7 +966,7 @@
           alert("新しいファイルが追加されました。")
           this.newFolder = '';
           this.addShow = !this.addShow;
-          this.flexableMargin = {'margin-top': '0px'}
+          // this.flexableMargin = {'margin-top': '0px'}
           this.fetchTags();
         },(error)=>{
           console.log(error);
@@ -865,7 +988,7 @@
             option_type: 'autoReply'
           }
           this.addShow = !this.addShow;
-          this.flexableMargin = {'margin-top': '0px'}
+          // this.flexableMargin = {'margin-top': '0px'}
           this.fetchOptions();
         },(error)=>{
           console.log(error)
@@ -881,6 +1004,10 @@
         this.deleteShow = false;
         this.selected = index
         this.selectedTagId = id
+        this.emptyAll();
+        this.clearCarousel();
+        this.reactions = []
+        this.carouselAreaShow = false
 
         this.fetchOptions();
       },
@@ -977,16 +1104,13 @@
       fetchReactions(){
         axios.get('api/reactions?option_id='+this.selectedId).then((res)=>{
           this.bubbles = []
-          this.resultHeaderCSS = []
-          this.resultBodyCSS = []
-          this.resultFooterCSS = []
           this.reactions = []
-          //console.log(res.data)
-          for(let reaction of res.data.reactions){
+          console.log(res.data)
+          for(let reaction of res.data){
             reaction.created_at = reaction.created_at.substr(0,16).replace('T',' ');
           }
           //console.log(res.data.reactions)
-          this.reactions = res.data.reactions
+          this.reactions = res.data
         },(error)=>{
           console.log(error)
         })
@@ -1230,6 +1354,7 @@
             }).then((res)=>{
               //console.log(res.data)
               alert("メッセージセーブ完了")
+              this.reactionToggle();
               this.toggleCarousel();
               this.fetchOptions();
             },(error)=>{
@@ -1323,6 +1448,8 @@
       toggleStamp(){
         this.emojiShow = false;
         this.mapShow = false;
+        this.carouselAreaShow = false
+        this.clearCarousel();
         this.stampShow = !this.stampShow
       },
       selectStamp(num){
@@ -1356,9 +1483,13 @@
       },
       closeDetail(){
         this.showDetail = false
+        this.showCarousel = false
       },
       toggleEmoji(){
         this.stampShow = false;
+        this.carouselAreaShow = false;
+        this.mapShow = false;
+        this.clearCarousel();
         this.emojiShow = !this.emojiShow
       },
       onFileChange(e){
@@ -1407,6 +1538,10 @@
       },
       toggleCarousel(){
         this.emptyAll();
+        this.clearCarousel();
+        this.carouselAreaShow = !this.carouselAreaShow
+      },
+      clearCarousel(){
         this.bubble_array = [{
           header: 'header', hero: null, body: 'body', footer: 'footer',
           header_gravity: 'top', header_align: 'start', header_size: 'md', header_bold: 'regular', header_color: '#111111',
@@ -1420,13 +1555,40 @@
         this.body = ['body']
         this.footer = ['footer']
         this.heros = []
-        this.carouselAreaShow = !this.carouselAreaShow
+
+        this.headerCSS = [{'margin-left':'0', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}]
+        this.heroCSS = [{'text-align':'center','background-color':'#ffffff'}]
+        this.imageCSS = [{'width':'100%', 'height': 'auto'}]
+        this.imageSize = ['100%']
+        this.bodyCSS = [{'margin-left':'0', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}]
+        this.footerCSS = [{'margin-left':'auto', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}]
+        this.headerBackground = [{'background-color':'#ffffff'}]
+        this.bodyBackground = [{'background-color':'#ffffff'}]
+        this.footerBackground = [{'background-color':'#ffffff'}]
+
+        this.gravity = 'top'
+        this.align = 'start'
+        this.color = '#111111'
+        this.background = '#ffffff'
+        this.size = 'md'
+        this.bold = 'regular'
+        this.heroWidth = 1
+        this.heroHeight = 1
+        this.footer_type = 'text'
+        this.footer_button = 'uri'
+        this.footer_uri = ''
+        this.footer_message = ''
+        this.selectedBubble = null
+        this.selectedComponent = null
+        this.carouselOpen = false
       },
       toggleMap(){
         this.uploadedImage = ""
         this.stampShow = false
         this.stampAreaShow = false
         this.emojiShow = false
+        this.clearCarousel();
+        this.carouselAreaShow = false
         this.mapShow = !this.mapShow
         if (this.mapShow==true){
           this.flexablePadding = {"padding-right": "315px"}
@@ -1467,6 +1629,16 @@
         this.carouselAreaShow = false;
         this.fetchReactions();
       },
+      reactionListToggle(){
+        if(this.reactionListShow!=true){
+          this.fetchAllReactions();
+          this.goRight();
+        } else {
+          this.fetchReactions();
+          this.goLeft();
+        }
+        this.reactionListShow = !this.reactionListShow
+      },
       detailImage(url){
         let imageHTML = '<img class="fullSizeImage" src='+url+' style="width: 21em;height: 26em;">'
         this.fullContents = imageHTML;
@@ -1478,7 +1650,8 @@
           .then((res)=>{
             alert("解除完了");
             this.fetchOptions();
-            this.fetchReactions();
+            //this.fetchReactions();
+            this.fetchAllReactions();
           },(error)=>{
             console.log(error)
           })
@@ -1609,94 +1782,103 @@
           alert("一つのアクションは一つのアクションでだけ修正できます。");
           return;
         } else if(this.carouselAreaShow){//only carousel
-          var contents = this.selectedReaction.contents
-          var contents_array = contents.split(",")
-          var old_length = contents_array.length
-          var new_length = this.bubble_array.length
-          if(old_length<new_length){
-            alert("carousel added")
-          } else if(old_length==new_length){
-            alert("carousel maintained")
-          } else {
-            alert("carousel deleted")
+          for(var bubble of this.bubble_array){
+            let bubbleLength = bubble.header.length+bubble.body.length+bubble.footer.length
+            if(bubbleLength==0){
+              alert("作成されないキャルセルがあります。");
+              return;
+            }
+            if(bubble.header_color.substr(0,1)!='#'&&bubble.header_color.length!=7){
+              alert("色の形式が間違います。\n例) #00b900");
+              return;
+            }else if(bubble.header_background.substr(0,1)!='#'&&bubble.header_background.length!=7){
+              alert("色の形式が間違います。\n例) #00b900");
+              return;
+            }else if(bubble.body_color.substr(0,1)!='#'&&bubble.body_color.length!=7){
+              alert("色の形式が間違います。\n例) #00b900");
+              return;
+            }else if(bubble.body_background.substr(0,1)!='#'&&bubble.body_background.length!=7){
+              alert("色の形式が間違います。\n例) #00b900");
+              return;
+            }else if(bubble.footer_color.substr(0,1)!='#'&&bubble.footer_color.length!=7){
+              alert("色の形式が間違います。\n例) #00b900");
+              return;
+            }else if(bubble.footer_background.substr(0,1)!='#'&&bubble.footer_background.length!=7){
+              alert("色の形式が間違います。\n例) #00b900");
+              return;
+            }else if(bubble.hero_background.substr(0,1)!='#'&&bubble.hero_background.length!=7){
+              alert("色の形式が間違います。\n例) #00b900");
+              return;
+            }
+            if(bubble.footer_type=='button'){
+              if(bubble.footer_button=='uri'&&bubble.footer_uri.length==0){
+                alert("ボタンのURLを入力してください。");
+                return;
+              } else if(bubble.footer_button=='message'&&bubble.footer_message.length==0){
+                alert("ボタンのメッセージを入力してください。");
+                return;
+              }
+            }
           }
+          var data = new FormData();
+          for(var i=0; i<this.bubble_array.length; i++){
+            data.append('headers[]', this.bubble_array[i].header)
+            data.append('images[]', this.heros[i])
+            data.append('bodies[]', this.bubble_array[i].body)
+            data.append('footers[]', this.bubble_array[i].footer)
 
-        //   for(var bubble of this.bubble_array){
-        //     let bubbleLength = bubble.header.length+bubble.body.length+bubble.footer.length
-        //     if(bubbleLength==0){
-        //       alert("作成されないキャルセルがあります。");
-        //       return;
-        //     }
-        //     if(bubble.header_color.substr(0,1)!='#'&&bubble.header_color.length!=7){
-        //       alert("色の形式が間違います。\n例) #00b900");
-        //       return;
-        //     }else if(bubble.header_background.substr(0,1)!='#'&&bubble.header_background.length!=7){
-        //       alert("色の形式が間違います。\n例) #00b900");
-        //       return;
-        //     }else if(bubble.body_color.substr(0,1)!='#'&&bubble.body_color.length!=7){
-        //       alert("色の形式が間違います。\n例) #00b900");
-        //       return;
-        //     }else if(bubble.body_background.substr(0,1)!='#'&&bubble.body_background.length!=7){
-        //       alert("色の形式が間違います。\n例) #00b900");
-        //       return;
-        //     }else if(bubble.footer_color.substr(0,1)!='#'&&bubble.footer_color.length!=7){
-        //       alert("色の形式が間違います。\n例) #00b900");
-        //       return;
-        //     }else if(bubble.footer_background.substr(0,1)!='#'&&bubble.footer_background.length!=7){
-        //       alert("色の形式が間違います。\n例) #00b900");
-        //       return;
-        //     }else if(bubble.hero_background.substr(0,1)!='#'&&bubble.hero_background.length!=7){
-        //       alert("色の形式が間違います。\n例) #00b900");
-        //       return;
-        //     }
-        //     if(bubble.footer_type=='button'){
-        //       if(bubble.footer_button=='uri'&&bubble.footer_uri.length==0){
-        //         alert("ボタンのURLを入力してください。");
-        //         return;
-        //       } else if(bubble.footer_button=='message'&&bubble.footer_message.length==0){
-        //         alert("ボタンのメッセージを入力してください。");
-        //         return;
-        //       }
-        //     }
-        //   }
-        //   var data = new FormData();
-        //   for(var i=0; i<this.bubble_array.length; i++){
-        //     data.append('headers[]', this.bubble_array[i].header)
-        //     data.append('images[]', this.heros[i])
-        //     data.append('bodies[]', this.bubble_array[i].body)
-        //     data.append('footers[]', this.bubble_array[i].footer)
+            data.append('header_gravity[]', this.bubble_array[i].header_gravity)
+            data.append('header_align[]', this.bubble_array[i].header_align)
+            data.append('header_size[]', this.bubble_array[i].header_size)
+            data.append('header_bold[]', this.bubble_array[i].header_bold)
+            data.append('header_color[]', this.bubble_array[i].header_color)
+            data.append('header_background[]', this.bubble_array[i].header_background)
 
-        //     data.append('header_gravity[]', this.bubble_array[i].header_gravity)
-        //     data.append('header_align[]', this.bubble_array[i].header_align)
-        //     data.append('header_size[]', this.bubble_array[i].header_size)
-        //     data.append('header_bold[]', this.bubble_array[i].header_bold)
-        //     data.append('header_color[]', this.bubble_array[i].header_color)
-        //     data.append('header_background[]', this.bubble_array[i].header_background)
+            data.append('hero_size[]', this.bubble_array[i].hero_size)
+            data.append('hero_align[]', this.bubble_array[i].hero_align)
+            data.append('hero_background[]', this.bubble_array[i].hero_background)
+            data.append('hero_ratio[]', this.bubble_array[i].hero_ratio)
 
-        //     data.append('hero_size[]', this.bubble_array[i].hero_size)
-        //     data.append('hero_align[]', this.bubble_array[i].hero_align)
-        //     data.append('hero_background[]', this.bubble_array[i].hero_background)
-        //     data.append('hero_ratio[]', this.bubble_array[i].hero_ratio)
+            data.append('body_gravity[]', this.bubble_array[i].body_gravity)
+            data.append('body_align[]', this.bubble_array[i].body_align)
+            data.append('body_size[]', this.bubble_array[i].body_size)
+            data.append('body_bold[]', this.bubble_array[i].body_bold)
+            data.append('body_color[]', this.bubble_array[i].body_color)
+            data.append('body_background[]', this.bubble_array[i].body_background)
 
-        //     data.append('body_gravity[]', this.bubble_array[i].body_gravity)
-        //     data.append('body_align[]', this.bubble_array[i].body_align)
-        //     data.append('body_size[]', this.bubble_array[i].body_size)
-        //     data.append('body_bold[]', this.bubble_array[i].body_bold)
-        //     data.append('body_color[]', this.bubble_array[i].body_color)
-        //     data.append('body_background[]', this.bubble_array[i].body_background)
-
-        //     data.append('footer_gravity[]', this.bubble_array[i].footer_gravity)
-        //     data.append('footer_align[]', this.bubble_array[i].footer_align)
-        //     data.append('footer_size[]', this.bubble_array[i].footer_size)
-        //     data.append('footer_bold[]', this.bubble_array[i].footer_bold)
-        //     data.append('footer_color[]', this.bubble_array[i].footer_color)
-        //     data.append('footer_background[]', this.bubble_array[i].footer_background)
-        //     data.append('footer_type[]', this.bubble_array[i].footer_type)
-        //     data.append('footer_button[]', this.bubble_array[i].footer_button)
-        //     data.append('footer_uri[]', this.bubble_array[i].footer_uri)
-        //     data.append('footer_message[]', this.bubble_array[i].footer_message)
-        //   }
-        //   data.append('bubble_num',this.bubble_array.length)
+            data.append('footer_gravity[]', this.bubble_array[i].footer_gravity)
+            data.append('footer_align[]', this.bubble_array[i].footer_align)
+            data.append('footer_size[]', this.bubble_array[i].footer_size)
+            data.append('footer_bold[]', this.bubble_array[i].footer_bold)
+            data.append('footer_color[]', this.bubble_array[i].footer_color)
+            data.append('footer_background[]', this.bubble_array[i].footer_background)
+            data.append('footer_type[]', this.bubble_array[i].footer_type)
+            data.append('footer_button[]', this.bubble_array[i].footer_button)
+            data.append('footer_uri[]', this.bubble_array[i].footer_uri)
+            data.append('footer_message[]', this.bubble_array[i].footer_message)
+          }
+          data.append('bubble_num',this.bubble_array.length)
+          data.append('bubble_ids', this.selectedReaction.contents)
+          axios.post('/api/update_bubbles',data).then((res)=>{
+            console.log(res.data)
+            const contents = res.data.toString()
+            axios.put('/api/reactions/'+this.selectedReaction.id,{
+              name: this.reactionName,
+              reaction_type: 'carousel',
+              contents: contents,
+              image: null,
+              match_option: this.selectedId,
+              tag: this.tagtext.toString(),
+            }).then((res)=>{
+              alert("アクションセーブ完了");
+              this.reactionToggle();
+              this.clearReactionCSS();
+            },(error)=>{
+              console.log(error)
+            })
+          },(error)=>{
+            console.log(error)
+          })
 
         } else if(!this.contents&&this.mapShow){//only map
           let geocoder = new google.maps.Geocoder();
@@ -1843,7 +2025,6 @@
           this.reactionsLeft = res.data
           if(this.reactionsLeft.length==0){
             alert("登録できるアクションがありません。")
-            this.reactionListShow = false;
           }
           this.fetchReactions();
         },(error)=>{
@@ -1995,13 +2176,13 @@
         this.bubble_array.pop();
       },
       syncHeader(index){
-        this.bubble_array[index].header = this.header[index]
+        this.bubble_array[index].header = this.$refs.header[index].innerHTML
       },
       syncBody(index){
-        this.bubble_array[index].body = this.body[index]
+        this.bubble_array[index].body = this.$refs.body[index].innerHTML
       },
       syncFooter(index){
-        this.bubble_array[index].footer = this.footer[index]
+        this.bubble_array[index].footer = this.$refs.footer[index].innerHTML
       },
       syncGravity(){
         var i = this.selectedBubble
@@ -2432,6 +2613,8 @@
           console.log(res.data)
           this.carouselAreaShow = true;
           this.bubble_array = []
+          this.bubbles = []
+          this.bubbles = res.data
           for(var i in res.data){
             var bubble = res.data[i]
             this.bubble_array[i] = bubble
@@ -2658,8 +2841,9 @@
       changeEditMode(mode){
         this.editMode = mode
         if(mode='new'){
-          if(this.heros.length>0){
+          if(this.heros.length>0||this.uploadedImage!=null){
             this.heros = []
+            this.uploadedImage = ""
             for(var bubble of this.bubble_array){
               bubble.hero = ''
             }
@@ -2667,6 +2851,10 @@
           }
           this.clearReactionCSS();
         }
+      },
+      detailCarousel(ids){
+        this.fetchBubbles(ids);
+        this.showCarousel = true;
       },
     },
     computed: {

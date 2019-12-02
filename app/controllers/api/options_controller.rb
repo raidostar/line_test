@@ -130,7 +130,7 @@ class Api::OptionsController < ApplicationController
       params[:option][:action_count] = params[:option][:action_count].to_i
     end
     params.require(:option).permit(
-      :id, :name, :match_reaction, :action_count, :tag, :created_at, :updated_at, :user_group, :target_day, :target_time, :target_keyword, :target_friend, :option_type, :remind_after
+      :id, :name, :match_reaction, :action_count, :tag, :created_at, :updated_at, :user_group, :target_day, :target_time, :target_keyword, :target_friend, :option_type, :remind_after, :hit_count, :bool, :remind_bool
       )
   end
 end

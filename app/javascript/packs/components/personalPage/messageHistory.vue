@@ -37,7 +37,7 @@
         <div class="carousel-box" style="margin-bottom: 1em;">
           <div class="bubble-box" style="height: auto; display: inline-flex;">
             <div v-for="(bubble,index) in bubbles">
-              <div class="bubble" style="height: inherit;" :style="bubbleChecker(bubble,msg.contents)">
+              <div class="bubble" style="height: inherit; width: 20.5em;" :style="bubbleChecker(bubble,msg.contents)">
                 <div style="height: 100%;">
                   <div class="result-blocks header-block rounder1">
                     <div class="header-text rounder1" v-html="bubble.header" :style="resultHeaderCSS[index]">

@@ -591,6 +591,7 @@ div.inline-radio button:active{
   background: #2C3E5B;
   border-radius: 8px;
   top: 14.2em;
+  z-index: 4;
 }
 .carousel-box {
   height: 100%;

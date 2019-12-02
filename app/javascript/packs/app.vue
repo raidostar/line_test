@@ -14,7 +14,7 @@
             <router-link class="pageLink selected-mode" to="/""><i class="material-icons">home</i>ホーム</router-link>
           </li>
           <li v-else @click="changeMode('')">
-            <router-link class="pageLink home" to="/home"><i class="material-icons">home</i>ホーム</router-link>
+            <router-link class="pageLink home" to="/"><i class="material-icons">home</i>ホーム</router-link>
           </li>
 
           <li class="category"><i class="material-icons">format_align_justify</i>1対1のトーク</li>
@@ -68,7 +68,12 @@
             <router-link class="pageLink" to="/template">テンプレート</router-link>
           </li>
 
-          <li><a class="pageLink" title="準備中" @click="readyAlert">回答フォーム</a></li>
+          <li v-if="mode=='tagManagement'">
+            <router-link class="pageLink selected-mode" to="/tagManagement">タグ管理</router-link>
+          </li>
+          <li v-else @click="changeMode('tagManagement')">
+            <router-link class="pageLink" to="/tagManagement">タグ管理</router-link>
+          </li>
 
           <li v-if="mode=='remindReply'">
             <router-link class="pageLink selected-mode" to="/remindReply">リマインダ配信</router-link>
@@ -84,7 +89,12 @@
             <router-link class="pageLink" to="/welcomeMessage">友だち追加時設定</router-link>
           </li>
 
-          <li><a class="pageLink" title="準備中" @click="readyAlert">Richメニュー作成</a></li>
+          <li v-if="mode=='richmenu'">
+            <router-link class="pageLink selected-mode" to="/richmenu">リッチメニュー</router-link>
+          </li>
+          <li v-else @click="changeMode('richmenu')">
+            <router-link class="pageLink" to="/richmenu">リッチメニュー</router-link>
+          </li>
 
           <li class="category"><i class="material-icons">person</i>マイページ</li>
           <li><a class="pageLink" href="users/edit">個人情報設定</a></li>

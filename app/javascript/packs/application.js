@@ -59,10 +59,10 @@ const routes = [
   { path: '/sendAll', component: Page6 },
   { path: '/autoReply', component: Page7 },
   { path: '/template', component: Page8 },
-  { path: '/page9', component: Page9 },
+  { path: '/tagManagement', component: Page9 },
   { path: '/remindReply', component: Page10 },
   { path: '/welcomeMessage', component: Page11 },
-  { path: '/page12', component: Page12 },
+  { path: '/richmenu', component: Page12 },
   { path: '/page13', component: Page13 },
   { path: '/personalPage/:id', component: personalPage, props: true},
 ];

@@ -176,7 +176,7 @@
   color: white;
   word-break: keep-all;
   margin-right: 1em;
-  margin-left: 50%;
+  margin-left: 90%;
 }
 .balloon-right:after {
   content: '';
@@ -221,10 +221,9 @@
 }
 .result-blocks {
   margin: 2px 1px;
-  border-radius: 8px;
 }
 .header-block {
-  min-height: 16%;
+  height: 100%;
   text-align: left;
 }
 .hero-block {
@@ -237,6 +236,7 @@
 .footer-block {
   min-height: 12%;
   text-align: center;
+  border-radius: 0 0 8px 8px;
 }
 .rounder1 {
   border-radius: 8px 8px 0px 0px;
@@ -266,4 +266,14 @@
   float: right;
   font-size: 10px;
   margin-bottom: 10px;
+}
+.bubble{
+  min-width: 20.5em;
+}
+.profile-name {
+  margin-left: 1em;
+}
+.header-block {
+  height: 10%;
+  border-radius: 8px 8px 0 0;
 }

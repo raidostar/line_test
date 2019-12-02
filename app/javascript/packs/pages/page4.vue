@@ -9,11 +9,11 @@
         <li v-for="friend in friendsList">
           <button class="frBtn" v-if="friend==selectedFriend" style="background-color: #aac5F2">
             <img :src="friend.profile_pic" class="profile_img">
-            {{friend.fr_name}}
+            <span class="profile-name">{{friend.fr_name}}</span>
           </button>
           <button class="frBtn" v-else @click="fetchMessages(friend)">
             <img :src="friend.profile_pic" class="profile_img">
-            {{friend.fr_name}}
+            <span class="profile-name">{{friend.fr_name}}</span>
           </button>
         </li>
       </ul>
@@ -46,7 +46,7 @@
             </span>
           </div>
         </div>
-        <div v-else-if="(msg.check_status=='answered')">
+        <div v-else>
           <div class="balloon-right" v-if="msg.message_type=='text'">
             <span v-html="msg.contents">{{msg.contents}}</span>
           </div>
@@ -56,27 +56,28 @@
           <div class="balloon-image" v-else-if="msg.message_type=='image'">
             <img class="attachedImg" :src="msg.image.url">
           </div>
-          <div class="balloon-image" v-else-if="msg.message_type=='carousel'">
+          <div class="balloon-image" v-else-if="msg.message_type=='carousel'" style="height: 27em;">
+            <!-- <div style="color: black;">{{bubbles.length}}</div> -->
             <div class="carousel-box" style="margin-bottom: 1em; width: 21em;">
-              <div class="bubble-box" style="height: auto; display: inline-flex;">
+              <div class="bubble-box"  style="height: 100%; display: inline-flex;">
                 <div v-for="(bubble,index) in bubbles">
-                  <div class="bubble" style="height: inherit;" :style="bubbleChecker(bubble,msg.contents)">
+                  <div class="bubble" style="height: 100%;" :style="bubbleChecker(bubble,msg.contents)">
                     <div style="height: 100%;">
-                      <div class="result-blocks header-block rounder1">
-                        <div class="header-text rounder1" v-html="bubble.header" :style="resultHeaderCSS[index]">
+                      <div class="result-blocks header-block rounder1" :style="resultHeaderCSS[index]">
+                        <div class="header-text rounder1" v-html="bubble.header" >
                         </div>
                       </div>
-                      <div class="result-blocks hero-block">
-                        <div class="carousel-img-area" v-show="bubble.image.url" style="bottom: -1%; display: grid; align-items: center;justify-content: center;">
+                      <div class="result-blocks hero-block" v-show="bubble.image.url">
+                        <div class="carousel-img-area" style="bottom: -1%; display: grid; align-items: center;justify-content: center;">
                           <img class="carousel-img" :src="bubble.image.url">
                         </div>
                       </div>
-                      <div class="result-blocks body-block">
-                        <div class="body-text" v-html="bubble.body" :style="resultBodyCSS[index]">
+                      <div class="result-blocks body-block" :style="resultBodyCSS[index]">
+                        <div class="body-text" v-html="bubble.body" >
                         </div>
                       </div>
-                      <div class="result-blocks footer-block" style="line-height: 4.5vh">
-                        <div class="footer-text rounder2" v-html="bubble.footer" :style="resultFooterCSS[index]">
+                      <div class="result-blocks footer-block" style="line-height: 4.5vh" :style="resultFooterCSS[index]">
+                        <div class="footer-text rounder2" v-html="bubble.footer">
                         </div>
                       </div>
                     </div>
@@ -154,6 +155,7 @@
         resultBodyCSS: [],
         resultFooterCSS: [],
         bubbles: [],
+        bubble_ids: [],
       }
     },
     mounted: function(){
@@ -177,20 +179,18 @@
         axios.post('/find_messages', {
           fr_account: friend.fr_account
         }).then((res)=>{
-          this.bubbles = []
-          this.resultHeaderCSS = []
-          this.resultBodyCSS = []
-          this.resultFooterCSS = []
-          const fr_account=''
+          this.bubble_ids = []
           for(let message of res.data.messages){
             if(message.message_type=="carousel"){
-              this.fetchBubbles(message.contents)
+              this.bubble_ids.push(message.contents)
             }
             let time = message.created_at+""
             message.created_at = time.substr(0,19).replace('T'," ")
           }
           this.messages = res.data.messages
           this.personalLinkBtn = '詳細ページ'
+          this.fetchBubbles(this.bubble_ids.toString())
+
         }, (error)=>{
           console.log(error)
         })
@@ -219,14 +219,16 @@
         return {lat: tempArr[0], lng: tempArr[1]}
       },
       fetchBubbles(ids){
-        axios.post('api/fetch_bubbles',{
+        axios.post('api/fetch_bubbles_archives',{
           ids: ids
         }).then((res)=>{
-          // console.log("bubble수집")
-          // console.log(res.data)
+          this.bubbles = []
+          this.resultHeaderCSS = []
+          this.resultBodyCSS = []
+          this.resultFooterCSS = []
           for(var bubble of res.data){
             this.bubbles.push(bubble)
-            var headerResult = {'display':'grid', 'height': '7vh'}
+            var headerResult = {'display':'grid'}
             var bodyResult = {'display':'grid'}
             var footerResult = {'display':'grid'}
 
@@ -255,18 +257,11 @@
             this.resultBodyCSS.push(bodyResult)
             this.resultFooterCSS.push(footerResult)
           }
-          // console.log(this.bubbles)
-          // console.log(this.resultHeaderCSS)
-          // console.log(this.resultBodyCSS)
-          // console.log(this.resultFooterCSS)
+          console.log(this.bubbles)
           let height = this.$refs.result.clientHeight
           let scrollTop = this.$refs.result.scrollTop
           let scrollHeight = this.$refs.result.scrollHeight
-          // console.log(height)
-          // console.log(scrollTop)
-          // console.log(scrollHeight)
           scrollTop = scrollHeight - height
-          //console.log(scrollTop)
           this.$refs.result.scrollTop = scrollTop
         },(error)=>{
           console.log(error)

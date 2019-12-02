@@ -4,9 +4,9 @@ DEFAULT_SLEEP = 2.freeze
 
 def client
   @client ||= Line::Bot::Client.new do |config|
-    config.channel_id = ENV["FULLOUT_CHANNEL_ID"]
-    config.channel_secret = ENV["FULLOUT_CHANNEL_SECRET"]
-    config.channel_token = ENV["FULLOUT_CHANNEL_TOKEN"]
+    config.channel_id = ENV["SHOW_ME_ID"]
+    config.channel_secret = ENV["SHOW_ME_SECRET"]
+    config.channel_token = ENV["SHOW_ME_TOKEN"]
     config.http_options = {
       open_timeout: 5,
       read_timeout: 5,

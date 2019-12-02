@@ -7,7 +7,7 @@
     </div>
     <div style="width: 49.5%; float: left; margin-bottom: 2em;">
       <!-- 조건어 설정 -->
-      <div class="option-setting" v-if="autoReply">
+      <div class="option-setting" v-if="autoReply" style="height: 10.7em;">
         <div>
           <p class="settingMenu">条件語設定</p>
           <input type="text" name="option[target_keyword]" v-model="keyword" class="keywordInput" @keydown.enter="createKeyword">
@@ -15,7 +15,7 @@
             <i class="material-icons keyword_cancel">cancel</i>
           </a>
         </div>
-        <hr style="margin-top: 60px;" />
+        <hr style="margin-top: 15px;" />
         <div>
           <span style="font-size: 14px;">条件語</span>
           <span v-for="(key,index) in keywords" v-model="keywords" style="margin-top: 10px;">
@@ -67,7 +67,7 @@
 
       <!-- 횟수 설정 -->
       <div class="option-setting">
-        <p class="option-setting settingMenu">回数設定</p>
+        <p class="settingMenu">回数設定</p>
         <input type="radio" class="settingRadio" id="unsetTime" value="unsetCount" v-model="setCount">
         <label class="setting" for="unsetCount">未指定</label>
         <input type="radio" class="settingRadio" id="setTime" value="setCount" v-model="setCount">
@@ -78,11 +78,18 @@
           </p>
         </div>
       </div>
+      <!-- 리마인드 설정 -->
+      <div class="option-setting" v-if="remindReply" style="margin-top: 58px;">
+        <p class="settingMenu">リマインド条件設定</p>
+        最後のメッセージから
+        <input type="number" name="option[target_keyword]" v-model="days" class="daysInput">
+        日後
+      </div>
     </div>
 
     <div style="width: 49.5%; float: left; margin-bottom: 2em;">
       <!-- 송신대상 설정 -->
-      <div class="option-setting">
+      <div class="option-setting" style="height: 10.7em;">
         <p class="settingMenu">送信対象設定</p>
         <input type="radio" class="settingRadio" id="unsetReceiver" value="unsetTarget" v-model="setTarget" @click="clearTargetTag">
         <label class="setting" >全ユーザー</label>
@@ -127,7 +134,7 @@
             <i class="material-icons keyword_cancel">cancel</i>
           </a>
         </div>
-        <hr style="margin-top: 60px;" />
+        <hr style="margin-top: 33px;" />
         <div>
           <span style="font-size: 14px;">タグリスト</span>
           <span v-for="(tag,index) in tagtext" v-model="tagtext" style="margin-top: 10px;">
@@ -136,13 +143,7 @@
         </div>
       </div>
 
-      <!-- 리마인드 설정 -->
-      <div class="option-setting" v-if="remindReply">
-        <p class="settingMenu">リマインド条件設定</p>
-        最後のメッセージから
-        <input type="number" name="option[target_keyword]" v-model="days" class="daysInput">
-        日後
-      </div>
+
     </div>
     <hr style="margin-top: 2px; display: flow-root;" />
     <div class="option-buttons">
