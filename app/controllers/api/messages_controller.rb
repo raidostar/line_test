@@ -28,42 +28,25 @@ class Api::MessagesController < ApplicationController
     render :index, status: :ok
   end
 
-  def get_number_of_monthly_message
+  def timely_messages
     now = Time.new
-    startTime = now.beginning_of_month
-    endTime = now.end_of_month
     group = current_user.group
-    @messages = Message.where(created_at: startTime..endTime, receiver: group)
+    timely = {}
+    start_day = now.beginning_of_day
+    end_day = now.end_of_day
+    start_week = now.beginning_of_week
+    end_week = now.end_of_week
+    start_month = now.beginning_of_month
+    end_month = now.end_of_month
 
-    render :index, status: :ok
-  end
+    daily_messages = Message.where(created_at: start_day..end_day, receiver: group).length
+    weekly_messages = Message.where(created_at: start_week..end_week, receiver: group).length
+    monthly_messages = Message.where(created_at: start_month..end_month, receiver: group).length
 
-  def get_number_of_weekly_message
-    now = Time.new
-    startTime = now.beginning_of_week
-    endTime = now.end_of_week
-    group = current_user.group
-    @messages = Message.where(created_at: startTime..endTime, receiver: group)
-
-    render :index,  status: :ok
-  end
-
-  def get_number_of_daily_message
-    now = Time.new
-    startTime = now.beginning_of_day
-    endTime = now.end_of_day
-    group = current_user.group
-    @messages = Message.where(created_at: startTime..endTime, receiver: group)
-    render :index,  status: :ok
-  end
-
-  def get_number_of_seven_days
-    now = Time.new
-    startTime = now.days_ago(6).beginning_of_day
-    group = current_user.group
-    @messages = Message.where(created_at: startTime..now, receiver: group)
-
-    render :index,  status: :ok
+    timely[:daily] = daily_messages
+    timely[:weekly] = weekly_messages
+    timely[:monthly] = monthly_messages
+    render json: timely, status: :ok
   end
 
   def get_last_message
@@ -243,25 +226,106 @@ class Api::MessagesController < ApplicationController
     return infos
   end
 
+  def fetch_personal_message_data
+    data = personal_message_data(params[:reply_boolean],params[:id],params[:time_option])
+    render json: data, status: :ok
+  end
+
+  def personal_message_data(reply_boolean,id,time_option)
+    infos = []
+    group = current_user.group
+    group = Group.find_by(group: group)
+
+    friend = Friend.find_by(id: id.to_i)
+    puts "found friend"
+    if reply_boolean == false
+      messages = Message.where(group_id: group.group_id, fr_account: friend.fr_account).where.not(check_status: 'answered')
+      message_info = {
+        name: "メッセージ値",
+        data: {}
+      }
+    else
+      messages = Message.where(group_id: group.group_id, fr_account: friend.fr_account, check_status: 'answered')
+      message_info = {
+        name: "返事値",
+        data: {}
+      }
+    end
+    message_array = messages.to_a
+    times = []
+    message_times = []
+
+    case timeOption
+    when "hourly"
+      for i in 0..23 do
+        if i < 10
+          times.push("0"+i.to_s+":00")
+        else
+          times.push(i.to_s+":00")
+        end
+        message_times.push(0)
+      end
+      for i in 0...message_array.length do
+        num = message_array[i].created_at.hour
+        message_times[num] = message_times[num] + 1
+      end
+    when "wdaily"
+      times = ['日','月','火','水','木','金','土']
+      message_times = [0,0,0,0,0,0,0]
+      for i in 0...message_array.length do
+        num = message_array[i].created_at.wday
+        message_times[num] = message_times[num] + 1
+      end
+    when "daily"
+      for i in 0..30 do
+        times.push((i+1).to_s+'日')
+        message_times.push(0)
+      end
+      for i in 0...message_array.length do
+        num = message_array[i].created_at.day - 1
+        message_times[num] = message_times[num] + 1
+      end
+    when "monthly"
+      for i in 0..11 do
+        times.push((i+1).to_s+'月')
+        message_times.push(0)
+      end
+      for i in 0...message_array.length do
+        num = message_array[i].created_at.month - 1
+        message_times[num] = message_times[num] + 1
+      end
+    end
+    for i in 0...times.length do
+      message_info[:data][times[i]] = message_times[i]
+    end
+
+    infos.push(message_info)
+    return infos
+  end
+
   def fetch_message_type_data
     infos = []
     group = current_user.group
     group = Group.find_by(group: group)
+    message_align = {}
     if params[:reply_boolean] == false
       messages = Message.where(group_id: group.group_id).where.not(check_status: 'answered')
     else
       messages = Message.where(group_id: group.group_id,check_status: 'answered')
+      carousel_message = messages.where(message_type: "carousel")
+      message_align["キャルセル"] = carousel_message.length
     end
-    message_align = {}
-
     text_message = messages.where(message_type: "text")
     stamp_message = messages.where(message_type: "stamp")
     image_message = messages.where(message_type: "image")
     map_message = messages.where(message_type: "map")
+
     message_align["テキスト"] = text_message.length
     message_align["スタンプ"] = stamp_message.length
     message_align["イメージ"] = image_message.length
     message_align["マップ"] = map_message.length
+    puts
+
 
     infos = message_align.sort{|(k1,v1),(k2,v2)| v2 <=> v1}
     render json: infos, status: :ok

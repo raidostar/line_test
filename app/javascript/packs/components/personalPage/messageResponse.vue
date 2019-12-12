@@ -22,11 +22,7 @@
   export default {
     name: 'responseTime',
     mounted: function(){
-      axios.post('/number_of_monthly').then((res)=>{
-        //console.log(res.data)
-      },(error)=>{
-        console.log(error)
-      })
+
     }
   }
 </script>

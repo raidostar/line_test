@@ -1,5 +1,5 @@
 class Api::ShowmesController < ApplicationController
-  require 'line/bot'  # gem 'line-bot-api'
+  require 'line/bot'
 
   THUMBNAIL_URL = 'https://www.disney.co.jp/content/dam/disney/images/sns/studio_mstore_03.jpg'
   THUMBNAIL_URL1 = 'https://www.disney.co.jp/content/disney/jp/deluxe/blog/maximum-guide/live-action-aladdin-subtitle/_jcr_content/par/navi_vertical_child/navi_vertical_child_par/image_only_1500734488/image.img.jpg/1570425883041.jpg'
@@ -122,9 +122,22 @@ class Api::ShowmesController < ApplicationController
         if dateInfo != 'null'
           message = "#{event['postback']['data']} (#{dateInfo})"
         else
-          message = "#{event['postback']['data']}"
           fr_account = event['source']['userId']
-          send_lottery_number(fr_account,message)
+          friend = Friend.find_by(fr_account: fr_account)
+          sender = friend.fr_name
+          receiver = @group
+          group_id = @group_id
+          data = "#{event['postback']['data']}"
+          reply_token = event['replyToken']
+          event_type = event['type']
+          fr_account = event['source']['userId']
+
+          postback = Postback.new({
+            sender: sender, receiver: receiver, data: data, fr_account: fr_account, group_id: group_id, reply_token: reply_token
+          })
+          bool_postback = save_postback(postback)
+          message = Message.new({sender: @group, receiver: sender, message_id: "", fr_account: fr_account, group_id: group_id, reply_token: reply_token, check_status: 'answered'})
+          option_checker(event,message)
         end
 
       when Line::Bot::Event::Beacon
@@ -365,30 +378,6 @@ class Api::ShowmesController < ApplicationController
     return converted_footer
   end
 
-  def send_lottery_number(fr_account,num)
-    case num
-    when "7"
-      text = (1..37).to_a.sample(7).to_s
-      message = {
-        type: 'text',
-        text: "ロト７ナンバー\n"+text
-      }
-    when "6"
-      text = (1..43).to_a.sample(6).to_s
-      message = {
-        type: 'text',
-        text: "ロト６ナンバー\n"+text
-      }
-    when "5"
-      text = (1..31).to_a.sample(5).to_s
-      message = {
-        type: 'text',
-        text: "ミニロトナンバー\n"+text
-      }
-    end
-    client.push_message(fr_account, message)
-  end
-
   def handle_message(event)
     check_user(event)
     case event.type
@@ -444,114 +433,133 @@ class Api::ShowmesController < ApplicationController
           }
         })
 
-      when "いまなんじ"
-        reply_content(event, {
-          type: 'template',
-          altText: 'Buttons alt text',
-          template: {
-            type: 'buttons',
-            thumbnailImageUrl: LOTTO_URL,
-            title: '宝くじ',
-            text: '自分の宝くじを選択してください。',
-            actions: [
-              { label: 'ロト7', type: 'postback', data: 7, text: 'ロト7'},
-              { label: 'ロト6', type: 'postback', data: 6, text: 'ロト6' },
-              { label: 'ミニロト', type: 'postback', data: 5, text: 'ミニロト' },
+      # when "7"
+      #   text = (1..37).to_a.sample(7).to_s
+      #   reply_content(event,{
+      #     type: 'text',
+      #     text: "ロト７ナンバー\n"+text
+      #   })
+      # when "6"
+      #   text = (1..43).to_a.sample(6).to_s
+      #   reply_content(event,{
+      #     type: 'text',
+      #     text: "ロト６ナンバー\n"+text
+      #   })
+      # when "5"
+      #   text = (1..31).to_a.sample(5).to_s
+      #   reply_content(event,{
+      #     type: 'text',
+      #     text: "ミニロトナンバー\n"+text
+      #   })
+
+    when "いまなんじ"
+      reply_content(event, {
+        type: 'template',
+        altText: 'Buttons alt text',
+        template: {
+          type: 'buttons',
+          thumbnailImageUrl: LOTTO_URL,
+          title: '宝くじ',
+          text: '自分の宝くじを選択してください。',
+          actions: [
+            { label: 'ロト7', type: 'postback', data: 7, text: 'ロト7'},
+            { label: 'ロト6', type: 'postback', data: 6, text: 'ロト6' },
+            { label: 'ミニロト', type: 'postback', data: 5, text: 'ミニロト' },
+          ]
+        }
+      })
+
+    when 'flex'
+      reply_content(event, {
+        type: "flex",
+        altText: "this is a flex message",
+        contents: {
+          type: "bubble",
+          header: {
+            type: "box",
+            layout: "vertical",
+            contents: [
+              {
+                type: "text",
+                text: "Header text",
+                size: "md",
+                weight: "regular",
+                align: "center",
+                position: "relative",
+                offsetBottom: "-15px",
+                color: "#111111",
+                wrap: true
+              }
+            ],
+            backgroundColor: "#dc3545"
+          },
+          hero: {
+            type: "image",
+            url: THUMBNAIL_URL,
+            size: "4xl",
+            aspectRatio: "1:1",
+            align: "start",
+            backgroundColor: "#00b900"
+          },
+          body: {
+            type: "box",
+            layout: "vertical",
+            contents: [
+              {
+                type: "text",
+                text: "Body text\nBody text\nBody text",
+                position: "relative",
+                offsetBottom: "-10px",
+                align: "center",
+                wrap: true
+              }
+            ],
+            backgroundColor: "#CC0000"
+          },
+          footer: {
+            type: "box",
+            layout: "horizontal",
+            contents: [
+              {
+                type: "text",
+                text: "footer",
+                position: "relative",
+                offsetBottom: "0px",
+                align: "center",
+                size: "xxl",
+                wrap: true
+              }
             ]
           }
-        })
+        }
+      })
 
-      when 'flex'
-        reply_content(event, {
-          type: "flex",
-          altText: "this is a flex message",
-          contents: {
-            type: "bubble",
-            header: {
-              type: "box",
-              layout: "vertical",
-              contents: [
-                {
-                  type: "text",
-                  text: "Header text",
-                  size: "md",
-                  weight: "regular",
-                  align: "center",
-                  position: "relative",
-                  offsetBottom: "-15px",
-                  color: "#111111",
-                  wrap: true
-                }
-              ],
-              backgroundColor: "#dc3545"
-            },
-            hero: {
-              type: "image",
-              url: THUMBNAIL_URL,
-              size: "4xl",
-              aspectRatio: "1:1",
-              align: "start",
-              backgroundColor: "#00b900"
-            },
-            body: {
-              type: "box",
-              layout: "vertical",
-              contents: [
-                {
-                  type: "text",
-                  text: "Body text\nBody text\nBody text",
-                  position: "relative",
-                  offsetBottom: "-10px",
-                  align: "center",
-                  wrap: true
-                }
-              ],
-              backgroundColor: "#CC0000"
-            },
-            footer: {
-              type: "box",
-              layout: "horizontal",
-              contents: [
-                {
-                  type: "text",
-                  text: "footer",
-                  position: "relative",
-                  offsetBottom: "0px",
-                  align: "center",
-                  size: "xxl",
-                  wrap: true
-                }
-              ]
-            }
-          }
-        })
+    when 'bye'
+      case event['source']['type']
+      when 'user'
+        reply_text(event, "[BYE]\nBot can't leave from 1:1 chat")
+      when 'group'
+        reply_text(event, "[BYE]\nLeaving group")
+        client.leave_group(event['source']['groupId'])
+      when 'room'
+        reply_text(event, "[BYE]\nLeaving room")
+        client.leave_room(event['source']['roomId'])
+      end
 
-      when 'bye'
-        case event['source']['type']
-        when 'user'
-          reply_text(event, "[BYE]\nBot can't leave from 1:1 chat")
-        when 'group'
-          reply_text(event, "[BYE]\nLeaving group")
-          client.leave_group(event['source']['groupId'])
-        when 'room'
-          reply_text(event, "[BYE]\nLeaving room")
-          client.leave_room(event['source']['roomId'])
-        end
+    else
+      if event['source']['type'] == 'user'
+        profile = client.get_profile(event['source']['userId'])
+        profile = JSON.parse(profile.read_body)
+        group_id = @group_id
+        reply_token = event['replyToken']
 
-      else
-        if event['source']['type'] == 'user'
-          profile = client.get_profile(event['source']['userId'])
-          profile = JSON.parse(profile.read_body)
-          group_id = @group_id
-          reply_token = event['replyToken']
+        @message = Message.new({sender: profile['displayName'], receiver: @group, contents: event.message['text'], message_type: 'text', message_id: event.message['id'], sticker_id: nil, package_id: nil, fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'unchecked'})
+        message = Message.new({sender: @group, receiver: profile['displayName'], message_id: event.message['id'],fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'answered'})
 
-          @message = Message.new({sender: profile['displayName'], receiver: @group, contents: event.message['text'], message_type: 'text', message_id: event.message['id'], sticker_id: nil, package_id: nil, fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'unchecked'})
-          message = Message.new({sender: @group, receiver: profile['displayName'], message_id: event.message['id'],fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'answered'})
-
-          save_message(@message)
-          update_friend_info(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],group_id,@message.contents)
-          event.message['text'] = unicodeConverter(event.message['text'])
-          auto_reply = option_checker(event,message)
+        save_message(@message)
+        update_friend_info(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],group_id,@message.contents)
+        event.message['text'] = unicodeConverter(event.message['text'])
+        auto_reply = option_checker(event,message)
           # reply_text(event, "ありがとうございます。")
         else
           reply_text(event, "Bot can't use profile API without user ID")
@@ -622,6 +630,14 @@ class Api::ShowmesController < ApplicationController
       latitude: message['latitude'],
       longitude: message['longitude']
     })
+  end
+
+  def save_postback(postback)
+    if postback.save
+      return true
+    else
+      return false
+    end
   end
 
   def save_message(message)
@@ -1040,7 +1056,12 @@ class Api::ShowmesController < ApplicationController
   end
 
   def option_checker(event,message)
-    @text = event.message['text']
+    event_type = event['type']
+    if event_type == 'message'
+      @text = event.message['text']
+    elsif event_type == 'postback'
+      @text = event['postback']['data']
+    end
     group = Group.find_by(group_id: @group_id)
     group = group.attributes["group"]
 
@@ -1049,8 +1070,8 @@ class Api::ShowmesController < ApplicationController
       options.each do |option|
         if check_target(option,message)
           now = Time.new
-          tempArray = option.target_day.split(",")
-          if tempArray.include? now.wday.to_s
+          temp_array = option.target_day.split(",")
+          if temp_array.include? now.wday.to_s
             tempArray = option.target_time.split(",")
             startTime = tempArray[0].delete(":").to_i
             endTime = tempArray[1].delete(":").to_i
@@ -1205,8 +1226,9 @@ class Api::ShowmesController < ApplicationController
       end
     end
     update_msg = Message.where(sender: message.receiver, receiver: message.sender, reply_token: message.reply_token)
-    update_msg.update({check_status: 'autoReplied'})
-
+    if update_msg.present?
+      update_msg.update({check_status: 'autoReplied'})
+    end
     reply_content(event, reply_contents)
   end
 
@@ -1380,6 +1402,168 @@ class Api::ShowmesController < ApplicationController
     end
   end
 
+  def set_richmenu
+    @richmenu = Richmenu.new(richmenu_params)
+
+    if @richmenu.save
+      width = @richmenu.attributes["width"]
+      height = @richmenu.attributes["height"]
+      rich_name = @richmenu.attributes["name"]
+      image = params[:image]
+      selected = @richmenu.attributes["selected"]
+      chat_bar_text = @richmenu.attributes["chat_bar_text"]
+      contents = @richmenu.attributes["contents"]
+      richaction_ids = contents.split(",")
+      areas = []
+
+      @richactions = Richaction.where(id: richaction_ids)
+
+      @richactions.each do |richaction|
+        area = {}
+        bounds = {}
+        action = {}
+
+        bounds[:x] = richaction.x
+        bounds[:y] = richaction.y
+        bounds[:width] = richaction.width
+        bounds[:height] = richaction.height
+        action[:type] = richaction.richaction_type
+        case richaction.richaction_type
+        when "message"
+          action[:text] = richaction.text
+        when "uri"
+          action[:uri] = richaction.uri
+        when "postback"
+          action[:text] = richaction.text
+          action[:data] = richaction.data
+        end
+        area[:bounds] = bounds
+        area[:action] = action
+        areas.push(area)
+      end
+      group = current_user.group
+      client = client_selecter(group)
+      rich_menu = {
+        size: {
+          width: width,
+          height: height
+        },
+        selected: selected,
+        name: rich_name,
+        chatBarText: chat_bar_text,
+        areas: areas
+      }
+      rich_menu_result = client.create_rich_menu(rich_menu)
+      body = rich_menu_result.read_body
+      parsed_body = JSON.parse(body)
+      richmenu_id = parsed_body["richMenuId"]
+      @richmenu.update(richmenu_id: richmenu_id)
+
+      client.create_rich_menu_image(richmenu_id,image)
+    else
+      # render json: @richmenu.errors, status: :unprocessable_entity
+    end
+  end
+
+  def set_default_richmenu
+    group = current_user.group
+    client = client_selecter(group)
+    richmenu_id = params[:richmenu_id]
+    result = client.set_default_rich_menu(richmenu_id)
+    if ((result.to_s.include?"Bad")||(result.to_s.include?"NotFound"))
+      render json: "BadRequest", status: :ok
+    else
+      rich_menus = Richmenu.where.not(richmenu_id: richmenu_id)
+      rich_menus.each do |rich|
+        rich.update(default_richmenu: false)
+      end
+      richmenu = Richmenu.find_by(richmenu_id: richmenu_id)
+      if richmenu.update(default_richmenu: true)
+        render json: richmenu, status: :ok
+      else
+        render json: richmenu.errors, status: :unprocessable_entity
+      end
+    end
+  end
+
+  def unset_default_richmenu
+    group = current_user.group
+    client = client_selecter(group)
+    richmenu_id = params[:richmenu_id]
+    client.unset_default_rich_menu
+    richmenu = Richmenu.find_by(richmenu_id: richmenu_id)
+    if richmenu.update(default_richmenu: false)
+      render json: richmenu, status: :ok
+    else
+      render json: richmenu.errors, status: :unprocessable_entity
+    end
+  end
+
+  def delete_richmenu
+    group = current_user.group
+    client = client_selecter(group)
+    richmenu_id = params[:richmenu_id]
+    client.delete_rich_menu(richmenu_id)
+
+    richmenu = Richmenu.find_by(richmenu_id: richmenu_id)
+    richmenu.destroy
+  end
+
+  def load_all_richmenus
+    group = current_user.group
+    client = client_selecter(group)
+    response = client.get_rich_menus
+    default = client.get_default_rich_menu
+    default = JSON.parse(default.read_body)
+    default_id = default["richMenuId"]
+    body = response.read_body
+    parsed_body = JSON.parse(body)
+    parsed_body["richmenus"].each do |richmenu|
+      richmenu_id = richmenu["richMenuId"]
+      @richmenu = Richmenu.find_by(richmenu_id: richmenu_id)
+      if !@richmenu.present?
+        rich_action_ids = []
+        richmenu["areas"].each do |rich_action|
+          x = rich_action["bounds"]["x"]
+          y = rich_action["bounds"]["y"]
+          width = rich_action["bounds"]["width"]
+          height = rich_action["bounds"]["height"]
+          richaction_type = rich_action["action"]["type"]
+          text = rich_action["action"]["text"]
+          uri = rich_action["action"]["uri"]
+          data = rich_action["action"]["data"]
+          @richaction = Richaction.new({
+            x: x, y: y, width: width, height: height, richaction_type: richaction_type, text: text, uri: uri, data: data
+          })
+          @richaction.save
+          rich_action_ids.push(@richaction.id)
+        end
+        richmenu_id = richmenu["richMenuId"]
+        rich_name = richmenu["name"]
+        contents = rich_action_ids.join(",")
+        width = richmenu["size"]["width"]
+        height = richmenu["size"]["height"]
+        chat_bar_text = richmenu["chatBarText"]
+        selected = richmenu["selected"]
+        image = client.get_rich_menu_image(richmenu_id)
+        if richmenu_id == default_id
+          default_richmenu = true
+        else
+          default_richmenu = false
+        end
+        image_check = image.to_s
+        if image_check.include? "NotFound"
+          image = nil
+        end
+        @rich_menu = Richmenu.new({
+          name: rich_name, contents: contents, width: width, height: height, chat_bar_text: chat_bar_text, selected: selected,
+          richmenu_id: richmenu_id, user_group: group, default_richmenu: default_richmenu
+        })
+        @rich_menu.save
+      end
+    end
+  end
+
   private
 
   def message_params
@@ -1395,5 +1579,12 @@ class Api::ShowmesController < ApplicationController
         :id, :sender, :receiver, :contents ,:message_type, :message_id, :sticker_id, :package_id, :fr_account, :group_id, :reply_token, :check_status
         )
     end
+  end
+
+  def richmenu_params
+    params[:user_group] = current_user.group
+    params.permit(
+      :name, :contents, :image, :width, :height, :selected, :chat_bar_text, :richmenu_id, :user_group
+      )
   end
 end

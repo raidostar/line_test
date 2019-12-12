@@ -328,7 +328,7 @@ label.stampBtn:focus {
   margin: 0 auto 10px;
   border-radius: 10px;
   padding: 8px 12px;
-  z-index: 3;
+  z-index: 1;
   float: left;
   word-break: keep-all;
 }
@@ -356,7 +356,7 @@ label.stampBtn:focus {
   margin: 0 auto 10px;
   border-radius: 10px;
   padding: 8px 12px;
-  z-index: 3;
+  z-index: 1;
   float: right;
   color: white;
   margin-left: 90%;
@@ -517,6 +517,7 @@ a:not([href]):not([tabindex]):hover{
   position: absolute;
   top: 6.7em;
   right: 4.5em;
+  z-index: 1;
 }
 .carouselArea {
   height: 63.8%;
@@ -752,7 +753,7 @@ input[type=text]:not(.browser-default) {
   /*max-width: 50vh;*/
   margin: 0 auto 0;
   border-radius: 10px;
-  z-index: 3;
+  z-index: 1;
   float: right;
   color: white;
   margin-left: 90%;
@@ -791,4 +792,55 @@ input[type=text]:not(.browser-default) {
 }
 .design-buttons {
   margin-bottom: 2em;
+}
+
+.waiting-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #ffffff;
+  height: 100%;
+  width: 100%;
+  z-index: 2;
+}
+.spinner {
+  margin: 350px auto 0;
+  width: 70px;
+  text-align: center;
+}
+
+.spinner > div {
+  width: 18px;
+  height: 18px;
+  background-color: #333;
+
+  border-radius: 100%;
+  display: inline-block;
+  -webkit-animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+  animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+}
+
+.spinner .bounce1 {
+  -webkit-animation-delay: -0.32s;
+  animation-delay: -0.32s;
+}
+
+.spinner .bounce2 {
+  -webkit-animation-delay: -0.16s;
+  animation-delay: -0.16s;
+}
+
+@-webkit-keyframes sk-bouncedelay {
+  0%, 80%, 100% { -webkit-transform: scale(0) }
+  40% { -webkit-transform: scale(1.0) }
+}
+
+@keyframes sk-bouncedelay {
+  0%, 80%, 100% {
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  } 40% {
+    -webkit-transform: scale(1.0);
+    transform: scale(1.0);
+  }
 }

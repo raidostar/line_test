@@ -1,681 +1,690 @@
 <!--リマインド配信-->
 <template>
   <div class="page" id="page10" @scroll="mouseScroll" ref="result">
-    <div class="inner-area" style="width: 200%">
-      <div v-show="!formShow" :style="flexableHeight">
+    <div v-show="loading" class="waiting-screen">
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
+    </div>
+    <div v-show="!loading">
+      <div class="inner-area" style="width: 200%">
+        <div v-show="!formShow" :style="flexableHeight">
+          <div class="col col-left">
+            <div class="label">
+              <i class="material-icons folder">folder_open</i>
+              条件タグ
+            </div>
+            <div :style="flexableMargin">
+              <div v-for="(tag,index) in tags" class="added-folder">
+                <span v-if="tag.id==selectedTagId">
+                  <button
+                  class="added-folderBtn"
+                  id="added-folderBtn"
+                  @click="selectTag(index,tag.id)"
+                  :style="selectedCSS"
+                  >
+                  <i style="float: left;" class="material-icons open-file-added">insert_drive_file</i>
+                  <span>
+                    {{tag.name}}
+                  </span>
+                </button>
+              </span>
+              <span v-else>
+                <button class="added-folderBtn" id="added-folderBtn" @click="selectTag(index,tag.id)">
+                  <i style="float: left;" class="material-icons open-file-added">insert_drive_file</i>
+                  <span>
+                    {{tag.name}}
+                  </span>
+                </button>
+              </span>
+            </div>
+          </div>
+        </div>
+
         <div class="col col-left">
           <div class="label">
-            <i class="material-icons folder">folder_open</i>
-            条件タグ
-          </div>
-          <div :style="flexableMargin">
-            <div v-for="(tag,index) in tags" class="added-folder">
-              <span v-if="tag.id==selectedTagId">
-                <button
-                class="added-folderBtn"
-                id="added-folderBtn"
-                @click="clickTag(index,tag.id)"
-                :style="selectedCSS"
-                >
-                <i style="float: left;" class="material-icons open-file-added">insert_drive_file</i>
-                <span>
-                  {{tag.name}}
-                </span>
-              </button>
-            </span>
-            <span v-else>
-              <button class="added-folderBtn" id="added-folderBtn" @click="clickTag(index,tag.id)">
-                <i style="float: left;" class="material-icons open-file-added">insert_drive_file</i>
-                <span>
-                  {{tag.name}}
-                </span>
-              </button>
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div class="col col-left">
-        <div class="label">
-          <i class="material-icons folder">event_note</i>
-          条件リスト
-          <button class="button" @click="addToggle">
-            <i class="material-icons btnMark">add_circle_outline</i>
-          </button>
-          <button class="button" v-if="deleteShow" @click="deleteOption" rel="nofollow" data-method="delete">
-            <i class="material-icons btnMark">remove_circle_outline</i>
-          </button>
-        </div>
-        <transition name="slideUpDown">
-          <div v-if="addShow">
-            <option-detail
-            :newOption="newOption"
-            :createOptions="createOptions"
-            :autoReply="autoReply"
-            :remindReply="remindReply"
-            :fetchTargets="fetchTargets"
-            :targets="targets"
-            :targetMargin="targetMargin"
-            />
-          </div>
-        </transition>
-        <div class="options-panel">
-          <div v-for="(item,index) in options" class="added-folder">
-            <span v-if="selectedOption==item">
-              <button class="added-folderBtn" id="added-folderBtn" @click="clickOption(index,item.id)" :style="selectedCSS">
-                <i style="float: left;" class="material-icons open-file-added">flash_on</i>
-                <span>
-                  {{item.name}}
-                </span>
-              </button>
-              <button class="detail-panel" @click="panelToggle">
-                <i class="material-icons down" v-if="!panelShow">keyboard_arrow_down</i>
-                <i class="material-icons down" v-if="panelShow">keyboard_arrow_up</i>
-              </button>
-              <transition name="slideUpDown">
-                <div class="edit-panel" id="edit-panel" v-if="panelShow">
-                  <div style="width: 49.5%; float: left; margin-bottom: 2em;">
-                    <!-- 조건어 설정 -->
-                    <div class="option-setting">
-                      <div>
-                        <p class="settingMenu">条件語設定</p>
-                        <input type="text" name="option[target_keyword]" v-model="keyword" class="keywordInput" @keydown.enter="createKeyword">
-                        <a @click="clearKeyInput" v-if="keyword">
-                          <i class="material-icons keyword_cancel">cancel</i>
-                        </a>
-                      </div>
-                      <hr style="margin-top: 15px;" />
-                      <div>
-                        <span style="font-size: 14px;">条件語(クリックすると削除)</span>
-                        <span v-for="(key,index) in keywords" v-model="keywords" style="margin-top: 10px;">
-                          <button class="keywordsTag" @click="removeKeyword(index)">{{key}}</button>
-                        </span>
-                      </div>
-                    </div>
-                    <!-- 요일 설정 -->
-                    <div class="option-setting">
-                      <p class="settingMenu">曜日設定</p>
-                      <input type="radio" class="settingRadio" id="unsetDay" value="unsetDay" v-model="setDay" @click="clearDay">
-                      <label class="setting" for="two">毎日</label>
-                      <input type="radio" class="settingRadio" id="setDay" value="setDay" v-model="setDay">
-                      <label class="setting" for="one">曜日選択</label>
-                      <div v-if="setDay=='setDay'">
-                        <p class="timeSet">
-                          <label>
-                            <input class="with-gap" type="checkbox" name="option[target_day]" value="1" v-model="targetDay"/>
-                            <span class="optCheck">月</span>
-                          </label>
-                          <label>
-                            <input class="with-gap" type="checkbox" name="option[target_day]" value="2" v-model="targetDay"/>
-                            <span class="optCheck">火</span>
-                          </label>
-                          <label>
-                            <input class="with-gap" type="checkbox" name="option[target_day]" value="3" v-model="targetDay"/>
-                            <span class="optCheck">水</span>
-                          </label>
-                          <label>
-                            <input class="with-gap" type="checkbox" name="option[target_day]" value="4" v-model="targetDay"/>
-                            <span class="optCheck">木</span>
-                          </label>
-                          <label>
-                            <input class="with-gap" type="checkbox" name="option[target_day]" value="5" v-model="targetDay"/>
-                            <span class="optCheck">金</span>
-                          </label>
-                          <label>
-                            <input class="with-gap" type="checkbox" name="option[target_day]" value="6" v-model="targetDay"/>
-                            <span class="optCheck">土</span>
-                          </label>
-                          <label>
-                            <input class="with-gap" type="checkbox" name="option[target_day]" value="0" v-model="targetDay"/>
-                            <span class="optCheck">日</span>
-                          </label>
-                        </p>
-                      </div>
-                    </div>
-                    <!-- 횟수 설정 -->
-                    <div class="option-setting">
-                      <p class="settingMenu">回数設定</p>
-                      <input type="radio" class="settingRadio" id="unsetTime" value="unsetCount" v-model="setCount">
-                      <label class="setting" for="unsetCount">未指定</label>
-                      <input type="radio" class="settingRadio" id="setTime" value="setCount" v-model="setCount">
-                      <label class="setting" for="setCount">回数選択</label>
-                      <div v-if="setCount=='setCount'">
-                        <p class="timeSet">
-                          <input class="countSet" type="number" name="option[action_count]" v-model="actionCount">回
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div style="width: 49.5%; float: right; margin-bottom: 2em;">
-                    <!-- 송신대상 설정 -->
-                    <div class="option-setting">
-                      <p class="settingMenu" style="margin-top: 4px;">送信対象設定</p>
-                      <input type="radio" class="settingRadio" id="unsetReceiver" value="unsetTarget" v-model="setTarget" @click="clearTargetTag">
-                      <label class="setting" >全ユーザー</label>
-                      <input type="radio" class="settingRadio" @click="callTarget" id="setReceiver" value="setTarget" v-model="setTarget">
-                      <label class="setting" >送信対象選択</label>
-                      <hr style="margin-top: 6.2px;"/>
-                      <div v-if="setTarget=='setTarget'">
-                        <span style="font-size: 14px;">送信対象タグ</span>
-                        <span v-for="(target,index) in targets" style="margin-top: 10px;">
-                          <button  v-model="selectedTargets" v-if="selectedTargets.includes(target)==true" class="keywordsTag" :style="targetCSS" @click="cancelTarget(target)">
-                            {{target}}
-                          </button>
-                          <button v-else class="keywordsTag" @click="selectTarget(index)">{{target}}</button>
-                        </span>
-                      </div>
-                    </div>
-
-                    <!-- 시간 설정 -->
-                    <div class="option-setting">
-                      <p class="settingMenu">時間設定</p>
-                      <input type="radio" class="settingRadio" id="unsetTime" value="unsetTime" v-model="setTime" @click="clearTime">
-                      <label class="setting" for="unsetTime">未指定</label>
-                      <input type="radio" class="settingRadio" id="setTime" value="setTime" v-model="setTime">
-                      <label class="setting" for="setTime">時間選択</label>
-                      <div v-if="setTime=='setTime'">
-                        <p class="timeSet">
-                          <input type="time" class="timeRange" v-model="startTime">
-                          ~
-                          <input type="time" class="timeRange" v-model="endTime">
-                        </p>
-                      </div>
-                    </div>
-                    <!-- 옵션태그 설정 -->
-                    <div class="option-setting">
-                      <div>
-                        <p class="settingMenu">タグ設定</p>
-                        <input type="text" name="option[target_keyword]" v-model="tag" class="keywordInput" @keydown.enter="createTag">
-                        <a @click="clearTag" v-if="tag">
-                          <i class="material-icons keyword_cancel">cancel</i>
-                        </a>
-                      </div>
-                      <hr style="margin-top: 60px;" />
-                      <div>
-                        <span style="font-size: 14px;">タグリスト</span>
-                        <span v-for="(tag,index) in tagtext" v-model="tagtext" style="margin-top: 10px;">
-                          <button class="keywordsTag" @click="removeTag(index)">{{tag}}</button>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <hr style="margin-top: 2px; display: flow-root;" />
-                  <div class="option-buttons">
-                    <button class="allSend-button">キャンセル</button>
-                    <button class="allSend-button" @click="updateOption">設定</button>
-                  </div>
-                </div>
-              </transition>
-            </span>
-            <span v-else>
-              <button class="added-folderBtn" id="added-folderBtn" @click="clickOption(index,item.id)">
-                <i style="float: left;" class="material-icons open-file-added">flash_on</i>
-                <span>
-                  {{item.name}}
-                </span>
-              </button>
-            </span>
-          </div>
-        </div>
-      </div>
-      <!---->
-      <div class="col col-left">
-        <div class="label">
-          <i class="material-icons folder">tap_and_play</i>
-          アクションリスト
-          <button class="former-reaction" @click="reactionListToggle">既存アクション</button>
-        </div>
-        <div class="right-panel" style="border: none;">
-          <table class="actionList">
-            <thead>
-              <tr>
-                <th>
-                  <input type="checkbox" class="checkbox" v-model="reactionAllCheck" @click="reactionAllChecker">
-                </th>
-                <th>アクション名</th>
-                <th>アクション内容</th>
-                <th>操作</th>
-                <th>ヒット数</th>
-                <th>タイプ</th>
-                <th>連動</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(reaction,index) in reactions" v-model="reactions" ref="reaction">
-                <td class="check">
-                  <input type="checkbox" class="checkbox" :checked="reaction.bool" @click="reactionChecker(index)">
-                </td>
-                <td>
-                  {{reaction.name}}
-                </td>
-                <td v-if="reaction.reaction_type=='stamp'">
-                  <a @click="editAction(reaction.id,index,'read')">
-                    <img class="stampBtnImg" :src="getImgUrl(reaction.contents)"/>
-                  </a>
-                </td>
-                <td v-else-if="reaction.reaction_type=='image'">
-                  <a @click="editAction(reaction.id,index,'read')">
-                    <img class="imageResult" :src="reaction.image.url"/>
-                  </a>
-                </td>
-                <td v-else-if="reaction.reaction_type=='carousel'">
-                  <a @click="editAction(reaction.id,index,'read')">
-                    <span>キャルセル</span>
-                  </a>
-                </td>
-                <td v-else>
-                  <a v-if="reaction.contents.search('<img src=')>=0"
-                    @click="editAction(reaction.id,index,'read')"
-                    v-html="reaction.contents.substr(0,100)"
-                    >
-                  </a>
-                  <a v-else @click="editAction(reaction.id,index,'read')">
-                    <span v-if="reaction.contents.length>19" v-html="reaction.contents.substr(0,20)+'...'"></span>
-                    <span v-else v-html="reaction.contents.substr(0,20)"></span>
-                  </a>
-                </td>
-                <td>
-                  <button class="edit-button" @click="editAction(reaction.id,index,'edit')">
-                    編集
-                  </button>
-                </td>
-                <td class="hitcount" style="text-align: center;">{{reaction.target_number}}</td>
-                <td style="text-align: center;">{{reaction.reaction_type}}</td>
-                <td>
-                  <button class="edit-button" v-show="reaction.bool" @click="reactionCancel(reaction.id)">
-                    解除
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="col col-left">
-        <div style="line-height: 2em;">
-          <input v-if="editMode!='read'" type="text" ref="reactionName" v-model="reactionName" placeholder="アクション名を入力してください。" style="width: 50%;"/>
-          <div class="read-title" v-else>
-            <span class="reaction-title" v-html="reactionName"></span>
-          </div>
-          <span class="mode-show" v-model="editMode">
-            MODE
-            <button class="mode-button" @click="changeEditMode('new')" v-if="editMode=='read'">プレビュー</button>
-            <button class="mode-button" v-if="editMode=='new'">新規作成</button>
-            <button class="mode-button" @click="changeEditMode('new')" v-if="editMode=='edit'">修正中</button>
-          </span>
-        </div>
-        <div class="right-panel" >
-          <!-- side buttons -->
-          <div class="contentBtns">
-            <button class="stampBtn" @click="toggleStamp" title="スタンプ追加">
-              <i class="material-icons stamp">child_care</i>
+            <i class="material-icons folder">event_note</i>
+            条件リスト
+            <button class="button" @click="addToggle">
+              <i class="material-icons btnMark">add_circle_outline</i>
             </button>
-            <button class="stampBtn" @click="toggleEmoji" title="emoji追加">
-              <i class="material-icons stamp">sentiment_satisfied_alt</i>
-            </button>
-            <label class="stampBtn" title="イメージ追加">
-              <i class="material-icons stamp">gif</i>
-              <input type="file" @change="onFileChange" class="imageBtn" ref="fileInput" accept="img/*">
-            </label>
-            <button class="stampBtn" @click="toggleCarousel" title="キャルセル追加">
-              <i class="material-icons stamp">border_color</i>
-            </button>
-            <button class="stampBtn" @click="toggleMap" title="マップ追加">
-              <i class="material-icons stamp">location_on</i>
+            <button class="button" v-if="deleteShow" @click="deleteOption" rel="nofollow" data-method="delete">
+              <i class="material-icons btnMark">remove_circle_outline</i>
             </button>
           </div>
-
-          <div class="chattingArea">
-            <div v-show="uploadedImage"  class="attachedImgPanel">
-              <a class="closeStamp" @click="closeImage">X</a>
-              <p>[イメージ]</p>
-              <img class="attachedImg" :src="uploadedImage">
+          <transition name="slideUpDown">
+            <div v-if="addShow">
+              <option-detail
+              :newOption="newOption"
+              :createOptions="createOptions"
+              :autoReply="autoReply"
+              :remindReply="remindReply"
+              :fetchTargets="fetchTargets"
+              :targets="targets"
+              :targetMargin="targetMargin"
+              />
             </div>
-
-            <div id="chattingContents" class="chattingContents" contenteditable="true" :style="flexablePadding" @input="sync" v-html="innerContent" v-model="innerContent" ref="chatting" autofocus="autofocus"></div>
-            <input type="text" v-model="contents" style="display: none;">
-
-            <!--tag input area-->
-            <div class="tags">
-              <div class="tags-top" style="width: 48%; float: left;">
-                <span style="margin-left: 10px; float: left;">タグ</span>
-                <input type="text" name="option[target_keyword]" v-model="tag" class="tagInput" @keydown.enter="createTag">
-                <a @click="clearTag" v-if="tag" style="line-height: 0px; float: left;">
-                  <i class="material-icons keyword_cancel">cancel</i>
-                </a>
-              </div>
-              <div class="tags-bottom" style="width: 48%; float: left; overflow-x: scroll; height: 100%;">
-                <div style="width: max-content;">
-                  <span style="font-size: 14px;">タグリスト</span>
-                  <span v-for="(tag,index) in tagtext" v-model="tagtext" style="margin-top: 10px; line-height: 0px;">
-                    <button class="tagList" @click="removeTag(index)">{{tag}}</button>
+          </transition>
+          <div class="options-panel">
+            <div v-for="(item,index) in options" class="added-folder">
+              <span v-if="selectedOption==item">
+                <button class="added-folderBtn" id="added-folderBtn" @click="clickOption(index,item.id)" :style="selectedCSS">
+                  <i style="float: left;" class="material-icons open-file-added">flash_on</i>
+                  <span>
+                    {{item.name}}
                   </span>
-                </div>
+                </button>
+                <button class="detail-panel" @click="panelToggle">
+                  <i class="material-icons down" v-if="!panelShow">keyboard_arrow_down</i>
+                  <i class="material-icons down" v-if="panelShow">keyboard_arrow_up</i>
+                </button>
+                <transition name="slideUpDown">
+                  <div class="edit-panel" id="edit-panel" v-if="panelShow">
+                    <div style="width: 49.5%; float: left; margin-bottom: 2em;">
+                      <!-- 조건어 설정 -->
+                      <div class="option-setting">
+                        <div>
+                          <p class="settingMenu">条件語設定</p>
+                          <input type="text" name="option[target_keyword]" v-model="keyword" class="keywordInput" @keydown.enter="createKeyword">
+                          <a @click="clearKeyInput" v-if="keyword">
+                            <i class="material-icons keyword_cancel">cancel</i>
+                          </a>
+                        </div>
+                        <hr style="margin-top: 15px;" />
+                        <div>
+                          <span style="font-size: 14px;">条件語(クリックすると削除)</span>
+                          <span v-for="(key,index) in keywords" v-model="keywords" style="margin-top: 10px;">
+                            <button class="keywordsTag" @click="removeKeyword(index)">{{key}}</button>
+                          </span>
+                        </div>
+                      </div>
+                      <!-- 요일 설정 -->
+                      <div class="option-setting">
+                        <p class="settingMenu">曜日設定</p>
+                        <input type="radio" class="settingRadio" id="unsetDay" value="unsetDay" v-model="setDay" @click="clearDay">
+                        <label class="setting" for="two">毎日</label>
+                        <input type="radio" class="settingRadio" id="setDay" value="setDay" v-model="setDay">
+                        <label class="setting" for="one">曜日選択</label>
+                        <div v-if="setDay=='setDay'">
+                          <p class="timeSet">
+                            <label>
+                              <input class="with-gap" type="checkbox" name="option[target_day]" value="1" v-model="targetDay"/>
+                              <span class="optCheck">月</span>
+                            </label>
+                            <label>
+                              <input class="with-gap" type="checkbox" name="option[target_day]" value="2" v-model="targetDay"/>
+                              <span class="optCheck">火</span>
+                            </label>
+                            <label>
+                              <input class="with-gap" type="checkbox" name="option[target_day]" value="3" v-model="targetDay"/>
+                              <span class="optCheck">水</span>
+                            </label>
+                            <label>
+                              <input class="with-gap" type="checkbox" name="option[target_day]" value="4" v-model="targetDay"/>
+                              <span class="optCheck">木</span>
+                            </label>
+                            <label>
+                              <input class="with-gap" type="checkbox" name="option[target_day]" value="5" v-model="targetDay"/>
+                              <span class="optCheck">金</span>
+                            </label>
+                            <label>
+                              <input class="with-gap" type="checkbox" name="option[target_day]" value="6" v-model="targetDay"/>
+                              <span class="optCheck">土</span>
+                            </label>
+                            <label>
+                              <input class="with-gap" type="checkbox" name="option[target_day]" value="0" v-model="targetDay"/>
+                              <span class="optCheck">日</span>
+                            </label>
+                          </p>
+                        </div>
+                      </div>
+                      <!-- 횟수 설정 -->
+                      <div class="option-setting">
+                        <p class="settingMenu">回数設定</p>
+                        <input type="radio" class="settingRadio" id="unsetTime" value="unsetCount" v-model="setCount">
+                        <label class="setting" for="unsetCount">未指定</label>
+                        <input type="radio" class="settingRadio" id="setTime" value="setCount" v-model="setCount">
+                        <label class="setting" for="setCount">回数選択</label>
+                        <div v-if="setCount=='setCount'">
+                          <p class="timeSet">
+                            <input class="countSet" type="number" name="option[action_count]" v-model="actionCount">回
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div style="width: 49.5%; float: right; margin-bottom: 2em;">
+                      <!-- 송신대상 설정 -->
+                      <div class="option-setting">
+                        <p class="settingMenu" style="margin-top: 4px;">送信対象設定</p>
+                        <input type="radio" class="settingRadio" id="unsetReceiver" value="unsetTarget" v-model="setTarget" @click="clearTargetTag">
+                        <label class="setting" >全ユーザー</label>
+                        <input type="radio" class="settingRadio" @click="callTarget" id="setReceiver" value="setTarget" v-model="setTarget">
+                        <label class="setting" >送信対象選択</label>
+                        <hr style="margin-top: 6.2px;"/>
+                        <div v-if="setTarget=='setTarget'">
+                          <span style="font-size: 14px;">送信対象タグ</span>
+                          <span v-for="(target,index) in targets" style="margin-top: 10px;">
+                            <button  v-model="selectedTargets" v-if="selectedTargets.includes(target)==true" class="keywordsTag" :style="targetCSS" @click="cancelTarget(target)">
+                              {{target}}
+                            </button>
+                            <button v-else class="keywordsTag" @click="selectTarget(index)">{{target}}</button>
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- 시간 설정 -->
+                      <div class="option-setting">
+                        <p class="settingMenu">時間設定</p>
+                        <input type="radio" class="settingRadio" id="unsetTime" value="unsetTime" v-model="setTime" @click="clearTime">
+                        <label class="setting" for="unsetTime">未指定</label>
+                        <input type="radio" class="settingRadio" id="setTime" value="setTime" v-model="setTime">
+                        <label class="setting" for="setTime">時間選択</label>
+                        <div v-if="setTime=='setTime'">
+                          <p class="timeSet">
+                            <input type="time" class="timeRange" v-model="startTime">
+                            ~
+                            <input type="time" class="timeRange" v-model="endTime">
+                          </p>
+                        </div>
+                      </div>
+                      <!-- 옵션태그 설정 -->
+                      <div class="option-setting">
+                        <div>
+                          <p class="settingMenu">タグ設定</p>
+                          <input type="text" name="option[target_keyword]" v-model="tag" class="keywordInput" @keydown.enter="createTag">
+                          <a @click="clearTag" v-if="tag">
+                            <i class="material-icons keyword_cancel">cancel</i>
+                          </a>
+                        </div>
+                        <hr style="margin-top: 60px;" />
+                        <div>
+                          <span style="font-size: 14px;">タグリスト</span>
+                          <span v-for="(tag,index) in tagtext" v-model="tagtext" style="margin-top: 10px;">
+                            <button class="keywordsTag" @click="removeTag(index)">{{tag}}</button>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <hr style="margin-top: 2px; display: flow-root;" />
+                    <div class="option-buttons">
+                      <button class="allSend-button">キャンセル</button>
+                      <button class="allSend-button" @click="updateOption">設定</button>
+                    </div>
+                  </div>
+                </transition>
+              </span>
+              <span v-else>
+                <button class="added-folderBtn" id="added-folderBtn" @click="clickOption(index,item.id)">
+                  <i style="float: left;" class="material-icons open-file-added">flash_on</i>
+                  <span>
+                    {{item.name}}
+                  </span>
+                </button>
+              </span>
+            </div>
+          </div>
+        </div>
+        <!---->
+        <div class="col col-left">
+          <div class="label">
+            <i class="material-icons folder">tap_and_play</i>
+            アクションリスト
+            <button class="former-reaction" @click="reactionListToggle">既存アクション</button>
+          </div>
+          <div class="right-panel" style="border: none;">
+            <table class="actionList">
+              <thead>
+                <tr>
+                  <th>
+                    <input type="checkbox" class="checkbox" v-model="reactionAllCheck" @click="reactionAllChecker">
+                  </th>
+                  <th>アクション名</th>
+                  <th>アクション内容</th>
+                  <th>操作</th>
+                  <th>ヒット数</th>
+                  <th>タイプ</th>
+                  <th>連動</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(reaction,index) in reactions" v-model="reactions" ref="reaction">
+                  <td class="check">
+                    <input type="checkbox" class="checkbox" :checked="reaction.bool" @click="reactionChecker(index)">
+                  </td>
+                  <td>
+                    {{reaction.name}}
+                  </td>
+                  <td v-if="reaction.reaction_type=='stamp'">
+                    <a @click="editAction(reaction.id,index,'read')">
+                      <img class="stampBtnImg" :src="getImgUrl(reaction.contents)"/>
+                    </a>
+                  </td>
+                  <td v-else-if="reaction.reaction_type=='image'">
+                    <a @click="editAction(reaction.id,index,'read')">
+                      <img class="imageResult" :src="reaction.image.url"/>
+                    </a>
+                  </td>
+                  <td v-else-if="reaction.reaction_type=='carousel'">
+                    <a @click="editAction(reaction.id,index,'read')">
+                      <span>キャルセル</span>
+                    </a>
+                  </td>
+                  <td v-else>
+                    <a v-if="reaction.contents.search('<img src=')>=0"
+                      @click="editAction(reaction.id,index,'read')"
+                      v-html="reaction.contents.substr(0,100)"
+                      >
+                    </a>
+                    <a v-else @click="editAction(reaction.id,index,'read')">
+                      <span v-if="reaction.contents.length>19" v-html="reaction.contents.substr(0,20)+'...'"></span>
+                      <span v-else v-html="reaction.contents.substr(0,20)"></span>
+                    </a>
+                  </td>
+                  <td>
+                    <button class="edit-button" @click="editAction(reaction.id,index,'edit')">
+                      編集
+                    </button>
+                  </td>
+                  <td class="hitcount" style="text-align: center;">{{reaction.target_number}}</td>
+                  <td style="text-align: center;">{{reaction.reaction_type}}</td>
+                  <td>
+                    <button class="edit-button" v-show="reaction.bool" @click="reactionCancel(reaction.id)">
+                      解除
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="col col-left">
+          <div style="line-height: 2em;">
+            <input v-if="editMode!='read'" type="text" ref="reactionName" v-model="reactionName" placeholder="アクション名を入力してください。" style="width: 50%;"/>
+            <div class="read-title" v-else>
+              <span class="reaction-title" v-html="reactionName"></span>
+            </div>
+            <span class="mode-show" v-model="editMode">
+              MODE
+              <button class="mode-button" @click="changeEditMode('new')" v-if="editMode=='read'">プレビュー</button>
+              <button class="mode-button" v-if="editMode=='new'">新規作成</button>
+              <button class="mode-button" @click="changeEditMode('new')" v-if="editMode=='edit'">修正中</button>
+            </span>
+          </div>
+          <div class="right-panel" >
+            <!-- side buttons -->
+            <div class="contentBtns">
+              <button class="stampBtn" @click="toggleStamp" title="スタンプ追加">
+                <i class="material-icons stamp">child_care</i>
+              </button>
+              <button class="stampBtn" @click="toggleEmoji" title="emoji追加">
+                <i class="material-icons stamp">sentiment_satisfied_alt</i>
+              </button>
+              <label class="stampBtn" title="イメージ追加">
+                <i class="material-icons stamp">gif</i>
+                <input type="file" @change="onFileChange" class="imageBtn" ref="fileInput" accept="img/*">
+              </label>
+              <button class="stampBtn" @click="toggleCarousel" title="キャルセル追加">
+                <i class="material-icons stamp">border_color</i>
+              </button>
+              <button class="stampBtn" @click="toggleMap" title="マップ追加">
+                <i class="material-icons stamp">location_on</i>
+              </button>
+            </div>
+
+            <div class="chattingArea">
+              <div v-show="uploadedImage"  class="attachedImgPanel">
+                <a class="closeStamp" @click="closeImage">X</a>
+                <p>[イメージ]</p>
+                <img class="attachedImg" :src="uploadedImage">
               </div>
-            </div>
 
-            <!-- stamp list bottom -->
-            <div class="sticker-panel" v-show="stampShow">
-              <button class="stampBtn" v-for="num in stampNums" @click="selectStamp(num)">
-                <img class="stampBtnImg" :src="getImgUrl(num)"/>
-              </button>
-            </div>
+              <div id="chattingContents" class="chattingContents" contenteditable="true" :style="flexablePadding" @input="sync" v-html="innerContent" v-model="innerContent" ref="chatting" autofocus="autofocus"></div>
+              <input type="text" v-model="contents" style="display: none;">
 
-            <!-- emoji list bottom -->
-            <div class="sticker-panel" v-show="emojiShow">
-              <button class="emojiBtn stampBtn" v-for="emoji in emojis" @click="addEmoji(emoji.img_url)">
-                <img class="stampBtnImg" :src="emoji.img_url">
-              </button>
-            </div>
-          </div>
-
-          <!-- stamp image area -->
-          <div class="stampArea" v-show="stampAreaShow">
-            <a class="closeStamp" @click="closeStamp">X</a>
-            <p>[スタンプ]</p>
-            <img class="selectStamp" :src="selectStampUrl">
-          </div>
-
-          <!-- carousel area -->
-          <transition name="showInOut">
-            <div class="carouselArea" v-show="carouselAreaShow" :style="carouselAreaWidth">
-              <!-- left-side menu -->
-              <div class="control-box">
-                <div class="bubble-setting setting-gravity" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">
-                  <span>垂直配置</span>
-                  <select class="css-option" v-model="gravity" @change="syncGravity">
-                    <option value="top">上</option>
-                    <option value="center">中</option>
-                    <option value="bottom">下</option>
-                  </select>
+              <!--tag input area-->
+              <div class="tags">
+                <div class="tags-top" style="width: 48%; float: left;">
+                  <span style="margin-left: 10px; float: left;">タグ</span>
+                  <input type="text" name="option[target_keyword]" v-model="tag" class="tagInput" @keydown.enter="createTag">
+                  <a @click="clearTag" v-if="tag" style="line-height: 0px; float: left;">
+                    <i class="material-icons keyword_cancel">cancel</i>
+                  </a>
                 </div>
-                <div class="bubble-setting setting-align" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">
-                  <span>水平配置</span>
-                  <select class="css-option" v-model="align" @change="syncAlign">
-                    <option value="start">左</option>
-                    <option value="center">中</option>
-                    <option value="end">右</option>
-                  </select>
-                </div>
-                <div class="bubble-setting setting-size" v-if="selectedComponent!='footer'||footer_type!='button'">
-                  <span v-if="selectedComponent!='hero'">文字サイズ</span>
-                  <span v-else>イメージ幅</span>
-                  <select class="css-option" v-model="size" @change="syncSize">
-                    <option value="xxs">1</option>
-                    <option value="xs">2</option>
-                    <option value="sm">3</option>
-                    <option value="md">4</option>
-                    <option value="lg">5</option>
-                    <option value="xl">6</option>
-                    <option value="xxl">7</option>
-                    <option value="3xl">8</option>
-                    <option value="4xl">9</option>
-                    <option value="5xl">10</option>
-                    <option v-if="selectedComponent=='hero'" value="full">full</option>
-                  </select>
-                </div>
-                <div class="bubble-setting setting-bold" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">
-                  <span>濃さ</span>
-                  <select class="css-option" v-model="bold" @change="syncBold">
-                    <option value="regular">普通</option>
-                    <option value="bold">濃い</option>
-                  </select>
-                </div>
-                <div class="bubble-setting color setting-color" v-if="selectedComponent=='hero'">
-                  <p style="margin-bottom: 0">横:縦</p>
-                  <input class="color-text" type="number" v-model="heroWidth" style="width: 4em;color: white;text-align: center;" @change="syncRatio">
-                  :
-                  <input class="color-text" type="number" v-model="heroHeight" style="width: 4em;color: white;text-align: center;" @change="syncRatio">
-                </div>
-                <div class="bubble-setting color setting-color" style="height: 5.8em;" v-if="selectedComponent=='footer'&&footer_type=='button'">
-                  <p style="margin-bottom: 0">文字色</p>
-                  <select class="css-option" v-model="color" @change="syncColor" style="margin-bottom: .3em;">
-                    <option value="#ffffff">白</option>
-                    <option value="#111111">黒</option>
-                  </select>
-                  <div class="color-sample" :style="fontColor" v-model="color"></div>
-                </div>
-                <div v-else style="height: 5.2em;">
-                  <div class="bubble-setting color setting-color" v-if="selectedComponent!='hero'">
-                    <p style="margin-bottom: 0">文字色</p>
-                    <input class="color-text color-input" type="text" v-model="color" @keyup="syncColor" style="height: 2em; color: white;">
-                    <div class="color-sample" :style="fontColor" v-model="color"></div>
+                <div class="tags-bottom" style="width: 48%; float: left; overflow-x: scroll; height: 100%;">
+                  <div style="width: max-content;">
+                    <span style="font-size: 14px;">タグリスト</span>
+                    <span v-for="(tag,index) in tagtext" v-model="tagtext" style="margin-top: 10px; line-height: 0px;">
+                      <button class="tagList" @click="removeTag(index)">{{tag}}</button>
+                    </span>
                   </div>
                 </div>
-                <button class="colorExchange" @click="exchangeColor" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">↑ 色逆に ↓</button>
-                <div class="bubble-setting color setting-background" style="height: 6em;">
-                  <p style="margin-bottom: 0">背景色</p>
-                  <input class="color-text color-input" type="text" v-model="background" @keyup="syncBackground" style="height: 2em; color: white;">
-                  <div class="color-sample" :style="backgroundColor" v-model="backgroundColor"></div>
-                </div>
-                <div class="bubble-setting setting-footerType" v-if="selectedComponent=='footer'">
-                  <span>フッタータイプ</span>
-                  <select class="css-option" v-model="footer_type" @change="syncFooterType">
-                    <option value="text">テキスト</option>
-                    <option value="button">ボタン</option>
-                  </select>
-                </div>
-                <div class="bubble-setting setting-footerType" v-if="selectedComponent=='footer'&&footer_type=='button'">
-                  <span>ボタンタイプ</span>
-                  <select class="css-option" v-model="footer_button" @change="syncFooterButton">
-                    <option value="uri">リンク</option>
-                    <option value="message">メッセージ</option>
-                  </select>
-                </div>
-                <div class="bubble-setting color setting-url" v-if="selectedComponent=='footer'&&footer_type=='button'&&footer_button=='uri'">
-                  <p style="margin-bottom: 0">リンクURL</p>
-                  <input class="uri-text" type="text" v-model="footer_uri" @keyup="syncFooterUri">
-                </div>
-                <div class="bubble-setting color setting-message" v-if="selectedComponent=='footer'&&footer_type=='button'&&footer_button=='message'">
-                  <p style="margin-bottom: 0">配信メッセージ</p>
-                  <input class="uri-text" type="text" v-model="footer_message" @keyup="syncFooterMessage">
-                </div>
-                <div class="design-buttons">
-                  <button class="copyChu copy" @click="copyCSS(selectedBubble)">デザインコピー</button>
-                  <button class="copyChu paste" v-if="copiedType" @click="pasteCSS">デザイン適用</button>
-                </div>
-                <label class="image-change" title="イメージ変更" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null">
-                  イメージ変更
-                  <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
-                </label>
-                <button class="image-remove" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null" @click="removeImage">
-                  イメージ削除
+              </div>
+
+              <!-- stamp list bottom -->
+              <div class="sticker-panel" v-show="stampShow">
+                <button class="stampBtn" v-for="num in stampNums" @click="selectStamp(num)">
+                  <img class="stampBtnImg" :src="getImgUrl(num)"/>
                 </button>
               </div>
 
-              <!-- main bubble -->
-              <div class="carousel-box" :style="carouselBoxWidth">
-                <div class="bubble-box" ref="carousel" v-model="bubble_array">
-                  <div class="bubble" v-for="(bubble,index) in bubble_array" :key="bubble.id">
-                    <!-- header -->
-                    <div class="blocks header-block" v-if="selectedComponent=='header'&&selectedBubble==index" style="border: 5px solid red" :style="headerBackground[index]">
+              <!-- emoji list bottom -->
+              <div class="sticker-panel" v-show="emojiShow">
+                <button class="emojiBtn stampBtn" v-for="emoji in emojis" @click="addEmoji(emoji.img_url)">
+                  <img class="stampBtnImg" :src="emoji.img_url">
+                </button>
+              </div>
+            </div>
+
+            <!-- stamp image area -->
+            <div class="stampArea" v-show="stampAreaShow">
+              <a class="closeStamp" @click="closeStamp">X</a>
+              <p>[スタンプ]</p>
+              <img class="selectStamp" :src="selectStampUrl">
+            </div>
+
+            <!-- carousel area -->
+            <transition name="showInOut">
+              <div class="carouselArea" v-show="carouselAreaShow" :style="carouselAreaWidth">
+                <!-- left-side menu -->
+                <div class="control-box">
+                  <div class="bubble-setting setting-gravity" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">
+                    <span>垂直配置</span>
+                    <select class="css-option" v-model="gravity" @change="syncGravity">
+                      <option value="top">上</option>
+                      <option value="center">中</option>
+                      <option value="bottom">下</option>
+                    </select>
+                  </div>
+                  <div class="bubble-setting setting-align" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">
+                    <span>水平配置</span>
+                    <select class="css-option" v-model="align" @change="syncAlign">
+                      <option value="start">左</option>
+                      <option value="center">中</option>
+                      <option value="end">右</option>
+                    </select>
+                  </div>
+                  <div class="bubble-setting setting-size" v-if="selectedComponent!='footer'||footer_type!='button'">
+                    <span v-if="selectedComponent!='hero'">文字サイズ</span>
+                    <span v-else>イメージ幅</span>
+                    <select class="css-option" v-model="size" @change="syncSize">
+                      <option value="xxs">1</option>
+                      <option value="xs">2</option>
+                      <option value="sm">3</option>
+                      <option value="md">4</option>
+                      <option value="lg">5</option>
+                      <option value="xl">6</option>
+                      <option value="xxl">7</option>
+                      <option value="3xl">8</option>
+                      <option value="4xl">9</option>
+                      <option value="5xl">10</option>
+                      <option v-if="selectedComponent=='hero'" value="full">full</option>
+                    </select>
+                  </div>
+                  <div class="bubble-setting setting-bold" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">
+                    <span>濃さ</span>
+                    <select class="css-option" v-model="bold" @change="syncBold">
+                      <option value="regular">普通</option>
+                      <option value="bold">濃い</option>
+                    </select>
+                  </div>
+                  <div class="bubble-setting color setting-color" v-if="selectedComponent=='hero'">
+                    <p style="margin-bottom: 0">横:縦</p>
+                    <input class="color-text" type="number" v-model="heroWidth" style="width: 4em;color: white;text-align: center;" @change="syncRatio">
+                    :
+                    <input class="color-text" type="number" v-model="heroHeight" style="width: 4em;color: white;text-align: center;" @change="syncRatio">
+                  </div>
+                  <div class="bubble-setting color setting-color" style="height: 5.8em;" v-if="selectedComponent=='footer'&&footer_type=='button'">
+                    <p style="margin-bottom: 0">文字色</p>
+                    <select class="css-option" v-model="color" @change="syncColor" style="margin-bottom: .3em;">
+                      <option value="#ffffff">白</option>
+                      <option value="#111111">黒</option>
+                    </select>
+                    <div class="color-sample" :style="fontColor" v-model="color"></div>
+                  </div>
+                  <div v-else style="height: 5.2em;">
+                    <div class="bubble-setting color setting-color" v-if="selectedComponent!='hero'">
+                      <p style="margin-bottom: 0">文字色</p>
+                      <input class="color-text color-input" type="text" v-model="color" @keyup="syncColor" style="height: 2em; color: white;">
+                      <div class="color-sample" :style="fontColor" v-model="color"></div>
+                    </div>
+                  </div>
+                  <button class="colorExchange" @click="exchangeColor" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">↑ 色逆に ↓</button>
+                  <div class="bubble-setting color setting-background" style="height: 6em;">
+                    <p style="margin-bottom: 0">背景色</p>
+                    <input class="color-text color-input" type="text" v-model="background" @keyup="syncBackground" style="height: 2em; color: white;">
+                    <div class="color-sample" :style="backgroundColor" v-model="backgroundColor"></div>
+                  </div>
+                  <div class="bubble-setting setting-footerType" v-if="selectedComponent=='footer'">
+                    <span>フッタータイプ</span>
+                    <select class="css-option" v-model="footer_type" @change="syncFooterType">
+                      <option value="text">テキスト</option>
+                      <option value="button">ボタン</option>
+                    </select>
+                  </div>
+                  <div class="bubble-setting setting-footerType" v-if="selectedComponent=='footer'&&footer_type=='button'">
+                    <span>ボタンタイプ</span>
+                    <select class="css-option" v-model="footer_button" @change="syncFooterButton">
+                      <option value="uri">リンク</option>
+                      <option value="message">メッセージ</option>
+                    </select>
+                  </div>
+                  <div class="bubble-setting color setting-url" v-if="selectedComponent=='footer'&&footer_type=='button'&&footer_button=='uri'">
+                    <p style="margin-bottom: 0">リンクURL</p>
+                    <input class="uri-text" type="text" v-model="footer_uri" @keyup="syncFooterUri">
+                  </div>
+                  <div class="bubble-setting color setting-message" v-if="selectedComponent=='footer'&&footer_type=='button'&&footer_button=='message'">
+                    <p style="margin-bottom: 0">配信メッセージ</p>
+                    <input class="uri-text" type="text" v-model="footer_message" @keyup="syncFooterMessage">
+                  </div>
+                  <div class="design-buttons">
+                    <button class="copyChu copy" @click="copyCSS(selectedBubble)">デザインコピー</button>
+                    <button class="copyChu paste" v-if="copiedType" @click="pasteCSS">デザイン適用</button>
+                  </div>
+                  <label class="image-change" title="イメージ変更" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null">
+                    イメージ変更
+                    <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
+                  </label>
+                  <button class="image-remove" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null" @click="removeImage">
+                    イメージ削除
+                  </button>
+                </div>
+
+                <!-- main bubble -->
+                <div class="carousel-box" :style="carouselBoxWidth">
+                  <div class="bubble-box" ref="carousel" v-model="bubble_array">
+                    <div class="bubble" v-for="(bubble,index) in bubble_array" :key="bubble.id">
+                      <!-- header -->
+                      <div class="blocks header-block" v-if="selectedComponent=='header'&&selectedBubble==index" style="border: 5px solid red" :style="headerBackground[index]">
+                        <div class="component header-text" ref="header" contenteditable="true" v-html="header[index]" @input="syncHeader(index)" :style="headerCSS[index]">
+                        </div>
+                      </div>
+                      <div class="blocks header-block" @click="selectComponent('header', index)" v-else
+                      :style="headerBackground[index]">
                       <div class="component header-text" ref="header" contenteditable="true" v-html="header[index]" @input="syncHeader(index)" :style="headerCSS[index]">
                       </div>
                     </div>
-                    <div class="blocks header-block" @click="selectComponent('header', index)" v-else
-                    :style="headerBackground[index]">
-                    <div class="component header-text" ref="header" contenteditable="true" v-html="header[index]" @input="syncHeader(index)" :style="headerCSS[index]">
-                    </div>
-                  </div>
-                  <input type="text" v-model="bubble.header" style="display: none;">
+                    <input type="text" v-model="bubble.header" style="display: none;">
 
-                  <!-- hero(image) -->
-                  <div class="blocks hero-block" v-if="selectedComponent=='hero'&&selectedBubble==index" style="border: 5px solid red">
-                    <label class="add-label" title="イメージ追加">
-                      <i class="material-icons add-bubble-image" v-if="!heros[index]">add</i>
-                      <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
-                    </label>
-                    <div class="carousel-img-area" v-show="bubble.hero" :style="heroCSS[index]">
-                      <img class="carousel-img" :src="bubble.hero" :style="imageCSS[index]">
+                    <!-- hero(image) -->
+                    <div class="blocks hero-block" v-if="selectedComponent=='hero'&&selectedBubble==index" style="border: 5px solid red">
+                      <label class="add-label" title="イメージ追加">
+                        <i class="material-icons add-bubble-image" v-if="!heros[index]">add</i>
+                        <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
+                      </label>
+                      <div class="carousel-img-area" v-show="bubble.hero" :style="heroCSS[index]">
+                        <img class="carousel-img" :src="bubble.hero" :style="imageCSS[index]">
+                      </div>
                     </div>
-                  </div>
-                  <div class="blocks hero-block" @click="selectComponent('hero', index)" v-else>
-                    <label class="add-label" title="イメージ追加">
-                      <i class="material-icons add-bubble-image" v-if="!heros[index]">add</i>
-                      <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
-                    </label>
-                    <div class="carousel-img-area" v-show="bubble.hero" :style="heroCSS[index]">
-                      <img class="carousel-img" :src="bubble.hero" :style="imageCSS[index]">
+                    <div class="blocks hero-block" @click="selectComponent('hero', index)" v-else>
+                      <label class="add-label" title="イメージ追加">
+                        <i class="material-icons add-bubble-image" v-if="!heros[index]">add</i>
+                        <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
+                      </label>
+                      <div class="carousel-img-area" v-show="bubble.hero" :style="heroCSS[index]">
+                        <img class="carousel-img" :src="bubble.hero" :style="imageCSS[index]">
+                      </div>
                     </div>
-                  </div>
 
-                  <!-- body -->
-                  <div class="blocks body-block" v-if="selectedComponent=='body'&&selectedBubble==index" style="border: 5px solid red" :style="bodyBackground[index]">
-                    <div class="component body-text" ref="body" contenteditable="true" v-html="body[index]" @input="syncBody(index)" :style="bodyCSS[index]">
+                    <!-- body -->
+                    <div class="blocks body-block" v-if="selectedComponent=='body'&&selectedBubble==index" style="border: 5px solid red" :style="bodyBackground[index]">
+                      <div class="component body-text" ref="body" contenteditable="true" v-html="body[index]" @input="syncBody(index)" :style="bodyCSS[index]">
+                      </div>
                     </div>
-                  </div>
-                  <div class="blocks body-block" @click="selectComponent('body', index)" v-else :style="bodyBackground[index]">
-                    <div class="component body-text" ref="body" contenteditable="true" v-html="body[index]" @input="syncBody(index)" :style="bodyCSS[index]">
+                    <div class="blocks body-block" @click="selectComponent('body', index)" v-else :style="bodyBackground[index]">
+                      <div class="component body-text" ref="body" contenteditable="true" v-html="body[index]" @input="syncBody(index)" :style="bodyCSS[index]">
+                      </div>
                     </div>
-                  </div>
-                  <input type="text" v-model="bubble.body" style="display: none;">
+                    <input type="text" v-model="bubble.body" style="display: none;">
 
-                  <!-- footer -->
-                  <div class="blocks footer-block" v-if="selectedComponent=='footer'&&selectedBubble==index" style="border: 5px solid red" :style="footerBackground[index]">
-                    <div class="component footer-text" ref="footer" contenteditable="true" v-html="footer[index]" @input="syncFooter(index)" :style="footerCSS[index]">
+                    <!-- footer -->
+                    <div class="blocks footer-block" v-if="selectedComponent=='footer'&&selectedBubble==index" style="border: 5px solid red" :style="footerBackground[index]">
+                      <div class="component footer-text" ref="footer" contenteditable="true" v-html="footer[index]" @input="syncFooter(index)" :style="footerCSS[index]">
+                      </div>
+                    </div>
+                    <div class="blocks footer-block" @click="selectComponent('footer', index)" v-else :style="footerBackground[index]">
+                      <div class="component footer-text" ref="footer" contenteditable="true" v-html="footer[index]" @input="syncFooter(index)" :style="footerCSS[index]">
+                      </div>
+                    </div>
+                    <input type="text" v-model="bubble.footer" style="display: none;">
+                    <div>
+                      <button v-if="index==0" class="copy-bubble" @click="copyBubble(index)" style="width: 100%;">
+                        複　製
+                      </button>
+                      <button v-if="index>0" class="copy-bubble" @click="copyBubble(index)">
+                        複　製
+                      </button>
+                      <button v-if="index>0" class="remove-bubble" @click="removeBubble(index)">
+                        削　除
+                      </button>
                     </div>
                   </div>
-                  <div class="blocks footer-block" @click="selectComponent('footer', index)" v-else :style="footerBackground[index]">
-                    <div class="component footer-text" ref="footer" contenteditable="true" v-html="footer[index]" @input="syncFooter(index)" :style="footerCSS[index]">
-                    </div>
-                  </div>
-                  <input type="text" v-model="bubble.footer" style="display: none;">
-                  <div>
-                    <button v-if="index==0" class="copy-bubble" @click="copyBubble(index)" style="width: 100%;">
-                      複　製
-                    </button>
-                    <button v-if="index>0" class="copy-bubble" @click="copyBubble(index)">
-                      複　製
-                    </button>
-                    <button v-if="index>0" class="remove-bubble" @click="removeBubble(index)">
-                      削　除
-                    </button>
-                  </div>
-                </div>
-                <div class="bubble">
-                  <div class="empty-bubble">
-                    <div class="add-button" @click="addBubble">
-                      <i class="material-icons add-circle">
-                        add_circle_outline
-                      </i>
+                  <div class="bubble">
+                    <div class="empty-bubble">
+                      <div class="add-button" @click="addBubble">
+                        <i class="material-icons add-circle">
+                          add_circle_outline
+                        </i>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+              <div class="add-button">
+                <i class="material-icons open-circle" @click="stretchCarouselToggle" v-if="!carouselOpen">
+                  keyboard_arrow_left
+                </i>
+                <i class="material-icons open-circle" @click="stretchCarouselToggle" v-if="carouselOpen">
+                  keyboard_arrow_right
+                </i>
+              </div>
             </div>
-            <div class="add-button">
-              <i class="material-icons open-circle" @click="stretchCarouselToggle" v-if="!carouselOpen">
-                keyboard_arrow_left
-              </i>
-              <i class="material-icons open-circle" @click="stretchCarouselToggle" v-if="carouselOpen">
-                keyboard_arrow_right
-              </i>
-            </div>
-          </div>
-        </transition>
+          </transition>
 
-        <!--GoogleMap-->
-        <div class="googleMap" v-show="mapShow">
-          <div class="placeSearch">
-            <GmapAutocomplete @place_changed="setPlace"/>
-          </div>
-          <button style="width: 100%; height: 5%;" id="location" @click="getAddress">
-            住所取得
-          </button>
-          <GmapMap
-          :center="default_center"
-          :zoom="12"
-          map-type-id="terrain"
-          style="width: 100%; height: 95%;"
-          @center_changed="onCenterChanged"
-          >
-          <GmapMarker
-          :position="marker_center"
-          :clickable="true"
-          :draggable="false"
-          />
-        </GmapMap>
+          <!--GoogleMap-->
+          <div class="googleMap" v-show="mapShow">
+            <div class="placeSearch">
+              <GmapAutocomplete @place_changed="setPlace"/>
+            </div>
+            <button style="width: 100%; height: 5%;" id="location" @click="getAddress">
+              住所取得
+            </button>
+            <GmapMap
+            :center="default_center"
+            :zoom="12"
+            map-type-id="terrain"
+            style="width: 100%; height: 95%;"
+            @center_changed="onCenterChanged"
+            >
+            <GmapMarker
+            :position="marker_center"
+            :clickable="true"
+            :draggable="false"
+            />
+          </GmapMap>
+        </div>
+        <!-- submit button -->
+        <button class="sendBtn okBtn" @click="createReaction" v-if="editMode=='new'">セーブ</button>
+        <button class="sendBtn okBtn" @click="updateReaction" v-else-if="editMode=='edit'">修正</button>
+        <button class="sendBtn cancelBtn" @click="reactionToggle"v-if="editMode!='read'" style="float: right;">再作成</button>
       </div>
-      <!-- submit button -->
-      <button class="sendBtn okBtn" @click="createReaction" v-if="editMode=='new'">セーブ</button>
-      <button class="sendBtn okBtn" @click="updateReaction" v-else-if="editMode=='edit'">修正</button>
-      <button class="sendBtn cancelBtn" @click="reactionToggle"v-if="editMode!='read'" style="float: right;">再作成</button>
+
+      <!-- 여기는 전체 액션을 보여주는 곳 -->
+      <transition name="slideUpDown">
+        <div class="reactionAll" v-if="reactionListShow">
+          <div class="right-panel-small" style="border: none;">
+            <table class="actionList">
+              <thead>
+                <tr>
+                  <th class="reactionAll-title">
+                    <input type="checkbox" class="checkbox" v-model="reactionLeftAllCheck" @click="reactionLeftAllChecker">
+                  </th>
+                  <th class="reactionAll-title">アクション名</th>
+                  <th class="reactionAll-title">アクション内容</th>
+                  <th class="reactionAll-title">ヒット数</th>
+                  <th class="reactionAll-title">タイプ</th>
+                  <th class="reactionAll-title">連動</th>
+                </tr>
+              </thead>
+              <tbody style="overflow:scroll;">
+                <tr v-for="(reaction,index) in reactionsLeft" v-model="reactionsLeft">
+                  <td class="check">
+                    <input type="checkbox" class="checkbox" :checked="reaction.bool" @click="reactionLeftChecker(index)">
+                  </td>
+                  <td>
+                    {{reaction.name}}
+                  </td>
+                  <td v-if="reaction.reaction_type=='stamp'">
+                    <a @click="detailImage(getImgUrl(reaction.contents))">
+                      <img class="stampBtnImg" :src="getImgUrl(reaction.contents)"/>
+                    </a>
+                  </td>
+                  <td v-else-if="reaction.reaction_type=='image'">
+                    <a @click="detailImage(reaction.image.url)">
+                      <img class="imageResult" :src="reaction.image.url"/>
+                    </a>
+                  </td>
+                  <td v-else>
+                    <a v-if="reaction.contents.search('<img src=')>=0"
+                      @click="showFullContents(reaction.contents)"
+                      v-html="reaction.contents.substr(0,100)"
+                      >
+                    </a>
+                    <a v-else @click="showFullContents(reaction.contents)" >
+                      <span v-if="reaction.contents.length>19" v-html="reaction.contents.substr(0,20)+'...'"></span>
+                      <span v-else v-html="reaction.contents.substr(0,20)"></span>
+                    </a>
+                  </td>
+                  <td class="hitcount">{{reaction.target_number}}</td>
+                  <td>{{reaction.reaction_type}}</td>
+                  <td>
+                    <button class="edit-button" v-if="reaction.bool" @click="linkOptionReaction(reaction.id)">
+                      選択
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </transition>
+
     </div>
 
-    <!-- 여기는 전체 액션을 보여주는 곳 -->
-    <transition name="slideUpDown">
-      <div class="reactionAll" v-if="reactionListShow">
-        <div class="right-panel-small" style="border: none;">
-          <table class="actionList">
-            <thead>
-              <tr>
-                <th class="reactionAll-title">
-                  <input type="checkbox" class="checkbox" v-model="reactionLeftAllCheck" @click="reactionLeftAllChecker">
-                </th>
-                <th class="reactionAll-title">アクション名</th>
-                <th class="reactionAll-title">アクション内容</th>
-                <th class="reactionAll-title">ヒット数</th>
-                <th class="reactionAll-title">タイプ</th>
-                <th class="reactionAll-title">連動</th>
-              </tr>
-            </thead>
-            <tbody style="overflow:scroll;">
-              <tr v-for="(reaction,index) in reactionsLeft" v-model="reactionsLeft">
-                <td class="check">
-                  <input type="checkbox" class="checkbox" :checked="reaction.bool" @click="reactionLeftChecker(index)">
-                </td>
-                <td>
-                  {{reaction.name}}
-                </td>
-                <td v-if="reaction.reaction_type=='stamp'">
-                  <a @click="detailImage(getImgUrl(reaction.contents))">
-                    <img class="stampBtnImg" :src="getImgUrl(reaction.contents)"/>
-                  </a>
-                </td>
-                <td v-else-if="reaction.reaction_type=='image'">
-                  <a @click="detailImage(reaction.image.url)">
-                    <img class="imageResult" :src="reaction.image.url"/>
-                  </a>
-                </td>
-                <td v-else>
-                  <a v-if="reaction.contents.search('<img src=')>=0"
-                    @click="showFullContents(reaction.contents)"
-                    v-html="reaction.contents.substr(0,100)"
-                    >
-                  </a>
-                  <a v-else @click="showFullContents(reaction.contents)" >
-                    <span v-if="reaction.contents.length>19" v-html="reaction.contents.substr(0,20)+'...'"></span>
-                    <span v-else v-html="reaction.contents.substr(0,20)"></span>
-                  </a>
-                </td>
-                <td class="hitcount">{{reaction.target_number}}</td>
-                <td>{{reaction.reaction_type}}</td>
-                <td>
-                  <button class="edit-button" v-if="reaction.bool" @click="linkOptionReaction(reaction.id)">
-                    選択
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </transition>
-
-  </div>
-
-  <div>
-    <button class="scroll-button scroll-right" @click="goRight" v-if="endPoint<2">
-      <i class="material-icons move-scroll">
-        keyboard_arrow_right
-      </i>
-    </button>
-    <button class="scroll-button scroll-left" @click="goLeft" v-if="endPoint>0">
-      <i class="material-icons move-scroll">
-        keyboard_arrow_left
-      </i>
-    </button>
+    <div>
+      <button class="scroll-button scroll-right" @click="goRight" v-if="endPoint<2">
+        <i class="material-icons move-scroll">
+          keyboard_arrow_right
+        </i>
+      </button>
+      <button class="scroll-button scroll-left" @click="goLeft" v-if="endPoint>0">
+        <i class="material-icons move-scroll">
+          keyboard_arrow_left
+        </i>
+      </button>
+    </div>
   </div>
 </div>
 </div>
@@ -823,6 +832,7 @@
         resultFooterCSS: [],
         copied: {},
         copiedType: '',
+        loading: true,
       }
     },
     mounted: function(){
@@ -834,8 +844,10 @@
     },
     methods: {
       fetchTags(){
+        this.loading = true
         axios.get('/api/tags?tag_group=option').then((res)=>{
           this.tags = res.data.tags
+          this.loading = false
         },(error)=>{
           console.log(error)
         })
@@ -931,7 +943,7 @@
         this.addShow = true;
         this.addToggle();
       },
-      clickTag(index,id){
+      selectTag(index,id){
         //this.setToggles();
         this.panelShow = false;
         this.deleteShow = false;
@@ -1423,8 +1435,10 @@
         this.stampAreaShow = false;
         this.mapShow = false;
         let files = e.target.files || e.dataTransfer.files;
-        // console.log("그래서 파일이 뭔데????")
-        // console.log((files[0]))
+        if(!files[0].type.match(/image.*/)){
+          alert("イメージファイルをアップロードしてください。")
+          return;
+        }
         this.imageFile = files[0]
         this.createImage(files[0]);
       },
@@ -1447,6 +1461,10 @@
 
         let files = e.target.files || e.dataTransfer.files;
         var index = this.selectedBubble
+        if(!files[0].type.match(/image.*/)){
+          alert("イメージファイルをアップロードしてください。")
+          return;
+        }
         this.heros[index] = files[0]
         this.createCarouselImage(index,files[0]);
       },

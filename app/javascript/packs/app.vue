@@ -1,11 +1,12 @@
 <template>
   <div id="app">
     <nav id="topbar" :class="{sticky: (position > 0)}">
-      <h3>LINE MANAGER
+      <div style="line-height: 3.5em;">
+        <span style="font-size: 25px; font-style: italic; font-weight: 600;">LINE MANAGER</span>
         <a class="loginOut" rel="nofollow" data-method="delete" href="/users/sign_out">
           {{userid}}
         </a>
-      </h3>
+      </div>
     </nav>
     <nav id="sidebar">
       <div class="side left nav-wrapper container">
@@ -29,7 +30,7 @@
             <router-link class="pageLink selected-mode" to="/allMessages">トーク一覧</router-link>
           </li>
           <li v-else @click="changeMode('allMessages')">
-            <router-link class="pageLink" to="/allMessages">トーク一覧</router-link>
+            <router-link class="pageLink" to="/allMessages/all">トーク一覧</router-link>
           </li>
 
           <li v-if="mode=='personalMessages'">

@@ -53,7 +53,7 @@ Vue.use(VueGoogleMaps, {
 const routes = [
   { path: '/', component: Page1 },
   { path: '/friendslist', component: Page2 },
-  { path: '/allMessages', component: Page3 },
+  { path: '/allMessages/:searchKeyword', component: Page3, props: true},
   { path: '/personalMessages', component: Page4 },
   { path: '/dataAnalysis', component: Page5 },
   { path: '/sendAll', component: Page6 },

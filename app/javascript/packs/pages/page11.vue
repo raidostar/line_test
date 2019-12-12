@@ -1,11 +1,14 @@
 <template>
   <div class="page" id="page11">
-    <div class="title area">
-      <!-- <h2 class="title">友達追加メッセージ設定<hr/></h2>
-      <div style="float: left;" class="settings">
-        <i class="material-icons setting-icon" @click="detailToggle">settings</i>
-      </div> -->
-      <!-- <transition name="fadeInOut"> -->
+    <div v-show="loading" class="waiting-screen">
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
+    </div>
+    <div v-show="!loading">
+      <div class="title area">
         <div class="personDetails">
           <div class="detail panel-left" v-model="welcome_bool">
             <p class="detail-title">友達新規登録メッセージ配信</p>
@@ -30,353 +33,353 @@
             </div>
           </div>
         </div>
-      <!-- </transition> -->
-    </div>
-    <div>
-      <div class="right-panel" >
-        <!-- side buttons -->
-        <div class="contentBtns">
-          <button class="stampBtn" @click="toggleStamp" title="スタンプ追加">
-            <i class="material-icons stamp">child_care</i>
-          </button>
-          <button class="stampBtn" @click="toggleEmoji" title="emoji追加">
-            <i class="material-icons stamp">sentiment_satisfied_alt</i>
-          </button>
-          <label class="stampBtn" title="イメージ追加">
-            <i class="material-icons stamp">gif</i>
-            <input type="file" @change="onFileChange" class="imageBtn" ref="fileInput" accept="img/*">
-          </label>
-          <button class="stampBtn" @click="toggleCarousel" title="キャルセル追加">
-            <i class="material-icons stamp">border_color</i>
-          </button>
-          <button class="stampBtn" @click="toggleMap" title="マップ追加">
-            <i class="material-icons stamp">location_on</i>
-          </button>
-        </div>
-        <div class="chattingArea">
-          <div v-show="uploadedImage"  class="attachedImgPanel">
-            <a class="closeStamp" @click="closeImage" style="margin-right: 1em;">X</a>
-            <p>[イメージ]</p>
-            <img class="attachedImg" :src="uploadedImage">
-          </div>
-          <!-- chatting area -->
-          <div id="chattingContents" class="chattingContents" contenteditable="true" :style="flexablePadding" @input="sync" v-html="innerContent" v-model="innerContent" ref="chatting" autofocus="autofocus"></div>
-          <input type="text" v-model="contents" style="display: none;">
-
-          <!-- stamp list bottom -->
-          <div class="sticker-panel" v-show="stampShow">
-            <button class="stampBtn" v-for="num in stampNums" @click="selectStamp(num)">
-              <img class="stampBtnImg" :src="getImgUrl(num)"/>
+        <!-- </transition> -->
+      </div>
+      <div>
+        <div class="right-panel" >
+          <!-- side buttons -->
+          <div class="contentBtns">
+            <button class="stampBtn" @click="toggleStamp" title="スタンプ追加">
+              <i class="material-icons stamp">child_care</i>
+            </button>
+            <button class="stampBtn" @click="toggleEmoji" title="emoji追加">
+              <i class="material-icons stamp">sentiment_satisfied_alt</i>
+            </button>
+            <label class="stampBtn" title="イメージ追加">
+              <i class="material-icons stamp">gif</i>
+              <input type="file" @change="onFileChange" class="imageBtn" ref="fileInput" accept="img/*">
+            </label>
+            <button class="stampBtn" @click="toggleCarousel" title="キャルセル追加">
+              <i class="material-icons stamp">border_color</i>
+            </button>
+            <button class="stampBtn" @click="toggleMap" title="マップ追加">
+              <i class="material-icons stamp">location_on</i>
             </button>
           </div>
-
-          <!-- emoji list bottom -->
-          <div class="sticker-panel" v-show="emojiShow">
-            <button class="emojiBtn stampBtn" v-for="emoji in emojis" @click="addEmoji(emoji.img_url)">
-              <img class="stampBtnImg" :src="emoji.img_url">
-            </button>
-          </div>
-
-          <!-- submit button -->
-          <div class="buttons">
-            <button class="sendBtn okBtn" @click="createOption">追加</button>
-            <button class="sendBtn okBtn" @click="resetReply">再作成</button>
-          </div>
-        </div>
-
-        <div class="resultArea">
-          <img src="" class="profile_img">
-          <div class="oneLine" v-for="reaction in reactions">
-            <div v-if="reaction.reaction_type=='text'" style="margin-bottom: 1em;">
-              <div class="balloon-left">
-                <span v-html="reaction.contents">{{reaction.contents}}</span>
-              </div>
-              <a class="cancelBtn" @click="reactionDelete(reaction.id)">X</a>
+          <div class="chattingArea">
+            <div v-show="uploadedImage"  class="attachedImgPanel">
+              <a class="closeStamp" @click="closeImage" style="margin-right: 1em;">X</a>
+              <p>[イメージ]</p>
+              <img class="attachedImg" :src="uploadedImage">
             </div>
-            <div v-if="reaction.reaction_type=='carousel'" style="height: 30em; width: max-content;">
-              <div class="carousel-box" style="margin-bottom: 1em;">
-                <div class="bubble-box" style="height: 100%; display: inline-flex;">
-                  <div v-for="(bubble,index) in bubbles">
-                  <div class="bubble" style="height: 100%;" :style="bubbleChecker(bubble,reaction.contents)">
-                    <div style="height: 100%;">
-                      <div class="result-blocks header-block rounder1">
-                        <div class="header-text rounder1" v-html="bubble.header" :style="resultHeaderCSS[index]">
-                        </div>
-                      </div>
-                      <div class="result-blocks hero-block">
-                        <div class="carousel-img-area" v-show="bubble.image.url" style="bottom: -1%; display: grid; align-items: center;justify-content: center;">
-                          <img class="carousel-img" :src="bubble.image.url">
-                        </div>
-                      </div>
-                      <div class="result-blocks body-block">
-                        <div class="body-text" v-html="bubble.body" :style="resultBodyCSS[index]">
-                        </div>
-                      </div>
-                      <div class="result-blocks footer-block" style="line-height: 4.5vh">
-                        <div class="footer-text rounder2" v-html="bubble.footer" :style="resultFooterCSS[index]">
+            <!-- chatting area -->
+            <div id="chattingContents" class="chattingContents" contenteditable="true" :style="flexablePadding" @input="sync" v-html="innerContent" v-model="innerContent" ref="chatting" autofocus="autofocus"></div>
+            <input type="text" v-model="contents" style="display: none;">
+
+            <!-- stamp list bottom -->
+            <div class="sticker-panel" v-show="stampShow">
+              <button class="stampBtn" v-for="num in stampNums" @click="selectStamp(num)">
+                <img class="stampBtnImg" :src="getImgUrl(num)"/>
+              </button>
+            </div>
+
+            <!-- emoji list bottom -->
+            <div class="sticker-panel" v-show="emojiShow">
+              <button class="emojiBtn stampBtn" v-for="emoji in emojis" @click="addEmoji(emoji.img_url)">
+                <img class="stampBtnImg" :src="emoji.img_url">
+              </button>
+            </div>
+
+            <!-- submit button -->
+            <div class="buttons">
+              <button class="sendBtn okBtn" @click="createOption">追加</button>
+              <button class="sendBtn okBtn" @click="resetReply">再作成</button>
+            </div>
+          </div>
+
+          <div class="resultArea">
+            <img src="" class="profile_img">
+            <div class="oneLine" v-for="reaction in reactions">
+              <div v-if="reaction.reaction_type=='text'" style="margin-bottom: 1em;">
+                <div class="balloon-left">
+                  <span v-html="reaction.contents">{{reaction.contents}}</span>
+                </div>
+                <a class="cancelBtn" @click="reactionDelete(reaction.id)">X</a>
+              </div>
+              <div v-if="reaction.reaction_type=='carousel'" style="height: 30em; width: max-content;">
+                <div class="carousel-box" style="margin-bottom: 1em;">
+                  <div class="bubble-box" style="height: 100%; display: inline-flex;">
+                    <div v-for="(bubble,index) in bubbles">
+                      <div class="bubble" style="height: 100%;" :style="bubbleChecker(bubble,reaction.contents)">
+                        <div style="height: 100%;">
+                          <div class="result-blocks header-block rounder1">
+                            <div class="header-text rounder1" v-html="bubble.header" :style="resultHeaderCSS[index]">
+                            </div>
+                          </div>
+                          <div class="result-blocks hero-block">
+                            <div class="carousel-img-area" v-show="bubble.image.url" style="bottom: -1%; display: grid; align-items: center;justify-content: center;">
+                              <img class="carousel-img" :src="bubble.image.url">
+                            </div>
+                          </div>
+                          <div class="result-blocks body-block">
+                            <div class="body-text" v-html="bubble.body" :style="resultBodyCSS[index]">
+                            </div>
+                          </div>
+                          <div class="result-blocks footer-block" style="line-height: 4.5vh">
+                            <div class="footer-text rounder2" v-html="bubble.footer" :style="resultFooterCSS[index]">
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                  </div>
+                </div>
+                <a class="cancelBtn" @click="reactionDelete(reaction.id)" style="float: right;">X</a>
+              </div>
+              <div v-else-if="reaction.reaction_type=='stamp'" style="margin-bottom: 1em;">
+                <div>
+                  <span>
+                    <img class="attachedStamp" :src="getImgUrl(reaction.contents)" style="width: 4em;"/>
+                  </span>
+                  <a class="cancelBtn" @click="reactionDelete(reaction.id)" style="margin-left: 10px;">X</a>
                 </div>
               </div>
-              <a class="cancelBtn" @click="reactionDelete(reaction.id)" style="float: right;">X</a>
-            </div>
-            <div v-else-if="reaction.reaction_type=='stamp'" style="margin-bottom: 1em;">
-              <div>
+              <div v-else-if="reaction.reaction_type=='image'" style="margin-bottom: 1em;">
+                <div>
+                  <span>
+                    <img class="attachedStamp" :src="reaction.image.url" style="width: 20em; height: 15em;" />
+                  </span>
+                  <a class="cancelBtn" @click="reactionDelete(reaction.id)" style="margin-left: 10px;">X</a>
+                </div>
+              </div>
+              <div v-else-if="reaction.reaction_type=='map'" style="margin-bottom: 1em;">
                 <span>
-                  <img class="attachedStamp" :src="getImgUrl(reaction.contents)" style="width: 4em;"/>
+                  <GmapMap :center="mapConvert(reaction.contents)" :zoom="12" map-type-id="terrain" style="width: 16em; height: 16em; float: left;">
+                    <GmapMarker :position="mapConvert(reaction.contents)" :clickable="true" :draggable="false"/>
+                  </GmapMap>
+                  <a class="cancelBtn" @click="reactionDelete(reaction.id)" style="margin-left: 10px;">X</a>
                 </span>
-                <a class="cancelBtn" @click="reactionDelete(reaction.id)" style="margin-left: 10px;">X</a>
               </div>
             </div>
-            <div v-else-if="reaction.reaction_type=='image'" style="margin-bottom: 1em;">
-              <div>
-                <span>
-                  <img class="attachedStamp" :src="reaction.image.url" style="width: 20em; height: 15em;" />
-                </span>
-                <a class="cancelBtn" @click="reactionDelete(reaction.id)" style="margin-left: 10px;">X</a>
+            <div style="display: none;">
+              <div class="balloon-right">
+                <span></span>
+                <span></span>
+                <span><img class="attachedImg"></span>
+                <span></span>
               </div>
+              <span class="right-time"></span>
             </div>
-            <div v-else-if="reaction.reaction_type=='map'" style="margin-bottom: 1em;">
-              <span>
-                <GmapMap :center="mapConvert(reaction.contents)" :zoom="12" map-type-id="terrain" style="width: 16em; height: 16em; float: left;">
-                  <GmapMarker :position="mapConvert(reaction.contents)" :clickable="true" :draggable="false"/>
-                </GmapMap>
-                <a class="cancelBtn" @click="reactionDelete(reaction.id)" style="margin-left: 10px;">X</a>
-              </span>
-            </div>
-          </div>
-          <div style="display: none;">
-            <div class="balloon-right">
-              <span></span>
-              <span></span>
-              <span><img class="attachedImg"></span>
-              <span></span>
-            </div>
-            <span class="right-time"></span>
           </div>
         </div>
-      </div>
 
-      <!-- stamp image area -->
-      <div class="stampArea" v-show="stampAreaShow">
-        <a class="closeStamp" @click="closeStamp">X</a>
-        <p>[スタンプ]</p>
-        <img class="selectStamp" :src="selectStampUrl">
-      </div>
+        <!-- stamp image area -->
+        <div class="stampArea" v-show="stampAreaShow">
+          <a class="closeStamp" @click="closeStamp">X</a>
+          <p>[スタンプ]</p>
+          <img class="selectStamp" :src="selectStampUrl">
+        </div>
 
-      <!-- carousel area -->
-      <transition name="showInOut">
-        <div class="carouselArea" v-show="carouselAreaShow" :style="carouselAreaWidth">
-          <!-- left-side menu -->
-          <div class="control-box">
-            <div class="bubble-setting setting-gravity" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">
-              <span>垂直配置</span>
-              <select class="css-option" v-model="gravity" @change="syncGravity">
-                <option value="top">上</option>
-                <option value="center">中</option>
-                <option value="bottom">下</option>
-              </select>
-            </div>
-            <div class="bubble-setting setting-align" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">
-              <span>水平配置</span>
-              <select class="css-option" v-model="align" @change="syncAlign">
-                <option value="start">左</option>
-                <option value="center">中</option>
-                <option value="end">右</option>
-              </select>
-            </div>
-            <div class="bubble-setting setting-size" v-if="selectedComponent!='footer'||footer_type!='button'">
-              <span v-if="selectedComponent!='hero'">文字サイズ</span>
-              <span v-else>イメージ幅</span>
-              <select class="css-option" v-model="size" @change="syncSize">
-                <option value="xxs">1</option>
-                <option value="xs">2</option>
-                <option value="sm">3</option>
-                <option value="md">4</option>
-                <option value="lg">5</option>
-                <option value="xl">6</option>
-                <option value="xxl">7</option>
-                <option value="3xl">8</option>
-                <option value="4xl">9</option>
-                <option value="5xl">10</option>
-                <option v-if="selectedComponent=='hero'" value="full">full</option>
-              </select>
-            </div>
-            <div class="bubble-setting setting-bold" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">
-              <span>濃さ</span>
-              <select class="css-option" v-model="bold" @change="syncBold">
-                <option value="regular">普通</option>
-                <option value="bold">濃い</option>
-              </select>
-            </div>
-            <div class="bubble-setting color setting-color" v-if="selectedComponent=='hero'">
-              <p style="margin-bottom: 0">横:縦</p>
-              <input class="color-text" type="number" v-model="heroWidth" style="width: 4em;color: white;text-align: center;" @change="syncRatio">
-              :
-              <input class="color-text" type="number" v-model="heroHeight" style="width: 4em;color: white;text-align: center;" @change="syncRatio">
-            </div>
-            <div class="bubble-setting color setting-color" v-if="selectedComponent=='footer'&&footer_type=='button'">
-              <p style="margin-bottom: 0">文字色</p>
-              <select class="css-option" v-model="color" @change="syncColor" style="margin-bottom: .3em;">
-                <option value="#ffffff">白</option>
-                <option value="#111111">黒</option>
-              </select>
-              <div class="color-sample" :style="fontColor" v-model="color"></div>
-            </div>
-            <div v-else>
-              <div class="bubble-setting color setting-color" v-if="selectedComponent!='hero'">
+        <!-- carousel area -->
+        <transition name="showInOut">
+          <div class="carouselArea" v-show="carouselAreaShow" :style="carouselAreaWidth">
+            <!-- left-side menu -->
+            <div class="control-box">
+              <div class="bubble-setting setting-gravity" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">
+                <span>垂直配置</span>
+                <select class="css-option" v-model="gravity" @change="syncGravity">
+                  <option value="top">上</option>
+                  <option value="center">中</option>
+                  <option value="bottom">下</option>
+                </select>
+              </div>
+              <div class="bubble-setting setting-align" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">
+                <span>水平配置</span>
+                <select class="css-option" v-model="align" @change="syncAlign">
+                  <option value="start">左</option>
+                  <option value="center">中</option>
+                  <option value="end">右</option>
+                </select>
+              </div>
+              <div class="bubble-setting setting-size" v-if="selectedComponent!='footer'||footer_type!='button'">
+                <span v-if="selectedComponent!='hero'">文字サイズ</span>
+                <span v-else>イメージ幅</span>
+                <select class="css-option" v-model="size" @change="syncSize">
+                  <option value="xxs">1</option>
+                  <option value="xs">2</option>
+                  <option value="sm">3</option>
+                  <option value="md">4</option>
+                  <option value="lg">5</option>
+                  <option value="xl">6</option>
+                  <option value="xxl">7</option>
+                  <option value="3xl">8</option>
+                  <option value="4xl">9</option>
+                  <option value="5xl">10</option>
+                  <option v-if="selectedComponent=='hero'" value="full">full</option>
+                </select>
+              </div>
+              <div class="bubble-setting setting-bold" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">
+                <span>濃さ</span>
+                <select class="css-option" v-model="bold" @change="syncBold">
+                  <option value="regular">普通</option>
+                  <option value="bold">濃い</option>
+                </select>
+              </div>
+              <div class="bubble-setting color setting-color" v-if="selectedComponent=='hero'">
+                <p style="margin-bottom: 0">横:縦</p>
+                <input class="color-text" type="number" v-model="heroWidth" style="width: 4em;color: white;text-align: center;" @change="syncRatio">
+                :
+                <input class="color-text" type="number" v-model="heroHeight" style="width: 4em;color: white;text-align: center;" @change="syncRatio">
+              </div>
+              <div class="bubble-setting color setting-color" v-if="selectedComponent=='footer'&&footer_type=='button'">
                 <p style="margin-bottom: 0">文字色</p>
-                <input class="color-text" type="text" v-model="color" @keyup="syncColor">
+                <select class="css-option" v-model="color" @change="syncColor" style="margin-bottom: .3em;">
+                  <option value="#ffffff">白</option>
+                  <option value="#111111">黒</option>
+                </select>
                 <div class="color-sample" :style="fontColor" v-model="color"></div>
               </div>
+              <div v-else>
+                <div class="bubble-setting color setting-color" v-if="selectedComponent!='hero'">
+                  <p style="margin-bottom: 0">文字色</p>
+                  <input class="color-text" type="text" v-model="color" @keyup="syncColor">
+                  <div class="color-sample" :style="fontColor" v-model="color"></div>
+                </div>
+              </div>
+              <button class="colorExchange" @click="exchangeColor" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">↑ 色逆に ↓</button>
+              <div class="bubble-setting color setting-background">
+                <p style="margin-bottom: 0">背景色</p>
+                <input class="color-text" type="text" v-model="background" @keyup="syncBackground">
+                <div class="color-sample" :style="backgroundColor" v-model="backgroundColor"></div>
+              </div>
+              <div class="bubble-setting setting-footerType" v-if="selectedComponent=='footer'">
+                <span>フッタータイプ</span>
+                <select class="css-option" v-model="footer_type" @change="syncFooterType">
+                  <option value="text">テキスト</option>
+                  <option value="button">ボタン</option>
+                </select>
+              </div>
+              <div class="bubble-setting setting-footerType" v-if="selectedComponent=='footer'&&footer_type=='button'">
+                <span>ボタンタイプ</span>
+                <select class="css-option" v-model="footer_button" @change="syncFooterButton">
+                  <option value="uri">リンク</option>
+                  <option value="message">メッセージ</option>
+                </select>
+              </div>
+              <div class="bubble-setting color setting-url" v-if="selectedComponent=='footer'&&footer_type=='button'&&footer_button=='uri'">
+                <p style="margin-bottom: 0">リンクURL</p>
+                <input class="uri-text" type="text" v-model="footer_uri" @keyup="syncFooterUri">
+              </div>
+              <div class="bubble-setting color setting-message" v-if="selectedComponent=='footer'&&footer_type=='button'&&footer_button=='message'">
+                <p style="margin-bottom: 0">配信メッセージ</p>
+                <input class="uri-text" type="text" v-model="footer_message" @keyup="syncFooterMessage">
+              </div>
+              <div class="design-buttons">
+                <button class="copyChu copy" @click="copyCSS">デザインコピー</button>
+                <button class="copyChu paste" v-if="copiedType" @click="pasteCSS">デザイン適用</button>
+              </div>
+              <label class="image-change" title="イメージ変更" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null">
+                イメージ変更
+                <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
+              </label>
+              <button class="image-remove" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null" @click="removeImage">
+                イメージ削除
+              </button>
             </div>
-            <button class="colorExchange" @click="exchangeColor" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">↑ 色逆に ↓</button>
-            <div class="bubble-setting color setting-background">
-              <p style="margin-bottom: 0">背景色</p>
-              <input class="color-text" type="text" v-model="background" @keyup="syncBackground">
-              <div class="color-sample" :style="backgroundColor" v-model="backgroundColor"></div>
-            </div>
-            <div class="bubble-setting setting-footerType" v-if="selectedComponent=='footer'">
-              <span>フッタータイプ</span>
-              <select class="css-option" v-model="footer_type" @change="syncFooterType">
-                <option value="text">テキスト</option>
-                <option value="button">ボタン</option>
-              </select>
-            </div>
-            <div class="bubble-setting setting-footerType" v-if="selectedComponent=='footer'&&footer_type=='button'">
-              <span>ボタンタイプ</span>
-              <select class="css-option" v-model="footer_button" @change="syncFooterButton">
-                <option value="uri">リンク</option>
-                <option value="message">メッセージ</option>
-              </select>
-            </div>
-            <div class="bubble-setting color setting-url" v-if="selectedComponent=='footer'&&footer_type=='button'&&footer_button=='uri'">
-              <p style="margin-bottom: 0">リンクURL</p>
-              <input class="uri-text" type="text" v-model="footer_uri" @keyup="syncFooterUri">
-            </div>
-            <div class="bubble-setting color setting-message" v-if="selectedComponent=='footer'&&footer_type=='button'&&footer_button=='message'">
-              <p style="margin-bottom: 0">配信メッセージ</p>
-              <input class="uri-text" type="text" v-model="footer_message" @keyup="syncFooterMessage">
-            </div>
-            <div class="design-buttons">
-              <button class="copyChu copy" @click="copyCSS">デザインコピー</button>
-              <button class="copyChu paste" v-if="copiedType" @click="pasteCSS">デザイン適用</button>
-            </div>
-            <label class="image-change" title="イメージ変更" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null">
-              イメージ変更
-              <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
-            </label>
-            <button class="image-remove" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null" @click="removeImage">
-              イメージ削除
-            </button>
-          </div>
-          <!-- main bubble -->
-          <div class="carousel-box" :style="carouselBoxWidth">
-            <div class="bubble-box" ref="carousel" v-model="bubble_array">
-              <div class="bubble" v-for="(bubble,index) in bubble_array" :key="bubble.id">
-                <!-- header -->
-                <div class="blocks header-block" v-if="selectedComponent=='header'&&selectedBubble==index" style="border: 5px solid red" :style="headerBackground[index]">
+            <!-- main bubble -->
+            <div class="carousel-box" :style="carouselBoxWidth">
+              <div class="bubble-box" ref="carousel" v-model="bubble_array">
+                <div class="bubble" v-for="(bubble,index) in bubble_array" :key="bubble.id">
+                  <!-- header -->
+                  <div class="blocks header-block" v-if="selectedComponent=='header'&&selectedBubble==index" style="border: 5px solid red" :style="headerBackground[index]">
+                    <div class="component header-text" ref="header" contenteditable="true" v-html="header[index]" @input="syncHeader(index)" :style="headerCSS[index]">
+                    </div>
+                  </div>
+                  <div class="blocks header-block" @click="selectComponent('header', index)" v-else
+                  :style="headerBackground[index]">
                   <div class="component header-text" ref="header" contenteditable="true" v-html="header[index]" @input="syncHeader(index)" :style="headerCSS[index]">
                   </div>
                 </div>
-                <div class="blocks header-block" @click="selectComponent('header', index)" v-else
-                :style="headerBackground[index]">
-                <div class="component header-text" ref="header" contenteditable="true" v-html="header[index]" @input="syncHeader(index)" :style="headerCSS[index]">
-                </div>
-              </div>
-              <input type="text" v-model="bubble.header" style="display: none;">
+                <input type="text" v-model="bubble.header" style="display: none;">
 
-              <!-- hero(image) -->
-              <div class="blocks hero-block" v-if="selectedComponent=='hero'&&selectedBubble==index" style="border: 5px solid red">
-                <label class="add-label" title="イメージ追加">
-                  <i class="material-icons add-bubble-image" v-if="!heros[index]">add</i>
-                  <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
-                </label>
-                <div class="carousel-img-area" v-show="bubble.hero" :style="heroCSS[index]">
-                  <img class="carousel-img" :src="bubble.hero" :style="imageCSS[index]">
+                <!-- hero(image) -->
+                <div class="blocks hero-block" v-if="selectedComponent=='hero'&&selectedBubble==index" style="border: 5px solid red">
+                  <label class="add-label" title="イメージ追加">
+                    <i class="material-icons add-bubble-image" v-if="!heros[index]">add</i>
+                    <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
+                  </label>
+                  <div class="carousel-img-area" v-show="bubble.hero" :style="heroCSS[index]">
+                    <img class="carousel-img" :src="bubble.hero" :style="imageCSS[index]">
+                  </div>
                 </div>
-              </div>
-              <div class="blocks hero-block" @click="selectComponent('hero', index)" v-else>
-                <label class="add-label" title="イメージ追加">
-                  <i class="material-icons add-bubble-image" v-if="!heros[index]">add</i>
-                  <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
-                </label>
-                <div class="carousel-img-area" v-show="bubble.hero" :style="heroCSS[index]">
-                  <img class="carousel-img" :src="bubble.hero" :style="imageCSS[index]">
+                <div class="blocks hero-block" @click="selectComponent('hero', index)" v-else>
+                  <label class="add-label" title="イメージ追加">
+                    <i class="material-icons add-bubble-image" v-if="!heros[index]">add</i>
+                    <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
+                  </label>
+                  <div class="carousel-img-area" v-show="bubble.hero" :style="heroCSS[index]">
+                    <img class="carousel-img" :src="bubble.hero" :style="imageCSS[index]">
+                  </div>
                 </div>
-              </div>
 
-              <!-- body -->
-              <div class="blocks body-block" v-if="selectedComponent=='body'&&selectedBubble==index" style="border: 5px solid red" :style="bodyBackground[index]">
-                <div class="component body-text" ref="body" contenteditable="true" v-html="body[index]" @input="syncBody(index)" :style="bodyCSS[index]">
+                <!-- body -->
+                <div class="blocks body-block" v-if="selectedComponent=='body'&&selectedBubble==index" style="border: 5px solid red" :style="bodyBackground[index]">
+                  <div class="component body-text" ref="body" contenteditable="true" v-html="body[index]" @input="syncBody(index)" :style="bodyCSS[index]">
+                  </div>
                 </div>
-              </div>
-              <div class="blocks body-block" @click="selectComponent('body', index)" v-else :style="bodyBackground[index]">
-                <div class="component body-text" ref="body" contenteditable="true" v-html="body[index]" @input="syncBody(index)" :style="bodyCSS[index]">
+                <div class="blocks body-block" @click="selectComponent('body', index)" v-else :style="bodyBackground[index]">
+                  <div class="component body-text" ref="body" contenteditable="true" v-html="body[index]" @input="syncBody(index)" :style="bodyCSS[index]">
+                  </div>
                 </div>
-              </div>
-              <input type="text" v-model="bubble.body" style="display: none;">
+                <input type="text" v-model="bubble.body" style="display: none;">
 
-              <!-- footer -->
-              <div class="blocks footer-block" v-if="selectedComponent=='footer'&&selectedBubble==index" style="border: 5px solid red" :style="footerBackground[index]">
-                <div class="component footer-text" ref="footer" contenteditable="true" v-html="footer[index]" @input="syncFooter(index)" :style="footerCSS[index]">
+                <!-- footer -->
+                <div class="blocks footer-block" v-if="selectedComponent=='footer'&&selectedBubble==index" style="border: 5px solid red" :style="footerBackground[index]">
+                  <div class="component footer-text" ref="footer" contenteditable="true" v-html="footer[index]" @input="syncFooter(index)" :style="footerCSS[index]">
+                  </div>
+                </div>
+                <div class="blocks footer-block" @click="selectComponent('footer', index)" v-else :style="footerBackground[index]">
+                  <div class="component footer-text" ref="footer" contenteditable="true" v-html="footer[index]" @input="syncFooter(index)" :style="footerCSS[index]">
+                  </div>
+                </div>
+                <input type="text" v-model="bubble.footer" style="display: none;">
+                <div>
+                  <button v-if="index==0" class="copy-bubble" @click="copyBubble(index)" style="width: 100%;">
+                    複　製
+                  </button>
+                  <button v-if="index>0" class="copy-bubble" @click="copyBubble(index)">
+                    複　製
+                  </button>
+                  <button v-if="index>0" class="remove-bubble" @click="removeBubble(index)">
+                    削　除
+                  </button>
                 </div>
               </div>
-              <div class="blocks footer-block" @click="selectComponent('footer', index)" v-else :style="footerBackground[index]">
-                <div class="component footer-text" ref="footer" contenteditable="true" v-html="footer[index]" @input="syncFooter(index)" :style="footerCSS[index]">
-                </div>
-              </div>
-              <input type="text" v-model="bubble.footer" style="display: none;">
-              <div>
-                <button v-if="index==0" class="copy-bubble" @click="copyBubble(index)" style="width: 100%;">
-                  複　製
-                </button>
-                <button v-if="index>0" class="copy-bubble" @click="copyBubble(index)">
-                  複　製
-                </button>
-                <button v-if="index>0" class="remove-bubble" @click="removeBubble(index)">
-                  削　除
-                </button>
-              </div>
-            </div>
-            <div class="bubble">
-              <div class="empty-bubble">
-                <div class="add-button" @click="addBubble">
-                  <i class="material-icons add-circle">
-                    add_circle_outline
-                  </i>
+              <div class="bubble">
+                <div class="empty-bubble">
+                  <div class="add-button" @click="addBubble">
+                    <i class="material-icons add-circle">
+                      add_circle_outline
+                    </i>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+          <div class="add-button">
+            <i class="material-icons open-circle" @click="stretchCarouselToggle" v-if="!carouselOpen">
+              keyboard_arrow_right
+            </i>
+            <i class="material-icons open-circle" @click="stretchCarouselToggle" v-if="carouselOpen">
+              keyboard_arrow_left
+            </i>
+          </div>
         </div>
-        <div class="add-button">
-          <i class="material-icons open-circle" @click="stretchCarouselToggle" v-if="!carouselOpen">
-            keyboard_arrow_right
-          </i>
-          <i class="material-icons open-circle" @click="stretchCarouselToggle" v-if="carouselOpen">
-            keyboard_arrow_left
-          </i>
+      </transition>
+      <!--GoogleMap-->
+      <div class="googleMap" v-show="mapShow">
+        <div class="placeSearch">
+          <GmapAutocomplete @place_changed="setPlace"/>
         </div>
+        <button style="width: 100%; height: 5%;" id="location" @click="getAddress">
+          住所取得
+        </button>
+        <GmapMap :center="default_center" :zoom="12" map-type-id="terrain" style="width: 100%; height: 95%;" @center_changed="onCenterChanged">
+          <GmapMarker :position="marker_center" :clickable="true" :draggable="false"/>
+        </GmapMap>
       </div>
-    </transition>
-    <!--GoogleMap-->
-    <div class="googleMap" v-show="mapShow">
-      <div class="placeSearch">
-        <GmapAutocomplete @place_changed="setPlace"/>
-      </div>
-      <button style="width: 100%; height: 5%;" id="location" @click="getAddress">
-        住所取得
-      </button>
-      <GmapMap :center="default_center" :zoom="12" map-type-id="terrain" style="width: 100%; height: 95%;" @center_changed="onCenterChanged">
-        <GmapMarker :position="marker_center" :clickable="true" :draggable="false"/>
-      </GmapMap>
     </div>
   </div>
-</div>
 </div>
 </template>
 <script>
@@ -476,6 +479,8 @@
         resultFooterCSS: [],
         copied: {},
         copiedType: '',
+        imageSize: '',
+        loading: true,
       }
     },
     mounted: function(){
@@ -486,6 +491,7 @@
     },
     methods: {
       fetchOption(){
+        this.loading = true
         axios.get('api/options?option_type=welcomeReply').then((res)=>{
           console.log(res.data.options[0].bool)
           console.log(res.data.options[0].remind_after)
@@ -494,11 +500,13 @@
             this.welcome_bool = option.bool
             this.remind_bool = option.remind_bool
           }
+          this.loading = false
         },(error)=>{
           console.log(error)
         })
       },
       fetchReactions(){
+        this.loading = true
         axios.post('api/fetch_welcome_reactions').then((res)=>{
           //console.log(res.data)
           this.bubbles = [];
@@ -541,6 +549,10 @@
         this.carouselAreaShow = false;
         this.mapShow = false;
         let files = e.target.files || e.dataTransfer.files;
+        if(!files[0].type.match(/image.*/)){
+          alert("イメージファイルをアップロードしてください。")
+          return;
+        }
         this.imageFile = files[0]
         this.createImage(files[0]);
       },
@@ -563,6 +575,10 @@
 
         let files = e.target.files || e.dataTransfer.files;
         var index = this.selectedBubble
+        if(!files[0].type.match(/image.*/)){
+          alert("イメージファイルをアップロードしてください。")
+          return;
+        }
         this.heros[index] = files[0]
         this.createCarouselImage(index,files[0]);
       },
@@ -615,10 +631,12 @@
         this.marker_center = place.geometry.location
       },
       fetchEmojis(){
+        this.loading = true
         axios.get('api/emojis').then((res)=>{
           // console.log("emojis")
           // console.log(res.data.emojis)
           this.emojis = res.data.emojis
+          this.loading = false
         },(error)=>{
           console.log(error)
         })
@@ -986,6 +1004,7 @@
         return {lat: tempArr[0], lng: tempArr[1]}
       },
       fetchStamps(){
+        this.loading = true
         for(let i=1; i<47;i++){
           let add = '1_'+i
           this.stampNums.push(add)
@@ -1002,6 +1021,7 @@
           let add = '1_'+i
           this.stampNums.push(add)
         }
+        this.loading = false
       },
       clearCarousel(){
         this.bubble_array = [{
@@ -1622,6 +1642,7 @@
           // console.log(this.resultHeaderCSS)
           // console.log(this.resultHeaderCSS)
           // console.log(this.bubbles)
+          this.loading = false;
         },(error)=>{
           console.log(error)
         })

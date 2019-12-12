@@ -29,9 +29,11 @@
         <tr v-for="fr in getFriend" >
           <td><input type="checkbox" value="1" class="checkbox"/></td>
           <td><span>確認済み</span></td>
-          <td style="text-align: left; padding-left: 100px;">
-            <img :src="fr.profile_pic" class="profile_img">
-            <router-link class="personalPage" :to="'/personalPage/'+fr.id">{{fr.fr_name}}</router-link>
+          <td>
+            <div class="personal">
+              <img :src="fr.profile_pic" class="profile_img">
+              <router-link class="personalPage" :to="'/personalPage/'+fr.id">{{fr.fr_name}}</router-link>
+            </div>
           </td>
           <td v-if="fr.block==false" style="color: green;">受信中</td>
           <td v-else style="color: red;">ブロック</td>
@@ -89,6 +91,13 @@
         </div>
       </div>
     </div>
+    <div v-show="loading" class="waiting-screen">
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
+    </div>
   </div>
 </transition>
 </div>
@@ -108,6 +117,7 @@
         currentPage: 1,
         selected_center: null,
         lastMessage: '',
+        loading: true,
       }
     },
     mounted: function(){
@@ -115,8 +125,10 @@
     },
     methods: {
       fetchFriends(){
+        this.loading = true
         axios.get('/api/friends').then((res) => {
           this.friendsList = res.data.friends
+          this.loading = false
         }, (error) => {
           console.log(error)
         })

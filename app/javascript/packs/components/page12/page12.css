@@ -1,5 +1,5 @@
 .page {
-  height: 92vh;
+  height: 90vh;
   width: 100%;
   overflow: scroll;
   scroll-behavior: smooth;
@@ -9,24 +9,25 @@ h3 {
   margin-bottom: 0px;
 }
 .col-left{
-  width: 38%;
+  width: 41%;
   float: left;
-  height: 91vh;
+  height: 100%;
+  overflow-x: scroll;
+  scroll-behavior: smooth;
+}
+.inner-col-left {
+  width: 200%;
+  height: inherit;
 }
 .col-right{
-  width: 62%;
+  width: 59%;
   float:right;
-  height: 91vh;
+  height: 100%;
 }
 .richmenu-image {
-  position: absolute;
-  top: 51px;
-  right: 0px;
-  z-index: 5;
-  width: 50em;/* 37.5% */
-  height: 33.8em;/* 37.5% */
+  width: 48.4em;
+  height: 32.8em;
   float: right;
-  background-color: yellow;
   border: 3px solid #777777;
 }
 .original-point {
@@ -35,29 +36,48 @@ h3 {
   border: .5px solid #111111;
   width: 8px;
   height: 8px;
+  z-index: 10;
 }
 .selected-range {
   position: absolute;
-  border: 3px dotted #999999;
   background-color: #99CCFF;
   opacity: 0.5;
   max-width: 937.5px;
   max-height: 632px;
+  z-index: 20;
 }
-.richmenu-list{
-  background-color: #20c997;
+.selected-range:focus {
+  outline: none;
+}
+.selected-range:active {
+  outline: none;
+}
+.richmenu-list-area{
   width: 48.8%;
-  height: 100%;
+  height: 90vh;
   float: left;
-  margin-right: .3em;
+  margin-right: .4em;
+  margin-left: .4em;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 .mouse-location{
-  width: 100%;
-  background-color: #007bff;
+  position: absolute;
+  width: 50%;
+  border: 2px solid #777777;
   float: right;
+  top: 36.3em;
+  bottom: 2.3em;
+  right: 1.5px;
+  margin: .2em;
+  overflow: scroll;
 }
 .imageBtn {
   display: none;
+}
+.rich-name {
+  float: left;
+  line-height: 3.5em;
 }
 .rich-image {
   z-index: 3;
@@ -67,8 +87,426 @@ h3 {
 }
 .richmenu-img {
   position: absolute;
-  width: 100%;
-  top: 0px;
+  width: 720px;
+  height: 485.56px;
+  top: 52px;
   right: 0px;
   z-index: 3;
+  margin-top: .15em;
+  margin-right: .2em;
 }
+.drag-area {
+  position: absolute;
+  width: 50%;
+  top: 52px;
+  right: 0px;
+  z-index: 10;
+  margin-top: .15em;
+  margin-right: .2em;
+}
+.select-number {
+  font-size: 72px;
+  color: red;
+  font-weight: 600;
+}
+.delete-action{
+  color: blue;
+  font-size: 15px;
+  float: right;
+}
+.delete-action:hover {
+  cursor: pointer;
+  text-decoration: underline;
+  color: red;
+}
+.add-label {
+  width: 70%;
+  height: 2em;
+  display: flex;
+  text-align: center;
+  border: 1px solid #999999;
+  border-radius: 5px;
+  float: right;
+}
+.add-label:hover {
+  cursor: pointer;
+}
+.add-rich-image {
+  font-size: 15px;
+  margin-left: auto;
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-right: 5px;
+}
+.folder {
+  font-size: 40px;
+  color: #00B900;
+}
+.label{
+  border-bottom: 2px solid grey;
+  padding: 0;
+  margin: 0;
+  line-height: 40px;
+  font-size: 23px;
+  font-weight: 700;
+}
+.add-richmenu-button {
+  width: 95%;
+  display: flex;
+  height: 2em;
+  background: #bbbbbb;
+  border: 3px solid #bbbbbb;
+  border-radius: 8px;
+  margin: 10px auto;
+}
+.add-richmenu-button:hover {
+  background: #cccccc;
+  border: 3px solid #cccccc;
+}
+.add-richmenu-button:focus {
+  outline: none;
+}
+.add-button {
+  margin: 0 auto;
+  font-size: 20px;
+  color: #666;
+}
+.open-file-added {
+  font-size: 20px;
+  line-height: 39px;
+  padding-left: 4px;
+  padding-right: 33px;
+}
+.clear-richmenu {
+  position: relative;
+  float: right;
+  line-height: 4em;
+  font-size: 15px;
+  color: grey;
+  cursor: pointer;
+}
+.add-tag {
+  font-size: 25px;
+  float: right;
+  line-height: 1.5em
+}
+.add-tag:hover {
+  cursor: pointer;
+  color: #000BB0;
+}
+.close-tag {
+  font-size: 25px;
+  float: right;
+  line-height: 1.5em;
+  color: #dc3545;
+}
+.close-tag:hover {
+  cursor: pointer;
+  color: #DC359E;
+}
+.richmenus {
+  height: 3em;
+  line-height: 3em;
+}
+.richmenu-setting {
+  width: 100%;
+}
+.richmenu-setting-button {
+  width: inherit;
+  height: 2.5em;
+  line-height: 2.3em;
+  border-radius: 15px;
+  font-weight: 600;
+  background-color: #C0C0C0;
+  color: #2C3250;
+}
+.richmenu-setting-button:hover {
+  cursor: pointer;
+  background-color: #2C3250;
+  color: #C0C0C0;
+}
+.richmenu-setting-button:focus {
+  outline: none;
+}
+.rich-area {
+  font-weight: 600;
+}
+p {
+  margin-bottom: 0;
+}
+.image-name {
+  margin-left: 10px;
+  line-height: 2em;
+}
+.richname-input-area {
+  height: 50px;
+  margin-bottom: .7em;
+}
+.richimage-input-area {
+  height: 30px;
+  margin-bottom: .7em;
+}
+.richsize-input-area {
+  height: 20px;
+  margin-bottom: .7em;
+}
+.richdefault-input-area {
+  height: auto;
+  margin-bottom: 1em;
+}
+.richbartext-input-area{
+  height: auto;
+  margin-bottom: 2em;
+}
+.richaction-input-area {
+  margin-bottom: .8em;
+}
+.richaction-sizemenu {
+  text-align: left;
+  margin-bottom: .8em;
+}
+.richaction-size {
+  font-size: 13.5px;
+  margin-bottom: .8em;
+}
+.richaction {
+  text-align: left;
+  /*border-bottom: 1.5px solid #211;*/
+  font-weight: 600;
+  margin-bottom: .5em;
+}
+.action-delete {
+  font-size: 12px;
+  float: right;
+  color: #999999;
+  cursor: default;
+}
+.action-number {
+  cursor: default;
+}
+.action-number:focus {
+  outline: none;
+}
+.action-number:active {
+  outline: none;
+}
+select {
+  display: flex;
+  border: 1px solid;
+  height: 2em;
+}
+select:focus {
+  outline: none;
+}
+.action-type {
+  margin-right: 20px;
+  float: left;
+  font-weight: 600;
+}
+.rich-bartext {
+  float: left;
+  font-weight: 600;
+}
+.richmenu-list {
+  margin-top: 0.5em;
+}
+.richmenu-one {
+  border-radius: 5px;
+  height: 2.5em;
+  line-height: 2.5em;
+  font-size: 20px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.richmenu-one:focus {
+  outline: none;
+}
+.richmenu-name {
+  float: left;
+  margin-left: 2em;
+}
+.rich-input-area {
+  width: 88%;
+  margin: 0 auto;
+}
+.richaction-menu {
+  font-weight: 600;
+}
+.richmenu-id{
+  font-style: italic;
+  font-size: 15px;
+  float: left;
+  text-align: left;
+}
+.scroll-button {
+  width: fit-content;
+  position: absolute;
+  top: 50%;
+  border-radius: 100%;
+  opacity: 0.8;
+}
+.scroll-button:focus {
+  outline: none;
+  background-color: white;
+}
+.scroll-right {
+  left: 46%;
+}
+.scroll-left {
+  left: 16%;
+}
+.move-scroll {
+  font-size: 20px;
+  color: #999999;
+}
+.richmenu-detail:focus {
+  outline: none;
+  background-color: white;
+}
+.open-detail {
+  opacity: 0.8;
+  float: right;
+  margin: 1rem;
+  font-size: 20px;
+  color: #999999;
+}
+.open-detail:focus {
+  outline: none;
+}
+.open-detail:hover {
+  color: #CCCCCC;
+}
+.detailWindow {
+  display: block;
+  position: absolute;
+  width: 340px;
+  height: 438px;
+  top: 102px;
+  right: 383px;
+  z-index: 50;
+  text-align: center;
+  background-color: #EEEEEE;
+  opacity: .9;
+  border: 2px solid #DDDDDD;
+}
+.detailPanel {
+  position: relative;
+}
+.details {
+  margin: .5em 1.5em;
+  float: left;
+}
+.detail-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+.detail-content {
+  margin-left: 2em;
+  font-weight: 600;
+}
+.richmenu-id-title {
+  float: left;
+}
+.close-detail {
+  text-align: right;
+}
+.close-detail:hover {
+  cursor: default;
+  color: red;
+}
+.default-setting {
+  width: 17em;
+  margin: 1rem auto;
+  border-radius: 5px;
+  font-weight: 600;
+  border: 3px solid #ffffff;
+}
+.default-setting:focus {
+  outline: none;
+}
+.default {
+  background-color: #009b00;
+  color: #ffffff;
+}
+.default:hover {
+  border: 3px solid #cccccc;
+}
+.delete-rich {
+  background-color: #ff4500;
+  color: #ffffff;
+}
+.delete-rich:hover {
+  border: 3px solid #cccccc;
+}
+.cancel {
+  background-color: #007bff;
+  color: #ffffff;
+}
+.cancel:hover {
+  border: 3px solid #cccccc;
+}
+.load-rich {
+  height: 1.5em;
+  font-size: 13px;
+  line-height: 1.5em;
+  float: right;
+  margin: 0.8em;
+  font-weight: 550;
+  border-radius: 4px;
+  background-color: #00aa22;
+  color: #ffffff;
+}
+.load-rich:focus {
+  outline: none;
+}
+
+.waiting-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #ffffff;
+  height: 100%;
+  width: 100%;
+  z-index: 4;
+}
+.spinner {
+  margin: 350px auto 0;
+  width: 70px;
+  text-align: center;
+}
+
+.spinner > div {
+  width: 18px;
+  height: 18px;
+  background-color: #333;
+
+  border-radius: 100%;
+  display: inline-block;
+  -webkit-animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+  animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+}
+
+.spinner .bounce1 {
+  -webkit-animation-delay: -0.32s;
+  animation-delay: -0.32s;
+}
+
+.spinner .bounce2 {
+  -webkit-animation-delay: -0.16s;
+  animation-delay: -0.16s;
+}
+
+@-webkit-keyframes sk-bouncedelay {
+  0%, 80%, 100% { -webkit-transform: scale(0) }
+  40% { -webkit-transform: scale(1.0) }
+}
+
+@keyframes sk-bouncedelay {
+  0%, 80%, 100% {
+    -webkit-transform: scale(0);
+    transform: scale(0);
+    } 40% {
+      -webkit-transform: scale(1.0);
+      transform: scale(1.0);
+    }
+  }

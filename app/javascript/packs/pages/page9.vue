@@ -1,6 +1,12 @@
 <template>
   <div class="page" id="page9">
-
+    <div v-show="loading" class="waiting-screen">
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
+    </div>
     <!-- 친구 태그 -->
     <div class="friend-tag col">
       <div class="label">
@@ -172,6 +178,7 @@
         friendEditTag: '',
         optionEditTag: '',
         reactionEditTag: '',
+        loading: true,
       }
     },
     mounted: function(){
@@ -199,22 +206,28 @@
         }
       },
       fetchFriendTags(){
+        this.loading = true
         axios.get('/api/tags?tag_group=friend').then((res)=>{
           this.friendTags = res.data.tags
+          this.loading = false
         },(error)=>{
           console.log(error)
         })
       },
       fetchOptionTags(){
+        this.loading = true
         axios.get('/api/tags?tag_group=option').then((res)=>{
           this.optionTags = res.data.tags
+          this.loading = false
         },(error)=>{
           console.log(error)
         })
       },
       fetchReactionTags(){
+        this.loading = true
         axios.get('/api/tags?tag_group=reaction').then((res)=>{
           this.reactionTags = res.data.tags
+          this.loading = false
         },(error)=>{
           console.log(error)
         })

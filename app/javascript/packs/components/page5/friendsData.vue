@@ -1,5 +1,12 @@
 <template>
   <div>
+    <div v-show="loading" class="waiting-screen">
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
+    </div>
     <div class="statistics">
       <select v-model="timeLineOption" @change="fetchFollowsData">
         <option value="oneWeek">最近一週間</option>
@@ -28,6 +35,7 @@
         timeOption: 'wdaily',
         timeLineFollows: [],
         timelyFollows: [],
+        loading: true,
       }
     },
     mounted: function(){
@@ -51,6 +59,7 @@
         }).then((res)=>{
           //console.log(res.data)
           this.timelyFollows = res.data
+          this.loading =false
         },(error)=>{
           //console.log(error)
         })

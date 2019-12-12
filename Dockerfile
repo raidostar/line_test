@@ -15,14 +15,7 @@ RUN bundle install --without development
 ADD package.json $APP_ROOT
 ADD yarn.lock $APP_ROOT
 
-RUN yarn add @vue/cli-service
-RUN bin/rails webpacker:install 
-RUN bin/rails webpacker:install:vue
-RUN yarn add axios
-RUN yarn add vue-router
-RUN yarn add vue-template-compiler
-RUN yarn add vuex
-RUN yarn add vue-eslint-parser
+RUN yarn install --check-files
 
 ADD . $APP_ROOT
 

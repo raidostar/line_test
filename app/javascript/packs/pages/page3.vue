@@ -1,13 +1,30 @@
 <template>
   <div class="page" id="page3">
+    <div v-show="loading" class="waiting-screen">
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
+    </div>
     <transition name="fadeInOut">
       <div v-show="!replyShow">
         <div>
           <div>
             <i @click="fetchMessage" class="material-icons loop">loop</i><br/>
             <div class="search-keyword">
-              <input class="searchBar" @keydown.enter="searchMessage" placeholder="検索" v-model="searchKey"/>
-              <button class="searchBtn" @click="searchMessage"><i class="material-icons" style="color: grey;">search</i></button>
+              <input class="searchBar" @keydown.enter="searchByKeyword" placeholder="検索" v-model="searchKey"/>
+              <button class="searchBtn" @click="searchByKeyword"><i class="material-icons" style="color: grey;">search</i></button>
+            </div>
+            <div class="setting">
+              <select v-model="searchStatus" @change="searchByStatus">
+                <option value='all'>全体</option>
+                <option value='unchecked'>未確認</option>
+                <option value='unreplied'>未返事</option>
+                <option value='checked'>確認完了</option>
+                <option value='autoReplied'>自動返事</option>
+                <option value='replied'>直接返事</option>
+              </select>
             </div>
             <div class="setting">
               <select v-model="parPage" @change="resetPage">
@@ -34,8 +51,8 @@
             <td><span>{{ msg.created_at }}</span></td>
             <td>{{ msg.sender }}</td>
             <td v-if="msg.message_type=='stamp'">
-              <a @click="detailImage(msg.contents)">
-                <img class="stampBtnImg" :src="msg.contents"/>
+              <a @click="detailImage(getImgUrl(msg.contents))">
+                <img class="stampBtnImg" :src="getImgUrl(msg.contents)"/>
               </a>
             </td>
             <td v-else-if="msg.message_type=='image'">
@@ -473,6 +490,9 @@
   import {gmapApi} from 'vue2-google-maps'
   export default {
     name: 'MessageList',
+    props: {
+      searchKeyword: String
+    },
     data(){
       return {
         allMessageList: [],
@@ -566,6 +586,8 @@
         copied: {},
         copiedType: '',
         baseTop: 0,
+        loading: true,
+        searchStatus: 'all',
       }
     },
     mounted: function(){
@@ -582,11 +604,12 @@
           for(let message of res.data.messages){
             let time = message.created_at+""
             message.created_at = time.substr(0,19).replace('T'," ")
-            if(message.check_status != 'answered'){
-              this.messageList.push(message)
-            } else {
+            if(message.check_status == 'answered'){
               this.replyList.push(message)
             }
+            // else {
+            //   this.messageList.push(message)
+            // }
           }
           var last = res.data.messages.length - 1
           for(var i=last; i>=0; i--){
@@ -599,6 +622,11 @@
           let scrollHeight = this.$refs.result.scrollHeight
           scrollTop = scrollHeight - height
           this.$refs.result.scrollTop = scrollTop
+          if(this.searchKeyword!=null){
+            this.searchStatus = this.searchKeyword
+            this.searchByStatus();
+          }
+          this.loading = false
         }, (error) => {
           console.log(error)
         })
@@ -647,6 +675,10 @@
         this.stampAreaShow = false;
         this.mapShow = false;
         let files = e.target.files || e.dataTransfer.files;
+        if(!files[0].type.match(/image.*/)){
+          alert("イメージファイルをアップロードしてください。")
+          return;
+        }
         this.imageFile = files[0]
         this.createImage(files[0]);
       },
@@ -669,6 +701,10 @@
 
         let files = e.target.files || e.dataTransfer.files;
         var index = this.selectedBubble
+        if(!files[0].type.match(/image.*/)){
+          alert("イメージファイルをアップロードしてください。")
+          return;
+        }
         this.heros[index] = files[0]
         this.createCarouselImage(index,files[0]);
       },
@@ -1148,7 +1184,7 @@
           console.log(error)
         })
       },
-      searchMessage(){
+      searchByKeyword(){
         if(this.searchKey.length==0) {
           this.fetchMessage();
         } else {
@@ -1895,17 +1931,21 @@
         this.heros[i] = null
         this.bubble_array[i].hero = null
       },
-      // mouseScroll(){
-      //   let height = this.$refs.result.clientHeight
-      //   let scrollTop = this.$refs.result.scrollTop
-      //   let scrollHeight = this.$refs.result.scrollHeight
-      //   if(this.baseTop<scrollTop){
-      //     console.log("down")
-      //   } else {
-      //     console.log("up")
-      //   }
-      //   this.baseTop = scrollTop
-      // },
+      searchByStatus(){
+        let searchResult = []
+        for(let msg of this.allMessageList){
+          if(this.searchStatus!='all'){
+            if(msg.check_status==this.searchStatus){
+              searchResult.push(msg)
+            }
+          } else{
+            if(msg.check_status!='answered'){
+              searchResult.push(msg)
+            }
+          }
+          this.messageList = searchResult
+        }
+      },
     },
     computed: {
       getMessage(){

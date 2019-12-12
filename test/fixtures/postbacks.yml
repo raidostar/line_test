@@ -1,0 +1,17 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  sender: MyString
+  receiver: MyString
+  data: MyText
+  fr_account: MyString
+  group_id: MyString
+  reply_token: MyString
+
+two:
+  sender: MyString
+  receiver: MyString
+  data: MyText
+  fr_account: MyString
+  group_id: MyString
+  reply_token: MyString

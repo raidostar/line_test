@@ -1,5 +1,12 @@
 <template>
   <div>
+    <div v-show="loading" class="waiting-screen">
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
+    </div>
     <div class="pie-chart">
       <div class="div-left">
         <pie-chart class="chart" :data="messageType" :colors="['#006400','#212529']" :donut="true"/>
@@ -80,6 +87,7 @@
         secondCheck: [],
         thirdCheck: [],
         messageTotal: 0,
+        loading: true,
       }
     },
     mounted: function(){
@@ -125,6 +133,7 @@
           this.firstCheck = res.data[0]
           this.secondCheck = res.data[1]
           this.thirdCheck = res.data[2]
+          this.loading = false
         },(error)=>{
           console.log(error)
         })

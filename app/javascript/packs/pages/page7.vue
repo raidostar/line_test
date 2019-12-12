@@ -1,6 +1,13 @@
 <!--自動応答-->
 <template>
   <div class="page" id="page7" @scroll="mouseScroll" ref="result">
+    <div v-show="loading" class="waiting-screen">
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
+    </div>
     <div class="inner-area" style="width: 200%">
       <div v-show="!formShow" :style="flexableHeight">
         <div class="col col-left">
@@ -14,7 +21,7 @@
                 <button
                 class="added-folderBtn"
                 id="added-folderBtn"
-                @click="clickTag(index,tag.id)"
+                @click="selectTag(index,tag.id)"
                 :style="selectedCSS"
                 >
                 <i style="float: left;" class="material-icons open-file-added">insert_drive_file</i>
@@ -24,7 +31,7 @@
               </button>
             </span>
             <span v-else>
-              <button class="added-folderBtn" id="added-folderBtn" @click="clickTag(index,tag.id)">
+              <button class="added-folderBtn" id="added-folderBtn" @click="selectTag(index,tag.id)">
                 <i style="float: left;" class="material-icons open-file-added">insert_drive_file</i>
                 <span>
                   {{tag.name}}
@@ -657,7 +664,7 @@
                     v-html="reaction.contents.substr(0,100)"
                     >
                   </a>
-                  <a v-else @click="showFullContents(reaction.contents)" >
+                  <a v-else @click="showFullContents(reaction.contents)">
                     <span v-if="reaction.contents.length>19" v-html="reaction.contents.substr(0,20)+'...'"></span>
                     <span v-else v-html="reaction.contents.substr(0,20)"></span>
                   </a>
@@ -892,6 +899,7 @@
         resultHeroCSS: [],
         resultBodyCSS: [],
         resultFooterCSS: [],
+        loading: true,
       }
     },
     mounted: function(){
@@ -903,8 +911,12 @@
     },
     methods: {
       fetchTags(){
+        this.loading = true
         axios.get('/api/tags?tag_group=option').then((res)=>{
           this.tags = res.data.tags
+          this.loading = false
+          var id = this.tags[0].id
+          this.selectTag(0,id);
         },(error)=>{
           console.log(error)
         })
@@ -998,7 +1010,7 @@
         this.addShow = true;
         this.addToggle();
       },
-      clickTag(index,id){
+      selectTag(index,id){
         //this.setToggles();
         this.panelShow = false;
         this.deleteShow = false;
@@ -1129,8 +1141,7 @@
       },
       addEmoji(img_url){
         this.contents += '<img src="'+img_url+'" style="width: 30px;">'
-        this.$refs.chatting.innerHTML = this.contents
-        this.$refs.chatting.focus();
+        this.$refs.chatting.innerHTML += '<img ref="emoji" src="'+img_url+'" style="width: 30px;"> '
       },
       createReaction(){
         if(this.selectedOption==null){
@@ -1497,8 +1508,10 @@
         this.stampAreaShow = false;
         this.mapShow = false;
         let files = e.target.files || e.dataTransfer.files;
-        // console.log("그래서 파일이 뭔데????")
-        // console.log((files[0]))
+        if(!files[0].type.match(/image.*/)){
+          alert("イメージファイルをアップロードしてください。")
+          return;
+        }
         this.imageFile = files[0]
         this.createImage(files[0]);
       },
@@ -1521,6 +1534,10 @@
 
         let files = e.target.files || e.dataTransfer.files;
         var index = this.selectedBubble
+        if(!files[0].type.match(/image.*/)){
+          alert("イメージファイルをアップロードしてください。")
+          return;
+        }
         this.heros[index] = files[0]
         this.createCarouselImage(index,files[0]);
       },

@@ -1,5 +1,12 @@
 <template>
   <div>
+    <div v-show="loading" class="waiting-screen">
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
+    </div>
     <div class="pie-chart">
       <div class="div-left">
         <pie-chart class="chart" :data="messageType" :colors="['#007bff','#dc3545','#fd7e14','#28a745','#6f42c1']" :donut="true"/>
@@ -49,6 +56,7 @@
         secondType: [],
         thirdType: [],
         messageTotal: 0,
+        loading: true,
       }
     },
     mounted: function(){
@@ -69,6 +77,7 @@
             sum += msg[1]
           }
           this.messageTotal = sum
+          this.loading = false
         },(error)=>{
           console.log(error)
         })

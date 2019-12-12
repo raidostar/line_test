@@ -1,6 +1,13 @@
 <!-- テンプレート -->
 <template>
   <div class="page" id="page8" @scroll="mouseScroll" ref="result">
+    <div v-show="loading" class="waiting-screen">
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
+    </div>
     <div class="inner-area" style="width: 150%">
       <div v-show="!formShow" :style="flexableHeight">
         <div class="col col-left8">
@@ -551,6 +558,7 @@
         resultFooterCSS: [],
         copied: {},
         copiedType: '',
+        loading: true
       }
     },
     mounted: function(){
@@ -561,8 +569,10 @@
     },
     methods: {
       fetchTags(){
+        this.loading = true
         axios.get('/api/tags?tag_group=reaction').then((res)=>{
           this.tags = res.data.tags
+          this.loading = false
         },(error)=>{
           console.log(error)
         })
@@ -971,8 +981,10 @@
         this.stampAreaShow = false;
         this.mapShow = false;
         let files = e.target.files || e.dataTransfer.files;
-        // console.log("그래서 파일이 뭔데????")
-        // console.log((files[0]))
+        if(!files[0].type.match(/image.*/)){
+          alert("イメージファイルをアップロードしてください。")
+          return;
+        }
         this.imageFile = files[0]
         this.createImage(files[0]);
       },
@@ -995,6 +1007,10 @@
 
         let files = e.target.files || e.dataTransfer.files;
         var index = this.selectedBubble
+        if(!files[0].type.match(/image.*/)){
+          alert("イメージファイルをアップロードしてください。")
+          return;
+        }
         this.heros[index] = files[0]
         this.createCarouselImage(index,files[0]);
       },

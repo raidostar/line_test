@@ -1,14 +1,22 @@
 <!-- 전체송신 -->
 <template>
   <div class="page" id="page6">
-    <div>
-      <button class="allSend-button" @click="formToggle" v-show="!formShow">新規配信</button>
-      <button class="allSend-button" @click="formToggle" v-show="formShow">リスト見る</button>
+    <div v-show="loading" class="waiting-screen">
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
     </div>
-    <transition name="slideInOut">
-      <div class="col col-left" v-show="formShow">
-        <div class="left-panel">
-          <div class="top-panel">
+    <div v-show="!loading">
+      <div>
+        <button class="allSend-button" @click="formToggle" v-show="!formShow">新規配信</button>
+        <button class="allSend-button" @click="formToggle" v-show="formShow">リスト見る</button>
+      </div>
+      <transition name="slideInOut">
+        <div class="col col-left" v-show="formShow">
+          <div class="left-panel">
+            <div class="top-panel">
             <!-- <button class="allSend-button innerBtn innerBtnLeft"></button>
               <button class="allSend-button innerBtn innerBtnRight"></button> -->
             </div>
@@ -442,8 +450,7 @@
     </div>
   </div>
 </transition>
-
-
+</div>
 </div>
 </template>
 <script>
@@ -537,6 +544,7 @@
         resultFooterCSS: [],
         copied: {},
         copiedType: '',
+        loading: true,
       }
     },
     mounted: function(){
@@ -583,12 +591,14 @@
         this.formShow = !this.formShow;
       },
       fetchNotifies(){
+        this.loading = true
         axios.get('api/notifies').then((res)=>{
           for(let notify of res.data.notifies){
             notify.created_at = notify.created_at.substr(0,16).replace('T',' ');
           }
           //console.log(res.data.notifies)
           this.notifies = res.data.notifies
+          this.loading = false
         },(error)=>{
           console.log(error)
         })
@@ -868,8 +878,10 @@
         this.stampAreaShow = false;
         this.mapShow = false;
         let files = e.target.files || e.dataTransfer.files;
-        // console.log("그래서 파일이 뭔데????")
-        // console.log((files[0]))
+        if(!files[0].type.match(/image.*/)){
+          alert("イメージファイルをアップロードしてください。")
+          return;
+        }
         this.imageFile = files[0]
         this.createImage(files[0]);
       },
@@ -892,6 +904,10 @@
 
         let files = e.target.files || e.dataTransfer.files;
         var index = this.selectedBubble
+        if(!files[0].type.match(/image.*/)){
+          alert("イメージファイルをアップロードしてください。")
+          return;
+        }
         this.heros[index] = files[0]
         this.createCarouselImage(index,files[0]);
       },

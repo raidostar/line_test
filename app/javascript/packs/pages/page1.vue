@@ -44,26 +44,26 @@
         <div class="panel-left">
           <div class="panel-heading">現在のマーク別人数</div>
           <div class="list-group">
-            <button>
+            <router-link class="status-button" :to="unchecked">
               <span class="label label-danger">未確認</span>
               <span class="msg-number" v-model="messages">{{ messages.unchecked }}件</span>
-            </button>
-            <button>
+            </router-link>
+            <router-link class="status-button" :to="unreplied">
               <span class="label label-primary">未対応</span>
               <span class="msg-number" v-model="messages">{{ messages.unreplied }}件</span>
-            </button>
-            <button>
+            </router-link>
+            <router-link class="status-button" :to="autoReplied">
               <span class="label label-answer">自動応答</span>
               <span class="msg-number" v-model="messages">{{ messages.auto_replied }}件</span>
-            </button>
-            <button>
+            </router-link>
+            <router-link class="status-button" :to="replied">
               <span class="label label-answer">直接応答</span>
               <span class="msg-number" v-model="messages">{{ messages.replied }}件</span>
-            </button>
-            <button>
+            </router-link>
+            <router-link class="status-button" :to="checked">
               <span class="label label-default">確認完了</span>
               <span class="msg-number" v-model="messages">{{ messages.checked }}件</span>
-            </button>
+            </router-link>
           </div>
         </div>
         <div >
@@ -83,7 +83,6 @@
                 <td class="date text-center" style="height: 35px;">{{data.date}}</td>
                 <td class="change text-center" id="gap" v-if="data.gap<0" style="color: red;">{{data.gap}}</td>
                 <td class="change text-center" id="gap" v-else style="color: green;">{{data.gap}}</td>
-
                 <td class="followNum text-center">{{data.add}}名</td>
                 <td class="blockNum text-center">{{data.block}}名</td>
                 <td class="friendsNum text-center">名</td>
@@ -97,43 +96,25 @@
     <div class="col-right">
       <div>
         <div class="panel-right">
-          <div class="panel-heading">LINE_MANAGERのお知らせ</div>
-          <div class="list-group alarm-list">
-            <button>
-              <span class="label label-danger">お知らせ２</span>
-            </button>
-            <button>
-              <span class="label label-primary">お知らせ３</span>
-            </button>
-            <button>
-              <span class="label label-primary">お知らせ４</span>
-            </button>
-            <button>
-              <span class="label label-answer">お知らせ５</span>
-            </button>
-            <button>
-              <span class="label label-default">お知らせ６</span>
-            </button>
-            <button>
-              <span class="label label-danger">お知らせ７</span>
-            </button>
-            <button>
-              <span class="label label-primary">お知らせ８</span>
-            </button>
-            <button>
-              <span class="label label-primary">お知らせ９</span>
-            </button>
-            <button>
-              <span class="label label-answer">お知らせ１０</span>
-            </button>
-            <button>
-              <span class="label label-default">お知らせ１１</span>
-            </button>
+          <div class="statistics" v-model="timeLineOption">
+            <line-chart class="chart" :data="timeLineFollows" :colors="['#212529','#006400','#FF4500']" style="height: 30vh;"/>
+          </div>
+          <div class="statistics" v-model="timeLineOption">
+            <line-chart class="chart" :data="timeLineMessages" :colors="['#007bff']" style="height: 30vh;"/>
+          </div>
+          <div class="statistics" v-model="timeLineOption">
+            <line-chart class="chart" :data="timeLineReplies" :colors="['#dc3545']" style="height: 30vh;"/>
           </div>
         </div>
       </div>
     </div>
-
+    <div v-show="loading" class="waiting-screen">
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -157,23 +138,84 @@
         dayType: ['日','月','火','水','木','金','土',],
         weeklyData: [],
         messages: {},
+        loading: true,
+        unchecked: '/allMessages/unchecked',
+        unreplied: '/allMessages/unreplied',
+        checked: '/allMessages/checked',
+        replied: '/allMessages/replied',
+        autoReplied: '/allMessages/autoReplied',
+        timeLineOption: 'oneWeek',
+        timeLineFollows: [],
+        timeLineMessages: [],
+        timeLineReplies: [],
       }
     },
     mounted: function(){
       this.fetchMessages();
       this.fetchFriends();
       this.getTime();
-      this.getThisMonth();
-      this.getThisWeek();
-      this.getToday();
+      this.timelyMessages();
       this.weekly_data();
+      this.$nextTick(function(){
+        this.fetchFollowsData();
+        this.fetchMessagesData();
+        this.fetchRepliesData();
+      })
     },
     methods: {
+      fetchFollowsData(){
+        axios.post('api/fetch_follows_data',{
+          timeOption: this.timeLineOption
+        }).then((res)=>{
+          // console.log(res.data)
+          this.timeLineFollows = res.data
+        },(error)=>{
+          console.log(error)
+        })
+      },
+      fetchMessagesData(){
+        axios.post('api/fetch_messages_data',{
+          reply_boolean: false,
+          timeOption: this.timeLineOption
+        }).then((res)=>{
+          //console.log(res.data)
+          this.timeLineMessages = res.data
+        },(error)=>{
+          console.log(error)
+        })
+      },
+      fetchRepliesData(){
+        axios.post('api/fetch_messages_data',{
+          reply_boolean: true,
+          timeOption: this.timeLineOption
+        }).then((res)=>{
+          //console.log(res.data)
+          this.timeLineReplies = res.data
+        },(error)=>{
+          console.log(error)
+        })
+      },
+      timelyMessages(){
+        this.loading = true
+        axios.post('api/timely_messages').then((res)=>{
+          this.dailyNum = res.data.daily
+          this.weeklyNum = res.data.weekly
+          this.monthlyNum = res.data.monthly
+          this.loading = false
+        },(error)=>{
+          console.log(error)
+        })
+      },
       getTime(){
         let date = new Date();
         this.month = date.getMonth()+1;
+        // console.log(date.getYear())
+        // console.log(date.getMonth())
+        // console.log(date.getDate())
+        // console.log(date.getDay())
       },
       fetchFriends(){
+        this.loading = true
         axios.get('/api/friends').then((res) => {
           // console.log("friends")
           // console.log(res.data.friends)
@@ -185,36 +227,13 @@
               this.blockList.push(friend)
             }
           }
+          this.loading = false
         }, (error) => {
           console.log(error)
         })
       },
-      getThisMonth(){
-        axios.post('/number_of_monthly').then((res)=>{
-          this.monthlyNum = res.data.messages.length
-          //console.log(res.data.messages)
-          //for(let message of res.data.messages){
-          //  console.log(message.created_at)
-          //}
-        }, (error)=>{
-          console.log(error)
-        })
-      },
-      getThisWeek(){
-        axios.post('/number_of_weekly').then((res)=>{
-          this.weeklyNum = res.data.messages.length
-        },(error)=>{
-          console.log(error)
-        })
-      },
-      getToday(){
-        axios.post('/number_of_daily').then((res)=>{
-          this.dailyNum = res.data.messages.length
-        },(error)=>{
-          console.log(error)
-        })
-      },
       weekly_data(){
+        this.loading = true
         axios.post('/weekly_friend_info').then((res)=>{
           for(let d of res.data){
             d.date = d.date.replace("-", "月");
@@ -225,18 +244,21 @@
           }
           //console.log(res.data)
           this.weeklyData = res.data
+          this.loading = false
         },(error)=>{
           console.log(error)
         })
       },
       fetchMessages(){
+        this.loading = true
         axios.post('api/fetch_message_check_data',{
           reply_boolean: false
         }).then((res)=>{
           for(var msg of res.data){
             this.messages[msg[0]] = msg[1]
           }
-          console.log(this.messages)
+          // console.log(this.messages)
+          this.loading = false
         },(error)=>{
           console.log(error)
         })

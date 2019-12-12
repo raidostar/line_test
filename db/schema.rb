@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_11_25_082320) do
+ActiveRecord::Schema.define(version: 2019_12_11_075934) do
 
   create_table "bubbles", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "header"
@@ -174,6 +174,17 @@ ActiveRecord::Schema.define(version: 2019_11_25_082320) do
     t.boolean "remind_bool", default: true
   end
 
+  create_table "postbacks", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
+    t.string "sender"
+    t.string "receiver"
+    t.text "data"
+    t.string "fr_account"
+    t.string "group_id"
+    t.string "reply_token"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "reactions", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "name"
     t.text "contents"
@@ -186,6 +197,34 @@ ActiveRecord::Schema.define(version: 2019_11_25_082320) do
     t.datetime "updated_at", null: false
     t.boolean "bool", default: false
     t.string "match_option"
+  end
+
+  create_table "richactions", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
+    t.integer "x"
+    t.integer "y"
+    t.integer "width"
+    t.integer "height"
+    t.string "richaction_type"
+    t.string "text"
+    t.string "uri"
+    t.string "data"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "richmenus", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
+    t.string "name"
+    t.string "contents"
+    t.string "image"
+    t.integer "width"
+    t.integer "height"
+    t.boolean "selected"
+    t.string "chat_bar_text"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "richmenu_id"
+    t.string "user_group"
+    t.boolean "default_richmenu", default: false
   end
 
   create_table "roles", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|

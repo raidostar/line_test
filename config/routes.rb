@@ -61,13 +61,21 @@ Rails.application.routes.draw do
     resources :reactions
   end
 
+  namespace :api, format: 'json' do
+    resources :richactions
+  end
+
+  namespace :api, format: 'json' do
+    resources :richmenus
+  end
+
+  namespace :api, format: 'json' do
+    resources :postbacks
+  end
+
   post '/find_messages' => 'api/messages#index_with_id'
   post '/show_current' => 'api/users#show_current_user'
-
-  post '/number_of_monthly' => 'api/messages#get_number_of_monthly_message'
-  post '/number_of_weekly' => 'api/messages#get_number_of_weekly_message'
-  post '/number_of_daily' => 'api/messages#get_number_of_daily_message'
-  post '/number_of_seven_days' => 'api/messages#get_number_of_seven_days'
+  post 'api/timely_messages' => 'api/messages#timely_messages'
   post '/find_group_key' => 'api/groups#show_with_group_key'
   # post '/add_number' => 'api/friends#number_of_add_by_date'
   # post '/block_number' => 'api/friends#number_of_block_by_date'
@@ -91,6 +99,7 @@ Rails.application.routes.draw do
   post 'api/fetch_follows_time_data' => 'api/follows#fetch_follows_time_data'
   post 'api/fetch_messages_data' => 'api/messages#fetch_messages_data'
   post 'api/fetch_messages_time_data' => 'api/messages#fetch_messages_time_data'
+  post 'api/fetch_personal_message_data' => 'api/messages#fetch_personal_message_data'
   post 'api/fetch_message_type_data' => 'api/messages#fetch_message_type_data'
   post 'api/fetch_message_check_data' => 'api/messages#fetch_message_check_data'
   post 'api/fetch_targets' => 'api/friends#fetch_targets'
@@ -102,4 +111,9 @@ Rails.application.routes.draw do
   post 'api/fetch_bubbles_archives' => 'api/bubbles_archives#fetch_bubbles_archives'
   post 'api/fetch_reply' => 'api/messages#fetch_reply'
   post 'api/update_bubbles' => 'api/bubbles#update_bubbles'
+  post 'api/set_richmenu' => 'api/showmes#set_richmenu'
+  post 'api/set_default_richmenu' => 'api/showmes#set_default_richmenu'
+  post 'api/unset_default_richmenu' => 'api/showmes#unset_default_richmenu'
+  post 'api/delete_richmenu' => 'api/showmes#delete_richmenu'
+  post 'api/load_all_richmenus' => 'api/showmes#load_all_richmenus'
 end

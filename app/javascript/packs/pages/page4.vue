@@ -26,58 +26,49 @@
       <div class="message chatting-content" id="chatting-content" ref="result">
         <div v-for="msg in messages">
           <div class="chatting-line" v-if="msg.check_status!='answered'">
-            <div class="balloon-left">
-              <span v-if="msg.message_type=='text'" v-html="msg.contents">{{msg.contents}}</span>
-              <span v-else-if="msg.message_type=='stamp'"><img class="attachedStamp" :src="getImgUrl(msg.contents)"/></span>
-              <span v-else-if="msg.message_type=='image'"><img class="attachedImg" :src="msg.image.url+''"></span>
-              <span v-else>
-                <GmapMap
-                :center="mapConvert(msg.contents)"
-                :zoom="12"
-                map-type-id="terrain"
-                style="width: 16em; height: 16em;"
-                >
-                <GmapMarker
-                :position="mapConvert(msg.contents)"
-                :clickable="true"
-                :draggable="false"
-                />
-              </GmapMap>
-            </span>
+            <div class="balloon-left" v-if="msg.message_type=='text'">
+              <span v-html="msg.contents">{{msg.contents}}</span>
+            </div>
+            <div class="balloon-leftimage" v-else-if="msg.message_type=='stamp'">
+              <img class="attachedStamp" :src="getImgUrl(msg.contents)"/>
+            </div>
+            <div class="balloon-leftimage" v-else-if="msg.message_type=='image'">
+              <img class="attachedImg" :src="msg.image.url+''">
+            </div>
           </div>
-        </div>
-        <div v-else>
-          <div class="balloon-right" v-if="msg.message_type=='text'">
-            <span v-html="msg.contents">{{msg.contents}}</span>
-          </div>
-          <div class="balloon-image" v-else-if="msg.message_type=='stamp'">
-            <img :src="getImgUrl(msg.contents)" style="width: 10em;"/>
-          </div>
-          <div class="balloon-image" v-else-if="msg.message_type=='image'">
-            <img class="attachedImg" :src="msg.image.url">
-          </div>
-          <div class="balloon-image" v-else-if="msg.message_type=='carousel'" style="height: 27em;">
-            <!-- <div style="color: black;">{{bubbles.length}}</div> -->
-            <div class="carousel-box" style="margin-bottom: 1em; width: 21em;">
-              <div class="bubble-box"  style="height: 100%; display: inline-flex;">
-                <div v-for="(bubble,index) in bubbles">
-                  <div class="bubble" style="height: 100%;" :style="bubbleChecker(bubble,msg.contents)">
-                    <div style="height: 100%;">
-                      <div class="result-blocks header-block rounder1" :style="resultHeaderCSS[index]">
-                        <div class="header-text rounder1" v-html="bubble.header" >
+          <div v-else>
+            <div class="balloon-right" v-if="msg.message_type=='text'">
+              <span v-html="msg.contents">{{msg.contents}}</span>
+            </div>
+            <div class="balloon-image" v-else-if="msg.message_type=='stamp'">
+              <img :src="getImgUrl(msg.contents)" style="width: 10em;"/>
+            </div>
+            <div class="balloon-image" v-else-if="msg.message_type=='image'">
+              <img class="attachedImg" :src="msg.image.url">
+            </div>
+            <div class="balloon-image" v-else-if="msg.message_type=='carousel'" style="height: 27em;">
+              <!-- <div style="color: black;">{{bubbles.length}}</div> -->
+              <div class="carousel-box" style="margin-bottom: 1em; width: 21em;">
+                <div class="bubble-box"  style="height: 100%; display: inline-flex;">
+                  <div v-for="(bubble,index) in bubbles">
+                    <div class="bubble" style="height: 100%;" :style="bubbleChecker(bubble,msg.contents)">
+                      <div style="height: 100%;">
+                        <div class="result-blocks header-block rounder1" :style="resultHeaderCSS[index]">
+                          <div class="header-text rounder1" v-html="bubble.header" >
+                          </div>
                         </div>
-                      </div>
-                      <div class="result-blocks hero-block" v-show="bubble.image.url">
-                        <div class="carousel-img-area" style="bottom: -1%; display: grid; align-items: center;justify-content: center;">
-                          <img class="carousel-img" :src="bubble.image.url">
+                        <div class="result-blocks hero-block" v-show="bubble.image.url">
+                          <div class="carousel-img-area" style="bottom: -1%; display: grid; align-items: center;justify-content: center;">
+                            <img class="carousel-img" :src="bubble.image.url">
+                          </div>
                         </div>
-                      </div>
-                      <div class="result-blocks body-block" :style="resultBodyCSS[index]">
-                        <div class="body-text" v-html="bubble.body" >
+                        <div class="result-blocks body-block" :style="resultBodyCSS[index]">
+                          <div class="body-text" v-html="bubble.body" >
+                          </div>
                         </div>
-                      </div>
-                      <div class="result-blocks footer-block" style="line-height: 4.5vh" :style="resultFooterCSS[index]">
-                        <div class="footer-text rounder2" v-html="bubble.footer">
+                        <div class="result-blocks footer-block" style="line-height: 4.5vh" :style="resultFooterCSS[index]">
+                          <div class="footer-text rounder2" v-html="bubble.footer">
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -85,57 +76,63 @@
                 </div>
               </div>
             </div>
+            <div class="balloon-image" v-else>
+              <GmapMap
+              :center="mapConvert(msg.contents)"
+              :zoom="12"
+              map-type-id="terrain"
+              style="width: 16em; height: 16em;"
+              >
+              <GmapMarker
+              :position="mapConvert(msg.contents)"
+              :clickable="true"
+              :draggable="false"
+              />
+            </GmapMap>
           </div>
-          <div class="balloon-image" v-else>
-            <GmapMap
-            :center="mapConvert(msg.contents)"
-            :zoom="12"
-            map-type-id="terrain"
-            style="width: 16em; height: 16em;"
-            >
-            <GmapMarker
-            :position="mapConvert(msg.contents)"
-            :clickable="true"
-            :draggable="false"
-            />
-          </GmapMap>
+          <span class="right-time">{{msg.created_at}}</span>
         </div>
-        <span class="right-time">{{msg.created_at}}</span>
+      </div>
+    </div>
+    <div class="message chatting-text" v-model="friend">
+      <button class="refresh" @click="fetchMessages(friend)">
+        <i class="material-icons animated fadeIn infinite duration-5s" style="color: white; padding-left: 7em;">loop</i>
+      </button>
+    </div>
+  </div>
+  <div class="col col-right">
+    <div class="label">
+      <i class="material-icons profile">face</i>
+      友達プロファイル
+    </div>
+    <div style="text-align: center;" v-model="friend">
+      <div style="margin-top: 10px;">
+        <img :src="friend.profile_pic" class="profile_img_for_one">
+      </div>
+      <div>
+        {{friend.fr_name}}
+      </div>
+      <hr/>
+      <div>
+        <p>プロファイルメッセージ</p>{{friend.profile_msg}}
+      </div>
+      <hr/>
+      <div>
+        <p>登録日時</p>{{friend.created_at}}
+      </div>
+      <hr/>
+      <div>
+        <router-link class="personalPage" :to="personalLink">{{personalLinkBtn}}</router-link>
       </div>
     </div>
   </div>
-  <div class="message chatting-text" v-model="friend">
-    <button class="refresh" @click="fetchMessages(friend)">
-      <i class="material-icons animated fadeIn infinite duration-5s" style="color: white; padding-left: 7em;">loop</i>
-    </button>
-  </div>
-</div>
-<div class="col col-right">
-  <div class="label">
-    <i class="material-icons profile">face</i>
-    友達プロファイル
-  </div>
-  <div style="text-align: center;" v-model="friend">
-    <div style="margin-top: 10px;">
-      <img :src="friend.profile_pic" class="profile_img_for_one">
-    </div>
-    <div>
-      {{friend.fr_name}}
-    </div>
-    <hr/>
-    <div>
-      <p>プロファイルメッセージ</p>{{friend.profile_msg}}
-    </div>
-    <hr/>
-    <div>
-      <p>登録日時</p>{{friend.created_at}}
-    </div>
-    <hr/>
-    <div>
-      <router-link class="personalPage" :to="personalLink">{{personalLinkBtn}}</router-link>
+  <div v-show="loading" class="waiting-screen">
+    <div class="spinner">
+      <div class="bounce1"></div>
+      <div class="bounce2"></div>
+      <div class="bounce3"></div>
     </div>
   </div>
-</div>
 </div>
 </template>
 <script>
@@ -156,6 +153,7 @@
         resultFooterCSS: [],
         bubbles: [],
         bubble_ids: [],
+        loading: true,
       }
     },
     mounted: function(){
@@ -164,6 +162,7 @@
     },
     methods: {
       fetchFriends(){
+        this.loading = true
         axios.get('/api/friends').then((res) => {
           //console.log(res.data.friends)
           this.friendsList = res.data.friends
@@ -176,6 +175,7 @@
         this.selectedFriend = friend
         this.personalLink = '/personalPage/'+friend.id
         this.showFriend(friend.fr_account);
+        this.loading = true
         axios.post('/find_messages', {
           fr_account: friend.fr_account
         }).then((res)=>{
@@ -190,7 +190,6 @@
           this.messages = res.data.messages
           this.personalLinkBtn = '詳細ページ'
           this.fetchBubbles(this.bubble_ids.toString())
-
         }, (error)=>{
           console.log(error)
         })
@@ -219,6 +218,7 @@
         return {lat: tempArr[0], lng: tempArr[1]}
       },
       fetchBubbles(ids){
+        this.loading = true
         axios.post('api/fetch_bubbles_archives',{
           ids: ids
         }).then((res)=>{
@@ -257,12 +257,13 @@
             this.resultBodyCSS.push(bodyResult)
             this.resultFooterCSS.push(footerResult)
           }
-          console.log(this.bubbles)
+          //console.log(this.bubbles)
           let height = this.$refs.result.clientHeight
           let scrollTop = this.$refs.result.scrollTop
           let scrollHeight = this.$refs.result.scrollHeight
           scrollTop = scrollHeight - height
           this.$refs.result.scrollTop = scrollTop
+          this.loading = false
         },(error)=>{
           console.log(error)
         })
