@@ -1,5 +1,12 @@
 <template>
   <div class="page" id="page4">
+    <div v-show="loading" class="waiting-screen">
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
+    </div>
     <div class="col col-left">
       <div class="label">
         <i class="material-icons people">group</i>
@@ -54,11 +61,11 @@
                     <div class="bubble" style="height: 100%;" :style="bubbleChecker(bubble,msg.contents)">
                       <div style="height: 100%;">
                         <div class="result-blocks header-block rounder1" :style="resultHeaderCSS[index]">
-                          <div class="header-text rounder1" v-html="bubble.header" >
+                          <div class="header-text rounder1" v-html="bubble.header">
                           </div>
                         </div>
-                        <div class="result-blocks hero-block" v-show="bubble.image.url">
-                          <div class="carousel-img-area" style="bottom: -1%; display: grid; align-items: center;justify-content: center;">
+                        <div class="result-blocks hero-block" v-show="bubble.image.url" :style="resultHeroCSS[index]">
+                          <div class="carousel-img-area">
                             <img class="carousel-img" :src="bubble.image.url">
                           </div>
                         </div>
@@ -126,13 +133,6 @@
       </div>
     </div>
   </div>
-  <div v-show="loading" class="waiting-screen">
-    <div class="spinner">
-      <div class="bounce1"></div>
-      <div class="bounce2"></div>
-      <div class="bounce3"></div>
-    </div>
-  </div>
 </div>
 </template>
 <script>
@@ -148,6 +148,7 @@
         personalLinkBtn: null,
         selectedFriend: null,
         resultHeaderCSS: [],
+        resultImageCSS: [],
         resultHeroCSS: [],
         resultBodyCSS: [],
         resultFooterCSS: [],
@@ -224,13 +225,17 @@
         }).then((res)=>{
           this.bubbles = []
           this.resultHeaderCSS = []
+          this.resultImageCSS = []
+          this.resultHeroCSS = []
           this.resultBodyCSS = []
           this.resultFooterCSS = []
           for(var bubble of res.data){
             this.bubbles.push(bubble)
-            var headerResult = {'display':'grid'}
-            var bodyResult = {'display':'grid'}
-            var footerResult = {'display':'grid'}
+            var headerResult = {'display':'flex'}
+            var imageResult = {}
+            var heroResult = {'display':'flex', 'align-items': 'center'}
+            var bodyResult = {'display':'flex'}
+            var footerResult = {'display':'flex'}
 
             headerResult = this.gravityResultConverter(bubble.header_gravity,headerResult)
             headerResult = this.alignResultConverter(bubble.header_align,headerResult)
@@ -238,6 +243,9 @@
             headerResult = this.sizeResultConverter(bubble.header_size,headerResult)
             headerResult = this.colorResultConverter(bubble.header_color,headerResult)
             headerResult = this.backgroundResultConverter(bubble.header_background,headerResult)
+
+            heroResult = this.alignResultConverter(bubble.hero_align,heroResult)
+            heroResult = this.backgroundResultConverter(bubble.hero_background,heroResult)
 
             bodyResult = this.gravityResultConverter(bubble.body_gravity,bodyResult)
             bodyResult = this.alignResultConverter(bubble.body_align,bodyResult)
@@ -254,6 +262,7 @@
             footerResult = this.backgroundResultConverter(bubble.footer_background,footerResult)
 
             this.resultHeaderCSS.push(headerResult)
+            this.resultHeroCSS.push(heroResult)
             this.resultBodyCSS.push(bodyResult)
             this.resultFooterCSS.push(footerResult)
           }

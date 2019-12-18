@@ -443,7 +443,7 @@ label.stampBtn:focus {
 .blocks {
   margin: 2px 1px;
   border-radius: 8px;
-  border: 3px dotted #111;
+  /*border: 3px dotted #111;*/
 }
 .blocks:focus {
   outline: none;
@@ -515,6 +515,7 @@ label.stampBtn:focus {
 }
 .color{
   height: 4.3em;
+  margin-bottom: 2em;
 }
 input[type=text]:not(.browser-default) {
   width: 75%;
@@ -522,7 +523,7 @@ input[type=text]:not(.browser-default) {
   height: 2.5em;
 }
 .bubble-setting {
-  height: 4em;
+  margin-bottom: 1em;
 }
 .empty-bubble {
   width: 97%;

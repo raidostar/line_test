@@ -310,7 +310,7 @@ DEPENDENCIES
   carrierwave (~> 2.0, >= 2.0.1)
   chromedriver-helper
   coffee-rails (~> 4.2)
-  devise
+  devise (~> 4.7, >= 4.7.1)
   devise_token_auth
   dotenv-rails
   faker

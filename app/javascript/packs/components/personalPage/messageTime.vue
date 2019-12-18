@@ -1,33 +1,63 @@
 <template>
   <div class="in-panel">
-    <!-- <line-chart class="chart" :data="time"/>
-     <table>
-      <tr>
-        <th>順位</th>
-        <th>時間代</th>
-        <th>頻度</th>
-        <th>返事確率</th>
-      </tr>
-      <tr>
-        <td><i class="material-icons" id="first">looks_one</i>位</td>
-        <td>{{timeRank[0]}}</td>
-        <td>{{timeFreqRank[0]}}%</td>
-        <td>多多</td>
-      </tr>
-      <tr>
-        <td><i class="material-icons" id="second">looks_two</i>位</td>
-        <td>{{timeRank[1]}}</td>
-        <td>{{timeFreqRank[1]}}%</td>
-        <td>多</td>
-      </tr>
-      <tr>
-        <td><i class="material-icons" id="third">looks_3</i>位</td>
-        <td>{{timeRank[2]}}</td>
-        <td>{{timeFreqRank[2]}}%</td>
-        <td>中</td>
-      </tr>
-    </table> -->
-  </div>
+    <div v-show="loading" class="waiting-screen">
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
+    </div>
+    <div>
+      <select class="time_option" v-model="timeOption" @change="fetchPersonalMessageData(false)">
+        <option value="hourly">時間別</option>
+        <option value="wdaily">曜日別</option>
+        <option value="daily">日別</option>
+        <option value="monthly">月鼈</option>
+      </select>
+      <span style="float: right;">全体のメッセージ数: {{ total }}件</span>
+    </div>
+    <div style="margin-bottom: 8vh;">
+     <line-chart class="chart" :data="data"/>
+   </div>
+   <table>
+    <tr>
+      <th class="title">順位</th>
+      <th class="title">時間代</th>
+      <th class="title">頻度</th>
+      <th class="title">返事確率</th>
+    </tr>
+    <tr>
+      <td>
+        <div class="inner-ranking">
+          <i class="material-icons ranking-mark" id="first">looks_one</i>位
+        </div>
+      </td>
+      <td class="ranking">{{timeRank[0]}}</td>
+      <td class="ranking">{{timeFreqRank[0]}}%</td>
+      <td class="ranking">多多</td>
+    </tr>
+    <tr>
+      <td>
+        <div class="inner-ranking">
+          <i class="material-icons ranking-mark" id="second">looks_two</i>位
+        </div>
+      </td>
+      <td class="ranking">{{timeRank[1]}}</td>
+      <td class="ranking">{{timeFreqRank[1]}}%</td>
+      <td class="ranking">多</td>
+    </tr>
+    <tr>
+      <td>
+        <div class="inner-ranking">
+          <i class="material-icons ranking-mark" id="third">looks_3</i>位
+        </div>
+      </td>
+      <td class="ranking">{{timeRank[2]}}</td>
+      <td class="ranking">{{timeFreqRank[2]}}%</td>
+      <td class="ranking">中</td>
+    </tr>
+  </table>
+</div>
 </template>
 <script>
   import axios from 'axios'
@@ -41,25 +71,46 @@
     },
     data: function(){
       return {
+        data: [],
         timeOption: 'hourly',
+        timeFreqRank: [],
+        timeRank: [],
+        total: 0,
+        loading: true,
       }
     },
     mounted: function(){
-      alert(this.id)
       this.fetchPersonalMessageData(false);
     },
     methods: {
       fetchPersonalMessageData(reply_boolean){
-        console.log(reply_boolean)
         axios.post('api/fetch_personal_message_data',{
           id: this.id,
           reply_boolean: reply_boolean,
           time_option: this.timeOption
         }).then((res)=>{
-          console.log(res.data)
+          //console.log(res.data)
+          this.data = res.data
+          this.rankingData(res.data)
         },(error)=>{
           console.log(error)
         })
+      },
+      rankingData(data){
+        this.total = 0
+        //console.log(data[0].data)
+        let list = data[0].data
+        this.timeRank = Object.keys(list).sort(function(a,b){return list[b]-list[a]})
+        this.timeFreqRank = Object.values(list).sort(function(a,b){return b-a})
+        // console.log(this.timeRank)
+        // console.log(this.timeFreqRank)
+        for(var i of this.timeFreqRank){
+          this.total += i
+        }
+        for(let i in this.timeFreqRank){
+          this.timeFreqRank[i]=((this.timeFreqRank[i]/this.total)*100).toFixed(1)
+        }
+        this.loading = false
       },
     }
   }
@@ -85,5 +136,21 @@ table td {
 }
 #third {
   color: #CD853F;
+}
+.time_option {
+  display: flex;
+  width: 25%;
+  background-color: cornflowerblue;
+  float: left;
+}
+.title {
+  text-align: center;
+}
+.ranking {
+  text-align: center;
+}
+.inner-ranking {
+  width: fit-content;
+  margin: 0 auto;
 }
 </style>

@@ -126,9 +126,6 @@
           <button class="stampBtn" @click="toggleMap" title="マップ追加">
             <i class="material-icons stamp">location_on</i>
           </button>
-          <button class="stampBtn" title="アクションプレビュー">
-            <i class="material-icons stamp">remove_red_eye</i>
-          </button>
         </div>
         <div class="chattingArea">
           <div v-show="uploadedImage" class="attachedImgPanel">
@@ -318,6 +315,7 @@
               <select class="css-option" v-model="footer_button" @change="syncFooterButton">
                 <option value="uri">リンク</option>
                 <option value="message">メッセージ</option>
+                <option value="postback">ポストバック</option>
               </select>
             </div>
             <div class="bubble-setting color setting-url" v-if="selectedComponent=='footer'&&footer_type=='button'&&footer_button=='uri'">
@@ -327,6 +325,10 @@
             <div class="bubble-setting color setting-message" v-if="selectedComponent=='footer'&&footer_type=='button'&&footer_button=='message'">
               <p style="margin-bottom: 0">配信メッセージ</p>
               <input class="uri-text" type="text" v-model="footer_message" @keyup="syncFooterMessage">
+            </div>
+            <div class="bubble-setting color setting-message" v-if="selectedComponent=='footer'&&footer_type=='button'&&footer_button=='postback'">
+              <p style="margin-bottom: 0">配信データ</p>
+              <input class="uri-text" type="text" v-model="footer_data" @keyup="syncFooterData">
             </div>
             <div class="design-buttons">
               <button class="copyChu copy" @click="copyCSS">デザインコピー</button>
@@ -340,120 +342,99 @@
               イメージ削除
             </button>
           </div>
+
           <!-- main bubble -->
           <div class="carousel-box" :style="carouselBoxWidth">
             <div class="bubble-box" ref="carousel" v-model="bubble_array">
               <div class="bubble" v-for="(bubble,index) in bubble_array" :key="bubble.id">
                 <!-- header -->
-                <div class="blocks header-block" v-if="selectedComponent=='header'&&selectedBubble==index" style="border: 5px solid red" :style="headerBackground[index]">
+                <div class="blocks header-block" :style="headerBackground[index]" @click="selectComponent('header', index)" ref="headerArea" tabindex="0" @keydown.shift="keyNumberCheck">
                   <div class="component header-text" ref="header" contenteditable="true" v-html="header[index]" @input="syncHeader(index)" :style="headerCSS[index]">
                   </div>
                 </div>
-                <div class="blocks header-block" @click="selectComponent('header', index)" v-else
-                :style="headerBackground[index]">
-                <div class="component header-text" ref="header" contenteditable="true" v-html="header[index]" @input="syncHeader(index)" :style="headerCSS[index]">
-                </div>
-              </div>
-              <input type="text" v-model="bubble.header" style="display: none;">
+                <input type="text" v-model="bubble.header" style="display: none;">
 
-              <!-- hero(image) -->
-              <div class="blocks hero-block" v-if="selectedComponent=='hero'&&selectedBubble==index" style="border: 5px solid red">
-                <label class="add-label" title="イメージ追加">
-                  <i class="material-icons add-bubble-image" v-if="!heros[index]">add</i>
-                  <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
-                </label>
-                <div class="carousel-img-area" v-show="bubble.hero" :style="heroCSS[index]">
-                  <img class="carousel-img" :src="bubble.hero" :style="imageCSS[index]">
+                <!-- hero(image) -->
+                <div class="blocks hero-block" :style="heroBackground[index]" ref="heroArea" @click="selectComponent('hero',index)" tabindex="0" @keydown.shift="keyNumberCheck">
+                  <label class="add-label" title="イメージ追加">
+                    <i class="material-icons add-bubble-image" v-if="!heros[index]">add</i>
+                    <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
+                  </label>
+                  <div class="carousel-img-area" v-show="bubble.hero" :style="heroCSS[index]">
+                    <img class="carousel-img" :src="bubble.hero" :style="imageCSS[index]">
+                  </div>
                 </div>
-              </div>
-              <div class="blocks hero-block" @click="selectComponent('hero', index)" v-else>
-                <label class="add-label" title="イメージ追加">
-                  <i class="material-icons add-bubble-image" v-if="!heros[index]">add</i>
-                  <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
-                </label>
-                <div class="carousel-img-area" v-show="bubble.hero" :style="heroCSS[index]">
-                  <img class="carousel-img" :src="bubble.hero" :style="imageCSS[index]">
-                </div>
-              </div>
 
-              <!-- body -->
-              <div class="blocks body-block" v-if="selectedComponent=='body'&&selectedBubble==index" style="border: 5px solid red" :style="bodyBackground[index]">
-                <div class="component body-text" ref="body" contenteditable="true" v-html="body[index]" @input="syncBody(index)" :style="bodyCSS[index]">
+                <!-- body -->
+                <div class="blocks body-block" :style="bodyBackground[index]" @click="selectComponent('body', index)" ref="bodyArea" tabindex="0" @keydown.shift="keyNumberCheck">
+                  <div class="component body-text" ref="body" contenteditable="true" v-html="body[index]" @input="syncBody(index)" :style="bodyCSS[index]">
+                  </div>
                 </div>
-              </div>
-              <div class="blocks body-block" @click="selectComponent('body', index)" v-else :style="bodyBackground[index]">
-                <div class="component body-text" ref="body" contenteditable="true" v-html="body[index]" @input="syncBody(index)" :style="bodyCSS[index]">
-                </div>
-              </div>
-              <input type="text" v-model="bubble.body" style="display: none;">
+                <input type="text" v-model="bubble.body" style="display: none;">
 
-              <!-- footer -->
-              <div class="blocks footer-block" v-if="selectedComponent=='footer'&&selectedBubble==index" style="border: 5px solid red" :style="footerBackground[index]">
-                <div class="component footer-text" ref="footer" contenteditable="true" v-html="footer[index]" @input="syncFooter(index)" :style="footerCSS[index]">
+                <!-- footer -->
+                <div class="blocks footer-block" :style="footerBackground[index]" ref="footerArea" @click="selectComponent('footer', index)" tabindex="0" @keydown.shift="keyNumberCheck">
+                  <div class="component footer-text" ref="footer" contenteditable="true" v-html="footer[index]" @input="syncFooter(index)" :style="footerCSS[index]">
+                  </div>
+                </div>
+                <input type="text" v-model="bubble.footer" style="display: none;">
+                <div>
+                  <button v-if="index==0" class="copy-bubble" @click="copyBubble(index)" style="width: 100%;">
+                    複　製
+                  </button>
+                  <button v-if="index>0" class="copy-bubble" @click="copyBubble(index)">
+                    複　製
+                  </button>
+                  <button v-if="index>0" class="remove-bubble" @click="removeBubble(index)">
+                    削　除
+                  </button>
                 </div>
               </div>
-              <div class="blocks footer-block" @click="selectComponent('footer', index)" v-else :style="footerBackground[index]">
-                <div class="component footer-text" ref="footer" contenteditable="true" v-html="footer[index]" @input="syncFooter(index)" :style="footerCSS[index]">
-                </div>
-              </div>
-              <input type="text" v-model="bubble.footer" style="display: none;">
-              <div>
-                <button v-if="index==0" class="copy-bubble" @click="copyBubble(index)" style="width: 100%;">
-                  複　製
-                </button>
-                <button v-if="index>0" class="copy-bubble" @click="copyBubble(index)">
-                  複　製
-                </button>
-                <button v-if="index>0" class="remove-bubble" @click="removeBubble(index)">
-                  削　除
-                </button>
-              </div>
-            </div>
-            <div class="bubble">
-              <div class="empty-bubble">
-                <div class="add-button" @click="addBubble">
-                  <i class="material-icons add-circle">
-                    add_circle_outline
-                  </i>
+              <div class="bubble">
+                <div class="empty-bubble">
+                  <div class="add-button" @click="addBubble">
+                    <i class="material-icons add-circle">
+                      add_circle_outline
+                    </i>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+          <div class="add-button" @click="stretchCarouselToggle">
+            <i class="material-icons open-circle" v-if="!carouselOpen">
+              keyboard_arrow_right
+            </i>
+            <i class="material-icons open-circle" v-if="carouselOpen">
+              keyboard_arrow_left
+            </i>
+          </div>
         </div>
-        <div class="add-button" @click="stretchCarouselToggle">
-          <i class="material-icons open-circle" v-if="!carouselOpen">
-            keyboard_arrow_right
-          </i>
-          <i class="material-icons open-circle" v-if="carouselOpen">
-            keyboard_arrow_left
-          </i>
-        </div>
-      </div>
-    </transition>
+      </transition>
 
-    <!--GoogleMap-->
-    <div class="googleMap" v-show="mapShow">
-      <div class="placeSearch">
-        <GmapAutocomplete @place_changed="setPlace"/>
-      </div>
-      <button style="width: 100%; height: 5%;" id="location" @click="getAddress">
-        住所取得
-      </button>
-      <GmapMap
-      :center="default_center"
-      :zoom="12"
-      map-type-id="terrain"
-      style="width: 100%; height: 95%;"
-      @center_changed="onCenterChanged"
-      >
-      <GmapMarker
-      :position="marker_center"
-      :clickable="true"
-      :draggable="false"
-      />
-    </GmapMap>
+      <!--GoogleMap-->
+      <div class="googleMap" v-show="mapShow">
+        <div class="placeSearch">
+          <GmapAutocomplete @place_changed="setPlace"/>
+        </div>
+        <button style="width: 100%; height: 5%;" id="location" @click="getAddress">
+          住所取得
+        </button>
+        <GmapMap
+        :center="default_center"
+        :zoom="12"
+        map-type-id="terrain"
+        style="width: 100%; height: 95%;"
+        @center_changed="onCenterChanged"
+        >
+        <GmapMarker
+        :position="marker_center"
+        :clickable="true"
+        :draggable="false"
+        />
+      </GmapMap>
+    </div>
   </div>
-</div>
 </div>
 </transition>
 <!-- preview area -->
@@ -543,7 +524,7 @@
           ,body_gravity: 'top', body_align: 'start', body_size: 'md', body_bold: 'regular', body_color: '#111111',
           body_background: '#ffffff', footer_gravity: 'top', footer_align: 'center', footer_size: 'md', footer_bold: 'regular'
           ,footer_color: '#111111', footer_background: '#ffffff', footer_type: 'text', footer_button: 'uri',footer_uri: '',
-          footer_message: ''
+          footer_message: '', footer_data: ''
         }
         ],
         header: ['header'],
@@ -562,6 +543,7 @@
         footer_button: 'uri',
         footer_uri: '',
         footer_message: '',
+        footer_data: '',
         selectedBubble: null,
         selectedComponent: null,
         carouselOpen: false,
@@ -576,9 +558,10 @@
         imageSize: ['100%'],
         bodyCSS: [{'margin-left':'0', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}],
         footerCSS: [{'margin-left':'auto', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}],
-        headerBackground: [{'background-color':'#ffffff'}],
-        bodyBackground: [{'background-color':'#ffffff'}],
-        footerBackground: [{'background-color':'#ffffff'}],
+        headerBackground: [{'background-color':'#ffffff', 'border': '3px dotted #111'}],
+        heroBackground: [{'background-color':'#ffffff', 'border': '3px dotted #111'}],
+        bodyBackground: [{'background-color':'#ffffff', 'border': '3px dotted #111'}],
+        footerBackground: [{'background-color':'#ffffff', 'border': '3px dotted #111'}],
         resultHeaderCSS: [],
         resultHeroCSS: [],
         resultBodyCSS: [],
@@ -617,16 +600,21 @@
             this.reverseMessageList.push(message)
           }
           this.allMessageList = res.data.messages
-          let height = this.$refs.result.clientHeight
-          let scrollTop = this.$refs.result.scrollTop
-          let scrollHeight = this.$refs.result.scrollHeight
-          scrollTop = scrollHeight - height
-          this.$refs.result.scrollTop = scrollTop
-          if(this.searchKeyword!=null){
-            this.searchStatus = this.searchKeyword
-            this.searchByStatus();
-          }
-          this.loading = false
+          this.$nextTick(function(){
+            let height = this.$refs.result.clientHeight
+            let scrollTop = this.$refs.result.scrollTop
+            let scrollHeight = this.$refs.result.scrollHeight
+            scrollTop = scrollHeight - height
+            this.$refs.result.scrollTop = scrollTop
+            if(this.searchKeyword!=null){
+              this.searchStatus = this.searchKeyword
+              this.searchByStatus();
+            } else {
+              this.searchStatus = 'all'
+              this.searchByStatus();
+            }
+            this.loading = false
+          })
         }, (error) => {
           console.log(error)
         })
@@ -724,6 +712,11 @@
         this.emptyAll();
         this.clearCarousel();
         this.carouselAreaShow = !this.carouselAreaShow
+        if(this.carouselAreaShow){
+          this.$nextTick(function(){
+            this.selectComponent('header',0)
+          })
+        }
       },
       clearCarousel(){
         this.bubble_array = [{
@@ -733,7 +726,7 @@
           ,body_gravity: 'top', body_align: 'start', body_size: 'md', body_bold: 'regular', body_color: '#111111',
           body_background: '#ffffff', footer_gravity: 'top', footer_align: 'center', footer_size: 'md', footer_bold: 'regular'
           ,footer_color: '#111111', footer_background: '#ffffff', footer_type: 'text', footer_button: 'uri',footer_uri: '',
-          footer_message: ''
+          footer_message: '', footer_data: ''
         }]
         this.header = ['header']
         this.body = ['body']
@@ -746,9 +739,10 @@
         this.imageSize = ['100%']
         this.bodyCSS = [{'margin-left':'0', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}]
         this.footerCSS = [{'margin-left':'auto', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}]
-        this.headerBackground = [{'background-color':'#ffffff'}]
-        this.bodyBackground = [{'background-color':'#ffffff'}]
-        this.footerBackground = [{'background-color':'#ffffff'}]
+        this.headerBackground = [{'background-color':'#ffffff', 'border': '3px dotted #111'}]
+        this.heroBackground = [{'background-color':'#ffffff', 'border': '3px dotted #111'}]
+        this.bodyBackground = [{'background-color':'#ffffff', 'border': '3px dotted #111'}]
+        this.footerBackground = [{'background-color':'#ffffff', 'border': '3px dotted #111'}]
 
         this.gravity = 'top'
         this.align = 'start'
@@ -762,6 +756,7 @@
         this.footer_button = 'uri'
         this.footer_uri = ''
         this.footer_message = ''
+        this.footer_data = ''
         this.selectedBubble = null
         this.selectedComponent = null
         this.carouselOpen = false
@@ -961,6 +956,9 @@
               } else if(bubble.footer_button=='message'&&bubble.footer_message.length==0){
                 alert("ボタンのメッセージを入力してください。");
                 return;
+              } else if(bubble.footer_button=='postback'&&bubble.footer_data.length==0){
+                alert("ボタンのデータを入力してください。");
+                return;
               }
             }
           }
@@ -1000,6 +998,7 @@
             data.append('footer_button[]', this.bubble_array[i].footer_button)
             data.append('footer_uri[]', this.bubble_array[i].footer_uri)
             data.append('footer_message[]', this.bubble_array[i].footer_message)
+            data.append('footer_data[]', this.bubble_array[i].footer_data)
           }
           data.append('bubble_num',this.bubble_array.length)
           axios.post('api/bubbles_archives',data)
@@ -1138,6 +1137,7 @@
         }).then((res)=>{
           //console.log(res.data)
           this.reverseMessageList = res.data.messages
+          this.bubbles = []
           for(var msg of this.reverseMessageList){
             let time = msg.created_at+""
             msg.created_at = time.substr(0,19).replace('T'," ")
@@ -1214,7 +1214,7 @@
           ,body_gravity: 'top', body_align: 'start', body_size: 'md', body_bold: 'regular', body_color: '#111111',
           body_background: '#ffffff', footer_gravity: 'top', footer_align: 'center', footer_size: 'md', footer_bold: 'regular'
           ,footer_color: '#111111', footer_background: '#ffffff', footer_type: 'text', footer_button: 'uri',footer_uri: '',
-          footer_message: ''
+          footer_message: '', footer_data: ''
         }
         var headerStyle = {
           'margin-left':'0', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px',
@@ -1241,9 +1241,10 @@
         this.bodyCSS.push(bodyStyle)
         this.footerCSS.push(footerStyle)
 
-        this.headerBackground.push({'background-color':'#ffffff'})
-        this.bodyBackground.push({'background-color':'#ffffff'})
-        this.footerBackground.push({'background-color':'#ffffff'})
+        this.headerBackground.push({'background-color':'#ffffff','border': '3px dotted #111'})
+        this.heroBackground.push({'background-color':'#ffffff','border': '3px dotted #111'})
+        this.bodyBackground.push({'background-color':'#ffffff','border': '3px dotted #111'})
+        this.footerBackground.push({'background-color':'#ffffff','border': '3px dotted #111'})
       },
       removeBubble(id){
         var start = id
@@ -1564,6 +1565,7 @@
           break
           case 'hero':
           this.bubble_array[i].hero_background = this.background
+          this.heroBackground[i]['background-color'] = this.background
           this.heroCSS[i]['background-color'] = this.background
           break
           case 'body':
@@ -1622,6 +1624,10 @@
         var i = this.selectedBubble
         this.bubble_array[i].footer_message = this.footer_message
       },
+      syncFooterData(){
+        var i = this.selectedBubble
+        this.bubble_array[i].footer_data = this.footer_data
+      },
       syncHeroRatio(){
         var i = this.selectedBubble
         this.bubble_array[i].hero_ratio = this.heroWidth + ':' + this.heroHeight
@@ -1629,6 +1635,10 @@
       selectComponent(type,index){
         this.selectedComponent = type
         this.selectedBubble = index
+        this.clearHeaderCSS();
+        this.clearHeroCSS();
+        this.clearBodyCSS();
+        this.clearFooterCSS();
         switch(type){
           case 'header':
           this.gravity = this.bubble_array[index].header_gravity
@@ -1637,6 +1647,10 @@
           this.color = this.bubble_array[index].header_color
           this.background = this.bubble_array[index].header_background
           this.bold = this.bubble_array[index].header_bold
+          this.headerBackground[index].border = '5px solid red'
+          this.$nextTick(function(){
+            this.$refs.headerArea[index].focus();
+          })
           break
           case 'hero':
           var ratio = this.bubble_array[index].hero_ratio.split(":")
@@ -1645,6 +1659,10 @@
           this.align = this.bubble_array[index].hero_align
           this.size = this.bubble_array[index].hero_size
           this.background = this.bubble_array[index].hero_background
+          this.heroBackground[index].border = '5px solid red'
+          this.$nextTick(function(){
+            this.$refs.heroArea[index].focus();
+          })
           break
           case 'body':
           this.gravity = this.bubble_array[index].body_gravity
@@ -1653,6 +1671,10 @@
           this.color = this.bubble_array[index].body_color
           this.background = this.bubble_array[index].body_background
           this.bold = this.bubble_array[index].body_bold
+          this.bodyBackground[index].border = '5px solid red'
+          this.$nextTick(function(){
+            this.$refs.bodyArea[index].focus();
+          })
           break
           case 'footer':
           this.gravity = this.bubble_array[index].footer_gravity
@@ -1665,6 +1687,11 @@
           this.footer_button = this.bubble_array[index].footer_button
           this.footer_uri = this.bubble_array[index].footer_uri
           this.footer_message = this.bubble_array[index].footer_message
+          this.footer_data = this.bubble_array[index].footer_data
+          this.footerBackground[index].border = '5px solid red'
+          this.$nextTick(function(){
+            this.$refs.footerArea[index].focus();
+          })
           break
           default:
           console.log("error")
@@ -1726,6 +1753,26 @@
         },(error)=>{
           console.log(error)
         })
+      },
+      clearHeaderCSS(){
+        for(var i in this.headerBackground){
+          this.headerBackground[i].border = '3px dotted #111'
+        }
+      },
+      clearHeroCSS(){
+        for(var i in this.heroBackground){
+          this.heroBackground[i].border = '3px dotted #111'
+        }
+      },
+      clearBodyCSS(){
+        for(var i in this.bodyBackground){
+          this.bodyBackground[i].border = '3px dotted #111'
+        }
+      },
+      clearFooterCSS(){
+        for(var i in this.footerBackground){
+          this.footerBackground[i].border = '3px dotted #111'
+        }
       },
       gravityResultConverter(gravity,result){
         switch(gravity){
@@ -1828,6 +1875,7 @@
         this.copied['footer_button']= this.footer_button
         this.copied['footer_uri']= this.footer_uri
         this.copied['footer_message']= this.footer_message
+        this.copied['footer_data'] = this.footer_data
       },
       pasteCSS(){
         // var design = this.copiedCSS
@@ -1880,6 +1928,7 @@
             this.footer_button = this.copied['footer_button']
             this.footer_uri = this.copied['footer_uri']
             this.footer_message = this.copied['footer_message']
+            this.footer_message = this.copied['footer_data']
 
             this.syncFooterType();
             this.syncFooterButton();
@@ -1945,6 +1994,191 @@
           }
           this.messageList = searchResult
         }
+      },
+      keyNumberCheck(e){
+        console.log(e.keyCode)
+        switch(e.keyCode){
+          case 13:
+          this.stretchCarouselToggle();
+          break;
+
+          case 37:
+          this.previousBubble();
+          break;
+          case 38:
+          this.previousComponent();
+          break;
+          case 39:
+          this.nextBubble();
+          break;
+          case 40:
+          this.nextComponent();
+          break;
+
+          case 48:
+          this.size = "5xl"
+          this.syncSize();
+          break;
+          case 49:
+          this.size = "xxs"
+          this.syncSize();
+          break;
+          case 50:
+          this.size = "xs"
+          this.syncSize();
+          break;
+          case 51:
+          this.size = "sm"
+          this.syncSize();
+          break;
+          case 52:
+          this.size = "md"
+          this.syncSize();
+          break;
+          case 53:
+          this.size = "lg"
+          this.syncSize();
+          break;
+          case 54:
+          this.size = "xl"
+          this.syncSize();
+          break;
+          case 55:
+          this.size = "xxl"
+          this.syncSize();
+          break;
+          case 56:
+          this.size = "3xl"
+          this.syncSize();
+          break;
+          case 57:
+          this.size = "4xl"
+          this.syncSize();
+          break;
+
+          case 66:
+          this.switchBold();
+          break;
+          case 67:
+          this.copyCSS();
+          break;
+          case 86:
+          this.pasteCSS();
+          break;
+
+          case 73:
+          this.gravityUp();
+          break;
+          case 74:
+          this.alignLeft();
+          break;
+          case 75:
+          this.gravityDown();
+          break;
+          case 76:
+          this.alignRight();
+          break;
+
+          case 78:
+          this.addBubble();
+          break;
+        }
+      },
+      alignRight(){
+        if(this.align=='start'){
+          this.align = 'center'
+        } else if(this.align=='center'){
+          this.align = 'end'
+        }
+        this.syncAlign();
+      },
+      alignLeft(){
+        if(this.align=='center'){
+          this.align = 'start'
+        } else if(this.align=='end'){
+          this.align = 'center'
+        }
+        this.syncAlign();
+      },
+      gravityUp(){
+        if(this.gravity=='center'){
+          this.gravity = 'top'
+        } else if(this.gravity=='bottom'){
+          this.gravity = 'center'
+        }
+        this.syncGravity();
+      },
+      gravityDown(){
+        if(this.gravity=='top'){
+          this.gravity = 'center'
+        } else if(this.gravity=='center'){
+          this.gravity = 'bottom'
+        }
+        this.syncGravity();
+      },
+      switchBold(){
+        if(this.bold == 'bold'){
+          this.bold = 'regular'
+        } else {
+          this.bold = 'bold'
+        }
+        this.syncBold();
+      },
+      nextComponent(){
+        var index = this.selectedBubble
+        switch(this.selectedComponent){
+          case 'header':
+          this.selectComponent('hero',index)
+          this.$nextTick(function(){
+            var i = this.selectedBubble
+            if(this.heros[i] == null){
+
+            }
+          })
+          break;
+          case 'hero':
+          this.selectComponent('body',index)
+          break;
+          case 'body':
+          this.selectComponent('footer',index)
+          break;
+        }
+      },
+      previousComponent(){
+        var index = this.selectedBubble
+        switch(this.selectedComponent){
+          case 'hero':
+          this.selectComponent('header',index)
+          break;
+          case 'body':
+          this.selectComponent('hero',index)
+          this.$nextTick(function(){
+            var i = this.selectedBubble
+            if(this.heros[i] == null){
+
+            }
+          })
+          break;
+          case 'footer':
+          this.selectComponent('body',index)
+          break;
+        }
+      },
+      nextBubble(){
+        var comp = this.selectedComponent
+        var index = 0
+        if(this.selectedBubble < this.bubble_array.length-1){
+          index = this.selectedBubble + 1
+        }
+        this.selectComponent(comp, index)
+      },
+      previousBubble(){
+        var comp = this.selectedComponent
+        var index = 0
+        if(this.selectedBubble >0){
+          index = this.selectedBubble - 1
+        }
+        this.selectComponent(comp, index)
       },
     },
     computed: {

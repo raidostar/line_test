@@ -1,5 +1,12 @@
 <template>
   <div class="in-panel" ref="result">
+    <div v-show="loading" class="waiting-screen">
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
+    </div>
     <div class="message" v-for="msg in this.messages">
       <div class="chatting-line" v-if="msg.check_status!='answered'">
         <div class="balloon-left" v-if="msg.message_type=='text'">
@@ -83,6 +90,11 @@
       resultFooterCSS: Array,
       getImgUrl: Function,
     },
+    data: function(){
+      return {
+        loading: true,
+      }
+    },
     methods: {
       mapConvert(contents){
         let tempArr = contents.split("+")
@@ -112,6 +124,9 @@
         scrollTop = scrollHeight - height
         //console.log(scrollTop)
         this.$refs.result.scrollTop = scrollTop
+        this.$nextTick(function(){
+          this.loading = false
+        })
       },
 
     }
@@ -119,7 +134,7 @@
 </script>
 <style scoped>
 .in-panel {
-  height: auto;
+  height: 74vh;
   max-height: 100%;
   overflow-y: scroll;
   overflow-x: hidden;

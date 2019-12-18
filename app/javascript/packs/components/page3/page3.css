@@ -584,7 +584,7 @@ a:not([href]):not([tabindex]):hover{
 .blocks {
   margin: 2px 1px;
   border-radius: 8px;
-  border: 3px dotted #111;
+  /*border: 3px dotted #111;*/
 }
 .blocks:focus {
   outline: none;

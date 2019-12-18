@@ -42,6 +42,7 @@ class Api::BubblesController < ApplicationController
       footer_button = params[:footer_button][i]
       footer_uri = params[:footer_uri][i]
       footer_message = params[:footer_message][i]
+      footer_data = params[:footer_data][i]
 
       @bubble = Bubble.new({
         header: header, image: image, body: body, footer: footer, header_gravity: header_gravity, header_align: header_align,
@@ -50,7 +51,7 @@ class Api::BubblesController < ApplicationController
         body_gravity: body_gravity, body_align: body_align, body_size: body_size, body_bold: body_bold, body_color: body_color,
         body_background: body_background, footer_gravity: footer_gravity, footer_align: footer_align, footer_size: footer_size,
         footer_bold: footer_bold, footer_color: footer_color, footer_background: footer_background, footer_type: footer_type,
-        footer_button: footer_button, footer_uri: footer_uri, footer_message: footer_message
+        footer_button: footer_button, footer_uri: footer_uri, footer_message: footer_message, footer_data: footer_data
       })
 
       if @bubble.save
@@ -102,6 +103,7 @@ class Api::BubblesController < ApplicationController
       footer_button = params[:footer_button][i]
       footer_uri = params[:footer_uri][i]
       footer_message = params[:footer_message][i]
+      footer_data = params[:footer_data][i]
 
       @bubble = Bubble.find_by(id: bubble_ids[i])
       if @bubble.present?
@@ -112,7 +114,7 @@ class Api::BubblesController < ApplicationController
           body_gravity: body_gravity, body_align: body_align, body_size: body_size, body_bold: body_bold, body_color: body_color,
           body_background: body_background, footer_gravity: footer_gravity, footer_align: footer_align, footer_size: footer_size,
           footer_bold: footer_bold, footer_color: footer_color, footer_background: footer_background, footer_type: footer_type,
-          footer_button: footer_button, footer_uri: footer_uri, footer_message: footer_message
+          footer_button: footer_button, footer_uri: footer_uri, footer_message: footer_message, footer_data: footer_data
         })
         else
           render json: @bubble.errors, status: :unprocessable_entity
@@ -125,7 +127,7 @@ class Api::BubblesController < ApplicationController
           body_gravity: body_gravity, body_align: body_align, body_size: body_size, body_bold: body_bold, body_color: body_color,
           body_background: body_background, footer_gravity: footer_gravity, footer_align: footer_align, footer_size: footer_size,
           footer_bold: footer_bold, footer_color: footer_color, footer_background: footer_background, footer_type: footer_type,
-          footer_button: footer_button, footer_uri: footer_uri, footer_message: footer_message
+          footer_button: footer_button, footer_uri: footer_uri, footer_message: footer_message, footer_data: footer_data
         })
         if @bubble.save
           bubble_ids.push(@bubble.id)

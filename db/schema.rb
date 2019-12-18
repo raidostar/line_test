@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_12_11_075934) do
+ActiveRecord::Schema.define(version: 2019_12_13_061941) do
 
   create_table "bubbles", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "header"
@@ -45,6 +45,7 @@ ActiveRecord::Schema.define(version: 2019_12_11_075934) do
     t.string "footer_button"
     t.string "footer_uri"
     t.string "footer_message"
+    t.string "footer_data"
   end
 
   create_table "bubbles_archives", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
@@ -80,6 +81,7 @@ ActiveRecord::Schema.define(version: 2019_12_11_075934) do
     t.string "footer_message"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "footer_data"
   end
 
   create_table "emojis", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|

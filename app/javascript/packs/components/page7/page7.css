@@ -1,5 +1,5 @@
 .page {
-  height: 91vh;
+  height: 88vh;
   width: 100%;
   overflow: scroll;
   scroll-behavior: smooth;
@@ -18,15 +18,15 @@
 .col {
   float: left;
   padding: 2px 5px;
-  margin: 10px 2px;
+  margin: 0px 2px;
   text-align: left;
 }
 .col-left {
-  height: 90vh;
+  height: 88vh;
   width: 24.8%;
 }
 .col-left8 {
-  height: 90vh;
+  height: 88vh;
   width: 33.1%;
 }
 .folder {
@@ -152,8 +152,9 @@ div.added-folder {
   font-size: 15px;
 }
 .edit-panel {
-  position: relative;
+  position: absolute;
   background-color: white;
+  /*top: 100px;*/
   padding: 0px;
   width: 98%;
   height: 480px;
@@ -265,7 +266,7 @@ input[type=text] {
   background-color: #EEECFF;
   padding: 30px 30px;
   width: 94%;
-  height: 68vh;
+  height: 66.5vh;
   border: 1px solid #C0C0C0;
   box-shadow: 0 0 2px #666;
   border-radius: 5px;
@@ -786,7 +787,7 @@ div.tags-bottom {
 .blocks {
   margin: 2px 1px;
   border-radius: 8px;
-  border: 3px dotted #111;
+  /*border: 3px dotted #111;*/
 }
 .blocks:focus {
   outline: none;
@@ -1027,6 +1028,7 @@ input.color-input{
 }
 input.uri-text {
   margin: 0 auto;
+  color: #ffffff;
 }
 .read-title {
   line-height: 3em;

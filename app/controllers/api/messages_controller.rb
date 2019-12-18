@@ -237,7 +237,6 @@ class Api::MessagesController < ApplicationController
     group = Group.find_by(group: group)
 
     friend = Friend.find_by(id: id.to_i)
-    puts "found friend"
     if reply_boolean == false
       messages = Message.where(group_id: group.group_id, fr_account: friend.fr_account).where.not(check_status: 'answered')
       message_info = {
@@ -254,8 +253,7 @@ class Api::MessagesController < ApplicationController
     message_array = messages.to_a
     times = []
     message_times = []
-
-    case timeOption
+    case time_option
     when "hourly"
       for i in 0..23 do
         if i < 10
@@ -309,9 +307,23 @@ class Api::MessagesController < ApplicationController
     group = Group.find_by(group: group)
     message_align = {}
     if params[:reply_boolean] == false
-      messages = Message.where(group_id: group.group_id).where.not(check_status: 'answered')
+      if params[:id].present?
+        id = params[:id]
+        friend = Friend.find_by(id: id.to_i)
+        fr_account = friend.fr_account
+        messages = Message.where(group_id: group.group_id, fr_account: fr_account).where.not(check_status: 'answered')
+      else
+        messages = Message.where(group_id: group.group_id).where.not(check_status: 'answered')
+      end
     else
-      messages = Message.where(group_id: group.group_id,check_status: 'answered')
+      if params[:id].present?
+        id = params[:id]
+        friend = Friend.find_by(id: id.to_i)
+        fr_account = friend.fr_account
+        messages = Message.where(group_id: group.group_id, fr_account: fr_account, check_status: 'answered')
+      else
+        messages = Message.where(group_id: group.group_id, check_status: 'answered')
+      end
       carousel_message = messages.where(message_type: "carousel")
       message_align["キャルセル"] = carousel_message.length
     end
@@ -319,13 +331,10 @@ class Api::MessagesController < ApplicationController
     stamp_message = messages.where(message_type: "stamp")
     image_message = messages.where(message_type: "image")
     map_message = messages.where(message_type: "map")
-
     message_align["テキスト"] = text_message.length
     message_align["スタンプ"] = stamp_message.length
     message_align["イメージ"] = image_message.length
     message_align["マップ"] = map_message.length
-    puts
-
 
     infos = message_align.sort{|(k1,v1),(k2,v2)| v2 <=> v1}
     render json: infos, status: :ok
@@ -335,26 +344,78 @@ class Api::MessagesController < ApplicationController
     infos = []
     group = current_user.group
     group = Group.find_by(group: group)
-    if params[:reply_boolean] == false
-      messages = Message.where(group_id: group.group_id).where.not(check_status: 'answered')
-    else
-      messages = Message.where(group_id: group.group_id, check_status: 'answered')
-    end
     message_align = {}
 
-    unreplied = messages.where(check_status: "unreplied")
-    unchecked = messages.where(check_status: "unchecked")
-    checked = messages.where(check_status: "checked")
-    replied = messages.where(check_status: "replied")
-    auto_replied = messages.where(check_status: "autoReplied")
+    if params[:reply_boolean] == false
+      if params[:id].present?
+        id = params[:id]
+        friend = Friend.find_by(id: id)
+        fr_account = friend.fr_account
+        messages = Message.where(group_id: group.group_id,fr_account: fr_account).where.not(check_status: 'answered')
+      else
+        messages = Message.where(group_id: group.group_id).where.not(check_status: 'answered')
+      end
 
-    message_align["unreplied"] = unreplied.length
-    message_align["unchecked"] = unchecked.length
-    message_align["checked"] = checked.length
-    message_align["replied"] = replied.length
-    message_align["auto_replied"] = auto_replied.length
+      unreplied = messages.where(check_status: "unreplied")
+      unchecked = messages.where(check_status: "unchecked")
+      checked = messages.where(check_status: "checked")
+      replied = messages.where(check_status: "replied")
+      auto_replied = messages.where(check_status: "autoReplied")
 
-    infos = message_align.sort{|(k1,v1),(k2,v2)| v2 <=> v1}
+      message_align["unreplied"] = unreplied.length
+      message_align["unchecked"] = unchecked.length
+      message_align["checked"] = checked.length
+      message_align["replied"] = replied.length
+      message_align["auto_replied"] = auto_replied.length
+
+      infos = message_align.sort{|(k1,v1),(k2,v2)| v2 <=> v1}
+    else
+      reply_tokens = []
+      if params[:id].present?
+        id = params[:id]
+        friend = Friend.find_by(id: id)
+        fr_account = friend.fr_account
+        replied_messages = Message.where(group_id: group.group_id,check_status: 'replied',fr_account: fr_account)
+      else
+        replied_messages = Message.where(group_id: group.group_id,check_status: 'replied')
+      end
+      replied_messages.each do |message|
+        reply_tokens.push(message.reply_token)
+      end
+      replied = Message.where(reply_token: reply_tokens,check_status: 'answered')
+
+      reply_tokens = []
+      if params[:id].present?
+        id = params[:id]
+        friend = Friend.find_by(id: id)
+        fr_account = friend.fr_account
+        auto_replied_messages = Message.where(group_id: group.group_id,check_status: 'autoReplied',fr_account: fr_account)
+      else
+        auto_replied_messages = Message.where(group_id: group.group_id,check_status: 'autoReplied')
+      end
+      auto_replied_messages.each do |message|
+        reply_tokens.push(message.reply_token)
+      end
+      auto_replied = Message.where(reply_token: reply_tokens,check_status: 'autoReplied')
+      if params[:id].present?
+        tags = []
+        id = params[:id]
+        friend = Friend.find_by(id: id)
+        if friend.tags.present?
+          tags = friend.attributes['tags'].split(",")
+        end
+        tags.push('ALL')
+        broadcast = Notify.where(receiver: tags)
+      else
+        broadcast = Notify.where(receiver: 'ALL')
+      end
+
+      message_align["replied"] = replied.length
+      message_align["autoReplied"] = auto_replied.length
+      message_align["broadcast"] = broadcast.length
+
+      infos = message_align.sort{|(k1,v1),(k2,v2)| v2 <=> v1}
+    end
     render json: infos, status: :ok
   end
 

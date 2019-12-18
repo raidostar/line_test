@@ -229,7 +229,7 @@ class Api::ShowmesController < ApplicationController
     if bubble.footer.present?
       converted_bubble[:footer] = footer_converter(bubble.footer, bubble.footer_gravity, bubble.footer_align,
         bubble.footer_size, bubble.footer_bold, bubble.footer_color, bubble.footer_background, bubble.footer_type,
-        bubble.footer_button, bubble.footer_uri, bubble.footer_message)
+        bubble.footer_button, bubble.footer_uri, bubble.footer_message,bubble.footer_data)
     end
 
     return converted_bubble
@@ -308,7 +308,7 @@ class Api::ShowmesController < ApplicationController
     return converted_body
   end
 
-  def footer_converter(footer,gravity,align,size,bold,color,background,type,button,uri,message)
+  def footer_converter(footer,gravity,align,size,bold,color,background,type,button,uri,message,data)
     if type == 'button'
       if color=='#ffffff'
         color = "primary"
@@ -341,6 +341,20 @@ class Api::ShowmesController < ApplicationController
           },
           color: background
         }
+      elsif button=='postback'
+        data = {
+          type: "button",
+          style: color,
+          action: {
+            type: "postback",
+            label: footer,
+            data: data
+          },
+          color: background
+        }
+        if message.present?
+          data[:action][:text] = message
+        end
       end
       converted_footer = {
         type: "box",
@@ -452,114 +466,114 @@ class Api::ShowmesController < ApplicationController
       #     text: "ミニロトナンバー\n"+text
       #   })
 
-    when "いまなんじ"
-      reply_content(event, {
-        type: 'template',
-        altText: 'Buttons alt text',
-        template: {
-          type: 'buttons',
-          thumbnailImageUrl: LOTTO_URL,
-          title: '宝くじ',
-          text: '自分の宝くじを選択してください。',
-          actions: [
-            { label: 'ロト7', type: 'postback', data: 7, text: 'ロト7'},
-            { label: 'ロト6', type: 'postback', data: 6, text: 'ロト6' },
-            { label: 'ミニロト', type: 'postback', data: 5, text: 'ミニロト' },
+    # when "いまなんじ"
+    #   reply_content(event, {
+    #     type: 'template',
+    #     altText: 'Buttons alt text',
+    #     template: {
+    #       type: 'buttons',
+    #       thumbnailImageUrl: LOTTO_URL,
+    #       title: '宝くじ',
+    #       text: '自分の宝くじを選択してください。',
+    #       actions: [
+    #         { label: 'ロト7', type: 'postback', data: 7, text: 'ロト7'},
+    #         { label: 'ロト6', type: 'postback', data: 6, text: 'ロト6' },
+    #         { label: 'ミニロト', type: 'postback', data: 5, text: 'ミニロト' },
+    #       ]
+    #     }
+    #   })
+
+  when 'flex'
+    reply_content(event, {
+      type: "flex",
+      altText: "this is a flex message",
+      contents: {
+        type: "bubble",
+        header: {
+          type: "box",
+          layout: "vertical",
+          contents: [
+            {
+              type: "text",
+              text: "Header text",
+              size: "md",
+              weight: "regular",
+              align: "center",
+              position: "relative",
+              offsetBottom: "-15px",
+              color: "#111111",
+              wrap: true
+            }
+          ],
+          backgroundColor: "#dc3545"
+        },
+        hero: {
+          type: "image",
+          url: THUMBNAIL_URL,
+          size: "4xl",
+          aspectRatio: "1:1",
+          align: "start",
+          backgroundColor: "#00b900"
+        },
+        body: {
+          type: "box",
+          layout: "vertical",
+          contents: [
+            {
+              type: "text",
+              text: "Body text\nBody text\nBody text",
+              position: "relative",
+              offsetBottom: "-10px",
+              align: "center",
+              wrap: true
+            }
+          ],
+          backgroundColor: "#CC0000"
+        },
+        footer: {
+          type: "box",
+          layout: "horizontal",
+          contents: [
+            {
+              type: "text",
+              text: "footer",
+              position: "relative",
+              offsetBottom: "0px",
+              align: "center",
+              size: "xxl",
+              wrap: true
+            }
           ]
         }
-      })
+      }
+    })
 
-    when 'flex'
-      reply_content(event, {
-        type: "flex",
-        altText: "this is a flex message",
-        contents: {
-          type: "bubble",
-          header: {
-            type: "box",
-            layout: "vertical",
-            contents: [
-              {
-                type: "text",
-                text: "Header text",
-                size: "md",
-                weight: "regular",
-                align: "center",
-                position: "relative",
-                offsetBottom: "-15px",
-                color: "#111111",
-                wrap: true
-              }
-            ],
-            backgroundColor: "#dc3545"
-          },
-          hero: {
-            type: "image",
-            url: THUMBNAIL_URL,
-            size: "4xl",
-            aspectRatio: "1:1",
-            align: "start",
-            backgroundColor: "#00b900"
-          },
-          body: {
-            type: "box",
-            layout: "vertical",
-            contents: [
-              {
-                type: "text",
-                text: "Body text\nBody text\nBody text",
-                position: "relative",
-                offsetBottom: "-10px",
-                align: "center",
-                wrap: true
-              }
-            ],
-            backgroundColor: "#CC0000"
-          },
-          footer: {
-            type: "box",
-            layout: "horizontal",
-            contents: [
-              {
-                type: "text",
-                text: "footer",
-                position: "relative",
-                offsetBottom: "0px",
-                align: "center",
-                size: "xxl",
-                wrap: true
-              }
-            ]
-          }
-        }
-      })
+  when 'bye'
+    case event['source']['type']
+    when 'user'
+      reply_text(event, "[BYE]\nBot can't leave from 1:1 chat")
+    when 'group'
+      reply_text(event, "[BYE]\nLeaving group")
+      client.leave_group(event['source']['groupId'])
+    when 'room'
+      reply_text(event, "[BYE]\nLeaving room")
+      client.leave_room(event['source']['roomId'])
+    end
 
-    when 'bye'
-      case event['source']['type']
-      when 'user'
-        reply_text(event, "[BYE]\nBot can't leave from 1:1 chat")
-      when 'group'
-        reply_text(event, "[BYE]\nLeaving group")
-        client.leave_group(event['source']['groupId'])
-      when 'room'
-        reply_text(event, "[BYE]\nLeaving room")
-        client.leave_room(event['source']['roomId'])
-      end
+  else
+    if event['source']['type'] == 'user'
+      profile = client.get_profile(event['source']['userId'])
+      profile = JSON.parse(profile.read_body)
+      group_id = @group_id
+      reply_token = event['replyToken']
 
-    else
-      if event['source']['type'] == 'user'
-        profile = client.get_profile(event['source']['userId'])
-        profile = JSON.parse(profile.read_body)
-        group_id = @group_id
-        reply_token = event['replyToken']
+      @message = Message.new({sender: profile['displayName'], receiver: @group, contents: event.message['text'], message_type: 'text', message_id: event.message['id'], sticker_id: nil, package_id: nil, fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'unchecked'})
+      message = Message.new({sender: @group, receiver: profile['displayName'], message_id: event.message['id'],fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'answered'})
 
-        @message = Message.new({sender: profile['displayName'], receiver: @group, contents: event.message['text'], message_type: 'text', message_id: event.message['id'], sticker_id: nil, package_id: nil, fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'unchecked'})
-        message = Message.new({sender: @group, receiver: profile['displayName'], message_id: event.message['id'],fr_account: profile['userId'], group_id: group_id, reply_token: reply_token, check_status: 'answered'})
-
-        save_message(@message)
-        update_friend_info(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],group_id,@message.contents)
-        event.message['text'] = unicodeConverter(event.message['text'])
-        auto_reply = option_checker(event,message)
+      save_message(@message)
+      update_friend_info(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],group_id,@message.contents)
+      event.message['text'] = unicodeConverter(event.message['text'])
+      auto_reply = option_checker(event,message)
           # reply_text(event, "ありがとうございます。")
         else
           reply_text(event, "Bot can't use profile API without user ID")
@@ -1201,6 +1215,9 @@ class Api::ShowmesController < ApplicationController
           bubble = Bubble.find(id)
           bubble_list.push(bubble_converter(bubble))
           bubble_attributes = bubble.attributes
+
+          image = bubble.image
+          bubble_attributes[:image] = image
           bubble_attributes.delete("id")
           bubble_attributes.delete("created_at")
           bubble_attributes.delete("updated_at")
@@ -1556,8 +1573,7 @@ class Api::ShowmesController < ApplicationController
           image = nil
         end
         @rich_menu = Richmenu.new({
-          name: rich_name, contents: contents, width: width, height: height, chat_bar_text: chat_bar_text, selected: selected,
-          richmenu_id: richmenu_id, user_group: group, default_richmenu: default_richmenu
+          name: rich_name, contents: contents, width: width, height: height, chat_bar_text: chat_bar_text, selected: selected, richmenu_id: richmenu_id, user_group: group, default_richmenu: default_richmenu
         })
         @rich_menu.save
       end

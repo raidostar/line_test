@@ -229,14 +229,15 @@
   height: 100%;
 }
 .result-blocks {
-  margin: 2px 1px;
+  /*margin: 2px 1px;*/
 }
 .header-block {
-  height: 100%;
+  height: 15%;
   text-align: left;
 }
 .hero-block {
-  height: 54%;
+  width: 20.5em;
+  height: 58%;
 }
 .body-block {
   min-height: 16%;
@@ -254,15 +255,12 @@
   border-radius: 8px;
 }
 .carousel-img-area {
-  width: 100%;
-  height: 95%;
-  position: relative;
-  bottom: 100%;
+  width: fit-content;
+  height: fit-content;
 }
 .carousel-img {
-  max-width: 100%;
-  max-height: 100%;
-  width: 20em;
+  max-width: 20.5em;
+  max-height: 14.5em;
 }
 .left-time {
   color: grey;

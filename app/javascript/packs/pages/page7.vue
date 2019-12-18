@@ -17,21 +17,20 @@
           </div>
           <div>
             <div v-for="(tag,index) in tags" class="added-folder">
-              <span v-if="tag.id==selectedTagId">
+              <span>
                 <button
                 class="added-folderBtn"
                 id="added-folderBtn"
                 @click="selectTag(index,tag.id)"
                 :style="selectedCSS"
+                ref="tag"
+                tabindex="0"
+                @keyup.right="goRight"
+                @keyup.left="goLeft"
+                @keyup.up="previousTag(index)"
+                @keyup.down="nextTag(index)"
+                @keyup.enter="afterTag"
                 >
-                <i style="float: left;" class="material-icons open-file-added">insert_drive_file</i>
-                <span>
-                  {{tag.name}}
-                </span>
-              </button>
-            </span>
-            <span v-else>
-              <button class="added-folderBtn" id="added-folderBtn" @click="selectTag(index,tag.id)">
                 <i style="float: left;" class="material-icons open-file-added">insert_drive_file</i>
                 <span>
                   {{tag.name}}
@@ -68,463 +67,457 @@
         </transition>
         <div class="options-panel">
           <div v-for="(item,index) in options" class="added-folder">
-            <span v-if="selectedOption==item">
-              <button class="added-folderBtn" id="added-folderBtn" @click="clickOption(index,item.id)" :style="selectedCSS">
-                <i style="float: left;" class="material-icons open-file-added">flash_on</i>
-                <span>
-                  {{item.name}}
-                </span>
-              </button>
-              <button class="detail-panel" @click="panelToggle">
-                <i class="material-icons down" v-if="!panelShow">keyboard_arrow_down</i>
-                <i class="material-icons down" v-if="panelShow">keyboard_arrow_up</i>
-              </button>
-              <transition name="slideUpDown">
-                <div class="edit-panel" id="edit-panel" v-if="panelShow">
-                  <div style="width: 49.5%; float: left; margin-bottom: 2em;">
-                    <!-- 조건어 설정 -->
-                    <div class="option-setting">
-                      <div>
-                        <p class="settingMenu">条件語設定</p>
-                        <input type="text" name="option[target_keyword]" v-model="keyword" class="keywordInput" @keydown.enter="createKeyword">
-                        <a @click="clearKeyInput" v-if="keyword">
-                          <i class="material-icons keyword_cancel">cancel</i>
-                        </a>
-                      </div>
-                      <hr style="margin-top: 15px;" />
-                      <div>
-                        <span style="font-size: 14px;">条件語</span>
-                        <span v-for="(key,index) in keywords" v-model="keywords" style="margin-top: 10px;">
-                          <button class="keywordsTag" @click="removeKeyword(index)">{{key}}</button>
-                        </span>
-                      </div>
-                    </div>
-                    <!-- 요일 설정 -->
-                    <div class="option-setting">
-                      <p class="settingMenu">曜日設定</p>
-                      <input type="radio" class="settingRadio" id="unsetDay" value="unsetDay" v-model="setDay" @click="clearDay">
-                      <label class="setting" for="two">毎日</label>
-                      <input type="radio" class="settingRadio" id="setDay" value="setDay" v-model="setDay">
-                      <label class="setting" for="one">曜日選択</label>
-                      <div v-if="setDay=='setDay'">
-                        <p class="timeSet">
-                          <label>
-                            <input class="with-gap" type="checkbox" name="option[target_day]" value="1" v-model="targetDay"/>
-                            <span class="optCheck">月</span>
-                          </label>
-                          <label>
-                            <input class="with-gap" type="checkbox" name="option[target_day]" value="2" v-model="targetDay"/>
-                            <span class="optCheck">火</span>
-                          </label>
-                          <label>
-                            <input class="with-gap" type="checkbox" name="option[target_day]" value="3" v-model="targetDay"/>
-                            <span class="optCheck">水</span>
-                          </label>
-                          <label>
-                            <input class="with-gap" type="checkbox" name="option[target_day]" value="4" v-model="targetDay"/>
-                            <span class="optCheck">木</span>
-                          </label>
-                          <label>
-                            <input class="with-gap" type="checkbox" name="option[target_day]" value="5" v-model="targetDay"/>
-                            <span class="optCheck">金</span>
-                          </label>
-                          <label>
-                            <input class="with-gap" type="checkbox" name="option[target_day]" value="6" v-model="targetDay"/>
-                            <span class="optCheck">土</span>
-                          </label>
-                          <label>
-                            <input class="with-gap" type="checkbox" name="option[target_day]" value="0" v-model="targetDay"/>
-                            <span class="optCheck">日</span>
-                          </label>
-                        </p>
-                      </div>
-                    </div>
-                    <!-- 횟수 설정 -->
-                    <div class="option-setting">
-                      <p class="settingMenu">回数設定</p>
-                      <input type="radio" class="settingRadio" id="unsetTime" value="unsetCount" v-model="setCount">
-                      <label class="setting" for="unsetCount">未指定</label>
-                      <input type="radio" class="settingRadio" id="setTime" value="setCount" v-model="setCount">
-                      <label class="setting" for="setCount">回数選択</label>
-                      <div v-if="setCount=='setCount'">
-                        <p class="timeSet">
-                          <input class="countSet" type="number" name="option[action_count]" v-model="actionCount">回
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div style="width: 49.5%; float: right; margin-bottom: 2em;">
-                    <!-- 송신대상 설정 -->
-                    <div class="option-setting">
-                      <p class="settingMenu" style="margin-top: 4px;">送信対象設定</p>
-                      <input type="radio" class="settingRadio" id="unsetReceiver" value="unsetTarget" v-model="setTarget" @click="clearTargetTag">
-                      <label class="setting" >全ユーザー</label>
-                      <input type="radio" class="settingRadio" @click="callTarget" id="setReceiver" value="setTarget" v-model="setTarget">
-                      <label class="setting" >送信対象選択</label>
-                      <hr style="margin-top: 6.2px;"/>
-                      <div v-if="setTarget=='setTarget'">
-                        <span style="font-size: 14px;">送信対象タグ</span>
-                        <span v-for="(target,index) in targets" style="margin-top: 10px;">
-                          <button  v-model="selectedTargets" v-if="selectedTargets.includes(target)==true" class="keywordsTag" :style="targetCSS" @click="cancelTarget(target)">
-                            {{target}}
-                          </button>
-                          <button v-else class="keywordsTag" @click="selectTarget(index)">{{target}}</button>
-                        </span>
-                      </div>
-                    </div>
-
-                    <!-- 시간 설정 -->
-                    <div class="option-setting">
-                      <p class="settingMenu">時間設定</p>
-                      <input type="radio" class="settingRadio" id="unsetTime" value="unsetTime" v-model="setTime" @click="clearTime">
-                      <label class="setting" for="unsetTime">未指定</label>
-                      <input type="radio" class="settingRadio" id="setTime" value="setTime" v-model="setTime">
-                      <label class="setting" for="setTime">時間選択</label>
-                      <div v-if="setTime=='setTime'">
-                        <p class="timeSet">
-                          <input type="time" class="timeRange" v-model="startTime">
-                          ~
-                          <input type="time" class="timeRange" v-model="endTime">
-                        </p>
-                      </div>
-                    </div>
-                    <!-- 옵션태그 설정 -->
-                    <div class="option-setting">
-                      <div>
-                        <p class="settingMenu">タグ設定</p>
-                        <input type="text" name="option[target_keyword]" v-model="tag" class="keywordInput" @keydown.enter="createTag">
-                        <a @click="clearTag" v-if="tag">
-                          <i class="material-icons keyword_cancel">cancel</i>
-                        </a>
-                      </div>
-                      <hr style="margin-top: 60px;" />
-                      <div>
-                        <span style="font-size: 14px;">タグリスト</span>
-                        <span v-for="(tag,index) in tagtext" v-model="tagtext" style="margin-top: 10px;">
-                          <button class="keywordsTag" @click="removeTag(index)">{{tag}}</button>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <hr style="margin-top: 2px; display: flow-root;" />
-                  <div class="option-buttons">
-                    <button class="allSend-button">キャンセル</button>
-                    <button class="allSend-button" @click="updateOption">設定</button>
-                  </div>
-                </div>
-              </transition>
-            </span>
-            <span v-else>
-              <button class="added-folderBtn" id="added-folderBtn" @click="clickOption(index,item.id)">
-                <i style="float: left;" class="material-icons open-file-added">flash_on</i>
-                <span>
-                  {{item.name}}
-                </span>
-              </button>
-            </span>
-          </div>
-        </div>
-      </div>
-      <!---->
-      <div class="col col-left">
-        <div class="label">
-          <i class="material-icons folder">tap_and_play</i>
-          アクションリスト
-          <button class="former-reaction" @click="reactionListToggle">既存アクション</button>
-        </div>
-        <div class="right-panel" style="border: none;">
-          <table class="actionList">
-            <thead>
-              <tr>
-                <th>
-                  <input type="checkbox" class="checkbox" v-model="reactionAllCheck" @click="reactionAllChecker">
-                </th>
-                <th>アクション名</th>
-                <th>アクション内容</th>
-                <th>操作</th>
-                <th>ヒット数</th>
-                <th>タイプ</th>
-                <th>連動</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(reaction,index) in reactions" v-model="reactions" ref="reaction">
-                <td class="check">
-                  <input type="checkbox" class="checkbox" :checked="reaction.bool" @click="reactionChecker(index)">
-                </td>
-                <td>
-                  {{reaction.name}}
-                </td>
-                <td v-if="reaction.reaction_type=='stamp'">
-                  <a @click="editAction(reaction.id,index,'read')">
-                    <img class="stampBtnImg" :src="getImgUrl(reaction.contents)"/>
-                  </a>
-                </td>
-                <td v-else-if="reaction.reaction_type=='image'">
-                  <a @click="editAction(reaction.id,index,'read')">
-                    <img class="imageResult" :src="reaction.image.url"/>
-                  </a>
-                </td>
-                <td v-else-if="reaction.reaction_type=='carousel'">
-                  <a @click="editAction(reaction.id,index,'read')">
-                    <span>キャルセル</span>
-                  </a>
-                </td>
-                <td v-else>
-                  <a v-if="reaction.contents.search('<img src=')>=0"
-                    @click="editAction(reaction.id,index,'read')"
-                    v-html="reaction.contents.substr(0,100)"
-                    >
-                  </a>
-                  <a v-else @click="editAction(reaction.id,index,'read')">
-                    <span v-if="reaction.contents.length>19" v-html="reaction.contents.substr(0,20)+'...'"></span>
-                    <span v-else v-html="reaction.contents.substr(0,20)"></span>
-                  </a>
-                </td>
-                <td>
-                  <button class="edit-button" @click="editAction(reaction.id,index,'edit')">
-                    編集
-                  </button>
-                </td>
-                <td class="hitcount" style="text-align: center;">{{reaction.target_number}}</td>
-                <td style="text-align: center;">{{reaction.reaction_type}}</td>
-                <td>
-                  <button class="edit-button" v-show="reaction.bool" @click="reactionCancel(reaction.id)">
-                    解除
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="col col-left">
-        <div style="line-height: 2em;">
-          <input v-if="editMode!='read'" type="text" ref="reactionName" v-model="reactionName" placeholder="アクション名を入力してください。" style="width: 50%;"/>
-          <div class="read-title" v-else>
-            <span class="reaction-title" v-html="reactionName"></span>
-          </div>
-          <span class="mode-show" v-model="editMode">
-            MODE
-            <button class="mode-button" @click="changeEditMode('new')" v-if="editMode=='read'">プレビュー</button>
-            <button class="mode-button" v-if="editMode=='new'">新規作成</button>
-            <button class="mode-button" @click="changeEditMode('new')" v-if="editMode=='edit'">修正中</button>
+            <span>
+              <button
+              class="added-folderBtn"
+              id="added-folderBtn"
+              @click="selectOption(index,item.id)"
+              ref="option"
+              tabindex="0"
+              @keyup.right="goRight"
+              @keyup.left="goLeft"
+              @keyup.up="previousOption(index)"
+              @keyup.down="nextOption(index)"
+              @keyup.enter="openPanel"
+              @keyup.esc="closePanel"
+              >
+              <i style="float: left;" class="material-icons open-file-added">flash_on</i>
+              <span>
+                {{item.name}}
+              </span>
+            </button>
+            <button class="detail-panel" v-if="selected==index" @click="panelToggle">
+              <i class="material-icons down" v-if="!panelShow">keyboard_arrow_down</i>
+              <i class="material-icons down" v-if="panelShow">keyboard_arrow_up</i>
+            </button>
           </span>
         </div>
-        <div class="right-panel" >
-          <!-- side buttons -->
-          <div class="contentBtns">
-            <button class="stampBtn" @click="toggleStamp" title="スタンプ追加">
-              <i class="material-icons stamp">child_care</i>
-            </button>
-            <button class="stampBtn" @click="toggleEmoji" title="emoji追加">
-              <i class="material-icons stamp">sentiment_satisfied_alt</i>
-            </button>
-            <label class="stampBtn" title="イメージ追加">
-              <i class="material-icons stamp">gif</i>
-              <input type="file" @change="onFileChange" class="imageBtn" ref="fileInput" accept="img/*">
-            </label>
-            <button class="stampBtn" @click="toggleCarousel" title="キャルセル追加">
-              <i class="material-icons stamp">border_color</i>
-            </button>
-            <button class="stampBtn" @click="toggleMap" title="マップ追加">
-              <i class="material-icons stamp">location_on</i>
-            </button>
-          </div>
-
-          <div class="chattingArea">
-            <div v-show="uploadedImage"  class="attachedImgPanel">
-              <a class="closeStamp" @click="closeImage">X</a>
-              <p>[イメージ]</p>
-              <img class="attachedImg" :src="uploadedImage">
-            </div>
-
-            <div id="chattingContents" class="chattingContents" contenteditable="true" :style="flexablePadding" @input="sync" v-html="innerContent" v-model="innerContent" ref="chatting" autofocus="autofocus"></div>
-            <input type="text" v-model="contents" style="display: none;">
-
-            <!--tag input area-->
-            <div class="tags">
-              <div class="tags-top" style="width: 48%; float: left;">
-                <span style="margin-left: 10px; float: left;">タグ</span>
-                <input type="text" name="option[target_keyword]" v-model="tag" class="tagInput" @keydown.enter="createTag">
-                <a @click="clearTag" v-if="tag" style="line-height: 0px; float: left;">
-                  <i class="material-icons keyword_cancel">cancel</i>
-                </a>
+        <transition name="slideUpDown">
+          <div class="edit-panel" ref="edit" id="edit-panel" v-show="panelShow" :style="editPanelCSS">
+            <div style="width: 49.5%; float: left; margin-bottom: 2em;">
+              <!-- 조건어 설정 -->
+              <div class="option-setting">
+                <div>
+                  <p class="settingMenu">条件語設定</p>
+                  <input type="text" name="option[target_keyword]" v-model="keyword" class="keywordInput" @keydown.enter="createKeyword">
+                  <a @click="clearKeyInput" v-if="keyword">
+                    <i class="material-icons keyword_cancel">cancel</i>
+                  </a>
+                </div>
+                <hr style="margin-top: 15px;" />
+                <div>
+                  <span style="font-size: 14px;">条件語</span>
+                  <span v-for="(key,index) in keywords" v-model="keywords" style="margin-top: 10px;">
+                    <button class="keywordsTag" @click="removeKeyword(index)">{{key}}</button>
+                  </span>
+                </div>
               </div>
-              <div class="tags-bottom" style="width: 48%; float: left; overflow-x: scroll; height: 100%;">
-                <div style="width: max-content;">
+              <!-- 요일 설정 -->
+              <div class="option-setting">
+                <p class="settingMenu">曜日設定</p>
+                <input type="radio" class="settingRadio" id="unsetDay" value="unsetDay" v-model="setDay" @click="clearDay">
+                <label class="setting" for="two">毎日</label>
+                <input type="radio" class="settingRadio" id="setDay" value="setDay" v-model="setDay">
+                <label class="setting" for="one">曜日選択</label>
+                <div v-if="setDay=='setDay'">
+                  <p class="timeSet">
+                    <label>
+                      <input class="with-gap" type="checkbox" name="option[target_day]" value="1" v-model="targetDay"/>
+                      <span class="optCheck">月</span>
+                    </label>
+                    <label>
+                      <input class="with-gap" type="checkbox" name="option[target_day]" value="2" v-model="targetDay"/>
+                      <span class="optCheck">火</span>
+                    </label>
+                    <label>
+                      <input class="with-gap" type="checkbox" name="option[target_day]" value="3" v-model="targetDay"/>
+                      <span class="optCheck">水</span>
+                    </label>
+                    <label>
+                      <input class="with-gap" type="checkbox" name="option[target_day]" value="4" v-model="targetDay"/>
+                      <span class="optCheck">木</span>
+                    </label>
+                    <label>
+                      <input class="with-gap" type="checkbox" name="option[target_day]" value="5" v-model="targetDay"/>
+                      <span class="optCheck">金</span>
+                    </label>
+                    <label>
+                      <input class="with-gap" type="checkbox" name="option[target_day]" value="6" v-model="targetDay"/>
+                      <span class="optCheck">土</span>
+                    </label>
+                    <label>
+                      <input class="with-gap" type="checkbox" name="option[target_day]" value="0" v-model="targetDay"/>
+                      <span class="optCheck">日</span>
+                    </label>
+                  </p>
+                </div>
+              </div>
+              <!-- 횟수 설정 -->
+              <div class="option-setting">
+                <p class="settingMenu">回数設定</p>
+                <input type="radio" class="settingRadio" id="unsetTime" value="unsetCount" v-model="setCount">
+                <label class="setting" for="unsetCount">未指定</label>
+                <input type="radio" class="settingRadio" id="setTime" value="setCount" v-model="setCount">
+                <label class="setting" for="setCount">回数選択</label>
+                <div v-if="setCount=='setCount'">
+                  <p class="timeSet">
+                    <input class="countSet" type="number" name="option[action_count]" v-model="actionCount">回
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div style="width: 49.5%; float: right; margin-bottom: 2em;">
+              <!-- 송신대상 설정 -->
+              <div class="option-setting">
+                <p class="settingMenu" style="margin-top: 4px;">送信対象設定</p>
+                <input type="radio" class="settingRadio" id="unsetReceiver" value="unsetTarget" v-model="setTarget" @click="clearTargetTag">
+                <label class="setting" >全ユーザー</label>
+                <input type="radio" class="settingRadio" @click="callTarget" id="setReceiver" value="setTarget" v-model="setTarget">
+                <label class="setting" >送信対象選択</label>
+                <hr style="margin-top: 6.2px;"/>
+                <div v-if="setTarget=='setTarget'">
+                  <span style="font-size: 14px;">送信対象タグ</span>
+                  <span v-for="(target,index) in targets" style="margin-top: 10px;">
+                    <button  v-model="selectedTargets" v-if="selectedTargets.includes(target)==true" class="keywordsTag" :style="targetCSS" @click="cancelTarget(target)">
+                      {{target}}
+                    </button>
+                    <button v-else class="keywordsTag" @click="selectTarget(index)">{{target}}</button>
+                  </span>
+                </div>
+              </div>
+
+              <!-- 시간 설정 -->
+              <div class="option-setting">
+                <p class="settingMenu">時間設定</p>
+                <input type="radio" class="settingRadio" id="unsetTime" value="unsetTime" v-model="setTime" @click="clearTime">
+                <label class="setting" for="unsetTime">未指定</label>
+                <input type="radio" class="settingRadio" id="setTime" value="setTime" v-model="setTime">
+                <label class="setting" for="setTime">時間選択</label>
+                <div v-if="setTime=='setTime'">
+                  <p class="timeSet">
+                    <input type="time" class="timeRange" v-model="startTime">
+                    ~
+                    <input type="time" class="timeRange" v-model="endTime">
+                  </p>
+                </div>
+              </div>
+              <!-- 옵션태그 설정 -->
+              <div class="option-setting">
+                <div>
+                  <p class="settingMenu">タグ設定</p>
+                  <input type="text" name="option[target_keyword]" v-model="tag" class="keywordInput" @keydown.enter="createTag">
+                  <a @click="clearTag" v-if="tag">
+                    <i class="material-icons keyword_cancel">cancel</i>
+                  </a>
+                </div>
+                <hr style="margin-top: 60px;" />
+                <div>
                   <span style="font-size: 14px;">タグリスト</span>
-                  <span v-for="(tag,index) in tagtext" v-model="tagtext" style="margin-top: 10px; line-height: 0px;">
-                    <button class="tagList" @click="removeTag(index)">{{tag}}</button>
+                  <span v-for="(tag,index) in tagtext" v-model="tagtext" style="margin-top: 10px;">
+                    <button class="keywordsTag" @click="removeTag(index)">{{tag}}</button>
                   </span>
                 </div>
               </div>
             </div>
-
-            <!-- stamp list bottom -->
-            <transition name="showInOut">
-              <div class="sticker-panel" v-show="stampShow">
-                <button class="stampBtn" v-for="num in stampNums" @click="selectStamp(num)">
-                  <img class="stampBtnImg" :src="getImgUrl(num)"/>
+            <hr style="margin-top: 2px; display: flow-root;" />
+            <div class="option-buttons">
+              <button class="allSend-button">キャンセル</button>
+              <button class="allSend-button" @click="updateOption">設定</button>
+            </div>
+          </div>
+        </transition>
+      </div>
+    </div>
+    <!---->
+    <div class="col col-left">
+      <div class="label">
+        <i class="material-icons folder">tap_and_play</i>
+        アクションリスト
+        <button class="former-reaction" @click="reactionListToggle">既存アクション</button>
+      </div>
+      <div class="right-panel" style="border: none;">
+        <table class="actionList">
+          <thead>
+            <tr>
+              <th>
+                <input type="checkbox" class="checkbox" v-model="reactionAllCheck" @click="reactionAllChecker">
+              </th>
+              <th>アクション名</th>
+              <th>アクション内容</th>
+              <th>操作</th>
+              <th>ヒット数</th>
+              <th>タイプ</th>
+              <th>連動</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(reaction,index) in reactions" v-model="reactions" ref="reaction">
+              <td class="check">
+                <input type="checkbox" class="checkbox" :checked="reaction.bool" @click="reactionChecker(index)">
+              </td>
+              <td>
+                {{reaction.name}}
+              </td>
+              <td v-if="reaction.reaction_type=='stamp'">
+                <a @click="editAction(reaction.id,index,'read')">
+                  <img class="stampBtnImg" :src="getImgUrl(reaction.contents)"/>
+                </a>
+              </td>
+              <td v-else-if="reaction.reaction_type=='image'">
+                <a @click="editAction(reaction.id,index,'read')">
+                  <img class="imageResult" :src="reaction.image.url"/>
+                </a>
+              </td>
+              <td v-else-if="reaction.reaction_type=='carousel'">
+                <a @click="editAction(reaction.id,index,'read')">
+                  <span>キャルセル</span>
+                </a>
+              </td>
+              <td v-else>
+                <a v-if="reaction.contents.search('<img src=')>=0"
+                  @click="editAction(reaction.id,index,'read')"
+                  v-html="reaction.contents.substr(0,100)"
+                  >
+                </a>
+                <a v-else @click="editAction(reaction.id,index,'read')">
+                  <span v-if="reaction.contents.length>19" v-html="reaction.contents.substr(0,20)+'...'"></span>
+                  <span v-else v-html="reaction.contents.substr(0,20)"></span>
+                </a>
+              </td>
+              <td>
+                <button class="edit-button" @click="editAction(reaction.id,index,'edit')">
+                  編集
                 </button>
-              </div>
-            </transition>
-
-            <!-- emoji list bottom -->
-            <transition name="showInOut">
-              <div class="sticker-panel" v-show="emojiShow">
-                <button class="emojiBtn stampBtn" v-for="emoji in emojis" @click="addEmoji(emoji.img_url)">
-                  <img class="stampBtnImg" :src="emoji.img_url">
+              </td>
+              <td class="hitcount" style="text-align: center;">{{reaction.target_number}}</td>
+              <td style="text-align: center;">{{reaction.reaction_type}}</td>
+              <td>
+                <button class="edit-button" v-show="reaction.bool" @click="reactionCancel(reaction.id)">
+                  解除
                 </button>
-              </div>
-            </transition>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="col col-left">
+      <div style="line-height: 2em;">
+        <input v-if="editMode!='read'" type="text" ref="reactionName" v-model="reactionName" placeholder="アクション名を入力してください。" style="width: 50%;"/>
+        <div class="read-title" v-else>
+          <span class="reaction-title" v-html="reactionName"></span>
+        </div>
+        <span class="mode-show" v-model="editMode">
+          MODE
+          <button class="mode-button" @click="changeEditMode('new')" v-if="editMode=='read'">プレビュー</button>
+          <button class="mode-button" v-if="editMode=='new'">新規作成</button>
+          <button class="mode-button" @click="changeEditMode('new')" v-if="editMode=='edit'">修正中</button>
+        </span>
+      </div>
+      <div class="right-panel" >
+        <!-- side buttons -->
+        <div class="contentBtns">
+          <button class="stampBtn" @click="toggleStamp" title="スタンプ追加">
+            <i class="material-icons stamp">child_care</i>
+          </button>
+          <button class="stampBtn" @click="toggleEmoji" title="emoji追加">
+            <i class="material-icons stamp">sentiment_satisfied_alt</i>
+          </button>
+          <label class="stampBtn" title="イメージ追加">
+            <i class="material-icons stamp">gif</i>
+            <input type="file" @change="onFileChange" class="imageBtn" ref="fileInput" accept="img/*">
+          </label>
+          <button class="stampBtn" @click="toggleCarousel" title="キャルセル追加">
+            <i class="material-icons stamp">border_color</i>
+          </button>
+          <button class="stampBtn" @click="toggleMap" title="マップ追加">
+            <i class="material-icons stamp">location_on</i>
+          </button>
+        </div>
+
+        <div class="chattingArea">
+          <div v-show="uploadedImage"  class="attachedImgPanel">
+            <a class="closeStamp" @click="closeImage">X</a>
+            <p>[イメージ]</p>
+            <img class="attachedImg" :src="uploadedImage">
           </div>
 
-          <!-- stamp image area -->
+          <div id="chattingContents" class="chattingContents" contenteditable="true" :style="flexablePadding" @input="sync" v-html="innerContent" v-model="innerContent" ref="chatting" autofocus="autofocus"></div>
+          <input type="text" v-model="contents" style="display: none;">
 
-          <div class="stampArea" v-show="stampAreaShow">
-            <a class="closeStamp" @click="closeStamp">X</a>
-            <p>[スタンプ]</p>
-            <img class="selectStamp" :src="selectStampUrl">
+          <!--tag input area-->
+          <div class="tags">
+            <div class="tags-top" style="width: 48%; float: left;">
+              <span style="margin-left: 10px; float: left;">タグ</span>
+              <input type="text" name="option[target_keyword]" v-model="tag" class="tagInput" @keydown.enter="createTag">
+              <a @click="clearTag" v-if="tag" style="line-height: 0px; float: left;">
+                <i class="material-icons keyword_cancel">cancel</i>
+              </a>
+            </div>
+            <div class="tags-bottom" style="width: 48%; float: left; overflow-x: scroll; height: 100%;">
+              <div style="width: max-content;">
+                <span style="font-size: 14px;">タグリスト</span>
+                <span v-for="(tag,index) in tagtext" v-model="tagtext" style="margin-top: 10px; line-height: 0px;">
+                  <button class="tagList" @click="removeTag(index)">{{tag}}</button>
+                </span>
+              </div>
+            </div>
           </div>
 
-
-          <!-- carousel area -->
+          <!-- stamp list bottom -->
           <transition name="showInOut">
-            <div class="carouselArea" v-show="carouselAreaShow" :style="carouselAreaWidth">
-              <!-- left-side menu -->
-              <div class="control-box">
-                <div class="bubble-setting setting-gravity" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">
-                  <span>垂直配置</span>
-                  <select class="css-option" v-model="gravity" @change="syncGravity">
-                    <option value="top">上</option>
-                    <option value="center">中</option>
-                    <option value="bottom">下</option>
-                  </select>
-                </div>
-                <div class="bubble-setting setting-align" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">
-                  <span>水平配置</span>
-                  <select class="css-option" v-model="align" @change="syncAlign">
-                    <option value="start">左</option>
-                    <option value="center">中</option>
-                    <option value="end">右</option>
-                  </select>
-                </div>
-                <div class="bubble-setting setting-size" v-if="selectedComponent!='footer'||footer_type!='button'">
-                  <span v-if="selectedComponent!='hero'">文字サイズ</span>
-                  <span v-else>イメージ幅</span>
-                  <select class="css-option" v-model="size" @change="syncSize">
-                    <option value="xxs">1</option>
-                    <option value="xs">2</option>
-                    <option value="sm">3</option>
-                    <option value="md">4</option>
-                    <option value="lg">5</option>
-                    <option value="xl">6</option>
-                    <option value="xxl">7</option>
-                    <option value="3xl">8</option>
-                    <option value="4xl">9</option>
-                    <option value="5xl">10</option>
-                    <option v-if="selectedComponent=='hero'" value="full">full</option>
-                  </select>
-                </div>
-                <div class="bubble-setting setting-bold" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">
-                  <span>濃さ</span>
-                  <select class="css-option" v-model="bold" @change="syncBold">
-                    <option value="regular">普通</option>
-                    <option value="bold">濃い</option>
-                  </select>
-                </div>
-                <div class="bubble-setting color setting-color" v-if="selectedComponent=='hero'">
-                  <p style="margin-bottom: 0">横:縦</p>
-                  <input class="color-text" type="number" v-model="heroWidth" style="width: 4em;color: white;text-align: center;" @change="syncRatio">
-                  :
-                  <input class="color-text" type="number" v-model="heroHeight" style="width: 4em;color: white;text-align: center;" @change="syncRatio">
-                </div>
-                <div class="bubble-setting color setting-color" style="height: 5.8em;" v-if="selectedComponent=='footer'&&footer_type=='button'">
+            <div class="sticker-panel" v-show="stampShow">
+              <button class="stampBtn" v-for="num in stampNums" @click="selectStamp(num)">
+                <img class="stampBtnImg" :src="getImgUrl(num)"/>
+              </button>
+            </div>
+          </transition>
+
+          <!-- emoji list bottom -->
+          <transition name="showInOut">
+            <div class="sticker-panel" v-show="emojiShow">
+              <button class="emojiBtn stampBtn" v-for="emoji in emojis" @click="addEmoji(emoji.img_url)">
+                <img class="stampBtnImg" :src="emoji.img_url">
+              </button>
+            </div>
+          </transition>
+        </div>
+
+        <!-- stamp image area -->
+        <div class="stampArea" v-show="stampAreaShow">
+          <a class="closeStamp" @click="closeStamp">X</a>
+          <p>[スタンプ]</p>
+          <img class="selectStamp" :src="selectStampUrl">
+        </div>
+
+
+        <!-- carousel area -->
+        <transition name="showInOut">
+          <div class="carouselArea" v-show="carouselAreaShow" :style="carouselAreaWidth">
+            <!-- left-side menu -->
+            <div class="control-box">
+              <div class="bubble-setting setting-gravity" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">
+                <span>垂直配置</span>
+                <select class="css-option" v-model="gravity" @change="syncGravity">
+                  <option value="top">上</option>
+                  <option value="center">中</option>
+                  <option value="bottom">下</option>
+                </select>
+              </div>
+              <div class="bubble-setting setting-align" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">
+                <span>水平配置</span>
+                <select class="css-option" v-model="align" @change="syncAlign">
+                  <option value="start">左</option>
+                  <option value="center">中</option>
+                  <option value="end">右</option>
+                </select>
+              </div>
+              <div class="bubble-setting setting-size" v-if="selectedComponent!='footer'||footer_type!='button'">
+                <span v-if="selectedComponent!='hero'">文字サイズ</span>
+                <span v-else>イメージ幅</span>
+                <select class="css-option" v-model="size" @change="syncSize">
+                  <option value="xxs">1</option>
+                  <option value="xs">2</option>
+                  <option value="sm">3</option>
+                  <option value="md">4</option>
+                  <option value="lg">5</option>
+                  <option value="xl">6</option>
+                  <option value="xxl">7</option>
+                  <option value="3xl">8</option>
+                  <option value="4xl">9</option>
+                  <option value="5xl">10</option>
+                  <option v-if="selectedComponent=='hero'" value="full">full</option>
+                </select>
+              </div>
+              <div class="bubble-setting setting-bold" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">
+                <span>濃さ</span>
+                <select class="css-option" v-model="bold" @change="syncBold">
+                  <option value="regular">普通</option>
+                  <option value="bold">濃い</option>
+                </select>
+              </div>
+              <div class="bubble-setting color setting-color" v-if="selectedComponent=='hero'">
+                <p style="margin-bottom: 0">横:縦</p>
+                <input class="color-text" type="number" v-model="heroWidth" style="width: 4em;color: white;text-align: center;" @change="syncRatio">
+                :
+                <input class="color-text" type="number" v-model="heroHeight" style="width: 4em;color: white;text-align: center;" @change="syncRatio">
+              </div>
+              <div class="bubble-setting color setting-color" style="height: 5.8em;" v-if="selectedComponent=='footer'&&footer_type=='button'">
+                <p style="margin-bottom: 0">文字色</p>
+                <select class="css-option" v-model="color" @change="syncColor" style="margin-bottom: .3em;">
+                  <option value="#ffffff">白</option>
+                  <option value="#111111">黒</option>
+                </select>
+                <div class="color-sample" :style="fontColor" v-model="color"></div>
+              </div>
+              <div v-else style="height: 5.2em;">
+                <div class="bubble-setting color setting-color" v-if="selectedComponent!='hero'">
                   <p style="margin-bottom: 0">文字色</p>
-                  <select class="css-option" v-model="color" @change="syncColor" style="margin-bottom: .3em;">
-                    <option value="#ffffff">白</option>
-                    <option value="#111111">黒</option>
-                  </select>
+                  <input class="color-text color-input" type="text" v-model="color" @keyup="syncColor" style="height: 2em; color: white;">
                   <div class="color-sample" :style="fontColor" v-model="color"></div>
                 </div>
-                <div v-else style="height: 5.2em;">
-                  <div class="bubble-setting color setting-color" v-if="selectedComponent!='hero'">
-                    <p style="margin-bottom: 0">文字色</p>
-                    <input class="color-text color-input" type="text" v-model="color" @keyup="syncColor" style="height: 2em; color: white;">
-                    <div class="color-sample" :style="fontColor" v-model="color"></div>
-                  </div>
-                </div>
-                <button class="colorExchange" @click="exchangeColor" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">↑ 色逆に ↓</button>
-                <div class="bubble-setting color setting-background" style="height: 6em;">
-                  <p style="margin-bottom: 0">背景色</p>
-                  <input class="color-text color-input" type="text" v-model="background" @keyup="syncBackground" style="height: 2em; color: white;">
-                  <div class="color-sample" :style="backgroundColor" v-model="backgroundColor"></div>
-                </div>
-                <div class="bubble-setting setting-footerType" v-if="selectedComponent=='footer'">
-                  <span>フッタータイプ</span>
-                  <select class="css-option" v-model="footer_type" @change="syncFooterType">
-                    <option value="text">テキスト</option>
-                    <option value="button">ボタン</option>
-                  </select>
-                </div>
-                <div class="bubble-setting setting-footerType" v-if="selectedComponent=='footer'&&footer_type=='button'">
-                  <span>ボタンタイプ</span>
-                  <select class="css-option" v-model="footer_button" @change="syncFooterButton">
-                    <option value="uri">リンク</option>
-                    <option value="message">メッセージ</option>
-                  </select>
-                </div>
-                <div class="bubble-setting color setting-url" v-if="selectedComponent=='footer'&&footer_type=='button'&&footer_button=='uri'">
-                  <p style="margin-bottom: 0">リンクURL</p>
-                  <input class="uri-text" type="text" v-model="footer_uri" @keyup="syncFooterUri">
-                </div>
-                <div class="bubble-setting color setting-message" v-if="selectedComponent=='footer'&&footer_type=='button'&&footer_button=='message'">
-                  <p style="margin-bottom: 0">配信メッセージ</p>
-                  <input class="uri-text" type="text" v-model="footer_message" @keyup="syncFooterMessage">
-                </div>
-                <div class="design-buttons">
-                  <button class="copyChu copy" @click="copyCSS(selectedBubble)">デザインコピー</button>
-                  <button class="copyChu paste" v-if="copiedType" @click="pasteCSS">デザイン適用</button>
-                </div>
-                <label class="image-change" title="イメージ変更" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null">
-                  イメージ変更
-                  <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
-                </label>
-                <button class="image-remove" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null" @click="removeImage">
-                  イメージ削除
-                </button>
               </div>
+              <button class="colorExchange" @click="exchangeColor" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">↑ 色逆に ↓</button>
+              <div class="bubble-setting color setting-background" style="height: 6em;">
+                <p style="margin-bottom: 0">背景色</p>
+                <input class="color-text color-input" type="text" v-model="background" @keyup="syncBackground" style="height: 2em; color: white;">
+                <div class="color-sample" :style="backgroundColor" v-model="backgroundColor"></div>
+              </div>
+              <div class="bubble-setting setting-footerType" v-if="selectedComponent=='footer'">
+                <span>フッタータイプ</span>
+                <select class="css-option" v-model="footer_type" @change="syncFooterType">
+                  <option value="text">テキスト</option>
+                  <option value="button">ボタン</option>
+                </select>
+              </div>
+              <div class="bubble-setting setting-footerType" v-if="selectedComponent=='footer'&&footer_type=='button'">
+                <span>ボタンタイプ</span>
+                <select class="css-option" v-model="footer_button" @change="syncFooterButton">
+                  <option value="uri">リンク</option>
+                  <option value="message">メッセージ</option>
+                  <option value="postback">ポストバック</option>
+                </select>
+              </div>
+              <div class="bubble-setting color setting-url" v-if="selectedComponent=='footer'&&footer_type=='button'&&footer_button=='uri'">
+                <p style="margin-bottom: 0">リンクURL</p>
+                <input class="uri-text" type="text" v-model="footer_uri" @keyup="syncFooterUri">
+              </div>
+              <div class="bubble-setting color setting-message" v-if="selectedComponent=='footer'&&footer_type=='button'&&(footer_button=='message'||footer_button=='postback')" style="margin-bottom: 1em;">
+                <p style="margin-bottom: 0">配信メッセージ</p>
+                <input class="uri-text" type="text" v-model="footer_message" @keyup="syncFooterMessage">
+              </div>
+              <div class="bubble-setting color setting-message" v-if="selectedComponent=='footer'&&footer_type=='button'&&footer_button=='postback'">
+                <p style="margin-bottom: 0">配信データ</p>
+                <input class="uri-text" type="text" v-model="footer_data" @keyup="syncFooterData">
+              </div>
+              <div class="design-buttons">
+                <button class="copyChu copy" @click="copyCSS">デザインコピー</button>
+                <button class="copyChu paste" v-if="copiedType" @click="pasteCSS">デザイン適用</button>
+              </div>
+              <label class="image-change" title="イメージ変更" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null">
+                イメージ変更
+                <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
+              </label>
+              <button class="image-remove" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null" @click="removeImage">
+                イメージ削除
+              </button>
+            </div>
 
-              <!-- main bubble -->
-              <div class="carousel-box" :style="carouselBoxWidth">
-                <div class="bubble-box" ref="carousel" v-model="bubble_array">
-                  <div class="bubble" v-for="(bubble,index) in bubble_array" :key="bubble.id">
-                    <!-- header -->
-                    <div class="blocks header-block" v-if="selectedComponent=='header'&&selectedBubble==index" style="border: 5px solid red" :style="headerBackground[index]">
-                      <div class="component header-text" ref="header" contenteditable="true" v-html="header[index]" @input="syncHeader(index)" :style="headerCSS[index]">
-                      </div>
-                    </div>
-                    <div class="blocks header-block" @click="selectComponent('header', index)" v-else
-                    :style="headerBackground[index]">
+            <!-- main bubble -->
+            <div class="carousel-box" :style="carouselBoxWidth">
+              <div class="bubble-box" ref="carousel" v-model="bubble_array">
+                <div class="bubble" v-for="(bubble,index) in bubble_array" :key="bubble.id">
+                  <!-- header v-if="selectedComponent=='header'&&selectedBubble==index"-->
+                  <div class="blocks header-block" :style="headerBackground[index]" @click="selectComponent('header', index)" ref="headerArea" tabindex="0" @keydown.shift="keyNumberCheck">
                     <div class="component header-text" ref="header" contenteditable="true" v-html="header[index]" @input="syncHeader(index)" :style="headerCSS[index]">
                     </div>
                   </div>
                   <input type="text" v-model="bubble.header" style="display: none;">
 
                   <!-- hero(image) -->
-                  <div class="blocks hero-block" v-if="selectedComponent=='hero'&&selectedBubble==index" style="border: 5px solid red">
-                    <label class="add-label" title="イメージ追加">
-                      <i class="material-icons add-bubble-image" v-if="!heros[index]">add</i>
-                      <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
-                    </label>
-                    <div class="carousel-img-area" v-show="bubble.hero" :style="heroCSS[index]">
-                      <img class="carousel-img" :src="bubble.hero" :style="imageCSS[index]">
-                    </div>
-                  </div>
-                  <div class="blocks hero-block" @click="selectComponent('hero', index)" v-else>
-                    <label class="add-label" title="イメージ追加">
+                  <div class="blocks hero-block" ref="heroArea" @click="selectComponent('hero',index)" :style="heroBackground[index]" tabindex="0" @keydown.shift="keyNumberCheck">
+                    <label class="add-label" title="イメージ追加" ref="image">
                       <i class="material-icons add-bubble-image" v-if="!heros[index]">add</i>
                       <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
                     </label>
@@ -534,25 +527,18 @@
                   </div>
 
                   <!-- body -->
-                  <div class="blocks body-block" v-if="selectedComponent=='body'&&selectedBubble==index" style="border: 5px solid red" :style="bodyBackground[index]">
-                    <div class="component body-text" ref="body" contenteditable="true" v-html="body[index]" @input="syncBody(index)" :style="bodyCSS[index]">
-                    </div>
-                  </div>
-                  <div class="blocks body-block" @click="selectComponent('body', index)" v-else :style="bodyBackground[index]">
+                  <div class="blocks body-block" ref="bodyArea" @click="selectComponent('body', index)" :style="bodyBackground[index]" tabindex="0" @keydown.shift="keyNumberCheck">
                     <div class="component body-text" ref="body" contenteditable="true" v-html="body[index]" @input="syncBody(index)" :style="bodyCSS[index]">
                     </div>
                   </div>
                   <input type="text" v-model="bubble.body" style="display: none;">
 
                   <!-- footer -->
-                  <div class="blocks footer-block" v-if="selectedComponent=='footer'&&selectedBubble==index" style="border: 5px solid red" :style="footerBackground[index]">
+                  <div class="blocks footer-block" ref="footerArea" @click="selectComponent('footer', index)" :style="footerBackground[index]" tabindex="0" @keydown.shift="keyNumberCheck">
                     <div class="component footer-text" ref="footer" contenteditable="true" v-html="footer[index]" @input="syncFooter(index)" :style="footerCSS[index]">
                     </div>
                   </div>
-                  <div class="blocks footer-block" @click="selectComponent('footer', index)" v-else :style="footerBackground[index]">
-                    <div class="component footer-text" ref="footer" contenteditable="true" v-html="footer[index]" @input="syncFooter(index)" :style="footerCSS[index]">
-                    </div>
-                  </div>
+
                   <input type="text" v-model="bubble.footer" style="display: none;">
                   <div>
                     <button v-if="index==0" class="copy-bubble" @click="copyBubble(index)" style="width: 100%;">
@@ -685,12 +671,12 @@
   </div>
 
   <div>
-    <button class="scroll-button scroll-right" @click="goRight" v-if="endPoint<2">
+    <button class="scroll-button scroll-right" ref="right" @click="goRight" tabindex="0" @keyup.right="goRight" @keyup.left="goLeft" v-if="endPoint<2">
       <i class="material-icons move-scroll">
         keyboard_arrow_right
       </i>
     </button>
-    <button class="scroll-button scroll-left" @click="goLeft" v-if="endPoint>0">
+    <button class="scroll-button scroll-left" ref="left" @click="goLeft" tabindex="0" @keyup.right="goRight" @keyup.left="goLeft" v-if="endPoint>0">
       <i class="material-icons move-scroll">
         keyboard_arrow_left
       </i>
@@ -852,12 +838,13 @@
         bubble_array: [
         {
           header: '', hero: null, body: '', footer: '',
-          header_gravity: 'top', header_align: 'start', header_size: 'md', header_bold: 'regular', header_color: '#111111',
-          header_background: '#ffffff', hero_size: 'full', hero_align: 'center', hero_background: '#ffffff', hero_ratio: '1:1'
-          ,body_gravity: 'top', body_align: 'start', body_size: 'md', body_bold: 'regular', body_color: '#111111',
-          body_background: '#ffffff', footer_gravity: 'top', footer_align: 'center', footer_size: 'md', footer_bold: 'regular'
-          ,footer_color: '#111111', footer_background: '#ffffff', footer_type: 'text', footer_button: 'uri',footer_uri: '',
-          footer_message: ''
+          header_gravity: 'top', header_align: 'start', header_size: 'md', header_bold: 'regular',
+          header_color: '#111111', header_background: '#ffffff', hero_size: 'full', hero_align: 'center',
+          hero_background: '#ffffff', hero_ratio: '1:1' ,body_gravity: 'top', body_align: 'start', body_size: 'md',
+          body_bold: 'regular', body_color: '#111111',body_background: '#ffffff', footer_gravity: 'top',
+          footer_align: 'center', footer_size: 'md', footer_bold: 'regular',footer_color: '#111111',
+          footer_background: '#ffffff', footer_type: 'text', footer_button: 'uri', footer_uri: '',
+          footer_message: '', footer_data: ''
         }
         ],
         header: ['header'],
@@ -876,6 +863,7 @@
         footer_button: 'uri',
         footer_uri: '',
         footer_message: '',
+        footer_data: '',
         selectedBubble: null,
         selectedComponent: null,
         carouselOpen: false,
@@ -890,9 +878,10 @@
         imageSize: ['100%'],
         bodyCSS: [{'margin-left':'0', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}],
         footerCSS: [{'margin-left':'auto', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}],
-        headerBackground: [{'background-color':'#ffffff'}],
-        bodyBackground: [{'background-color':'#ffffff'}],
-        footerBackground: [{'background-color':'#ffffff'}],
+        headerBackground: [{'background-color':'#ffffff', 'border': '3px dotted #111'}],
+        heroBackground: [{'background-color':'#ffffff', 'border': '3px dotted #111'}],
+        bodyBackground: [{'background-color':'#ffffff', 'border': '3px dotted #111'}],
+        footerBackground: [{'background-color':'#ffffff', 'border': '3px dotted #111'}],
         copied: {},
         copiedType: '',
         resultHeaderCSS: [],
@@ -900,6 +889,8 @@
         resultBodyCSS: [],
         resultFooterCSS: [],
         loading: true,
+        selectedTag: 0,
+        editPanelCSS: {'top': '100px'},
       }
     },
     mounted: function(){
@@ -916,6 +907,9 @@
           this.tags = res.data.tags
           this.loading = false
           var id = this.tags[0].id
+          this.$nextTick(function(){
+            this.$refs.tag[0].focus();
+          })
           this.selectTag(0,id);
         },(error)=>{
           console.log(error)
@@ -930,7 +924,10 @@
         })
       },
       fetchOptions(){
-        axios.post('api/options_by_tag',{option_type: 'autoReply',tag_id: this.selectedTagId}).then((res)=>{
+        axios.post('api/options_by_tag',{
+          option_type: 'autoReply',
+          tag_id: this.selectedTagId
+        }).then((res)=>{
           //console.log(res.data)
           this.options = res.data
           //this.fetchOption();
@@ -1002,6 +999,7 @@
           this.addShow = !this.addShow;
           // this.flexableMargin = {'margin-top': '0px'}
           this.fetchOptions();
+          this.fetchTags();
         },(error)=>{
           console.log(error)
         })
@@ -1011,10 +1009,18 @@
         this.addToggle();
       },
       selectTag(index,id){
-        //this.setToggles();
         this.panelShow = false;
         this.deleteShow = false;
-        this.selected = index
+        this.$nextTick(function(){
+          this.clearOptionCSS();
+          for(var i in this.tags){
+            this.$refs.tag[i].style['background-color'] = '#ffffff';
+            this.$refs.tag[i].style['color'] = '#000000';
+          }
+          this.$refs.tag[index].style['background-color'] = '#444444';
+          this.$refs.tag[index].style['color'] = '#ffffff';
+        })
+        // this.selectedTag = index
         this.selectedTagId = id
         this.emptyAll();
         this.clearCarousel();
@@ -1023,18 +1029,41 @@
 
         this.fetchOptions();
       },
-      clickOption(index,id){
+      selectOption(index,id){
         //this.setToggles();
         this.deleteShow = true;
         this.panelShow = false;
         this.selected = index
+        this.$nextTick(function(){
+          this.clearOptionCSS();
+          this.$refs.option[index].style['background-color'] = '#444444'
+          this.$refs.option[index].style['color'] = '#ffffff'
+          this.$refs.option[index].focus();
+          this.$refs.edit.style.top = '100px'
+          let top = this.$refs.edit.style.top
+          top = top.substring(0,top.length-2)*1
+          this.$refs.edit.style.top = (top+39*index)+'px'
+        })
         this.selectedId = id
         this.fetchOption();
         this.fetchReactions();
-        this.goRight();
+      },
+      clearOptionCSS(){
+        if(this.options.length>0){
+          for(var i in this.options){
+            this.$refs.option[i].style['background-color'] = '#ffffff'
+            this.$refs.option[i].style['color'] = '#000000'
+          }
+        }
       },
       panelToggle(){
         this.panelShow = !this.panelShow;
+      },
+      openPanel(){
+        this.panelShow = true;
+      },
+      closePanel(){
+        this.panelShow = false;
       },
       allChecker(){
         for(let obj of this.options){
@@ -1061,13 +1090,13 @@
         this.reactionsLeft[index].bool = !this.reactionsLeft[index].bool
       },
       deleteTag(){
-        if(this.tags[this.selected].name=='ALL'){
+        if(this.tags[this.selectedTag].name=='ALL'){
           alert("ALLタグはデフォルトタグです。");
           return
         }
         if (confirm("このファイルを削除しますか。")==true){
           axios.delete('/api/tags/'+this.selectedId).then((res)=>{
-            this.selected = null
+            this.selectedTag = null
             this.selectedId = null
             this.panelShow = false
             this.fetchTags();
@@ -1117,7 +1146,6 @@
         axios.get('api/reactions?option_id='+this.selectedId).then((res)=>{
           this.bubbles = []
           this.reactions = []
-          console.log(res.data)
           for(let reaction of res.data){
             reaction.created_at = reaction.created_at.substr(0,16).replace('T',' ');
           }
@@ -1311,6 +1339,9 @@
               } else if(bubble.footer_button=='message'&&bubble.footer_message.length==0){
                 alert("ボタンのメッセージを入力してください。");
                 return;
+              } else if(bubble.footer_button=='postback'&&bubble.footer_data.length==0){
+                alert("ボタンのデータを入力してください。");
+                return;
               }
             }
           }
@@ -1350,6 +1381,7 @@
             data.append('footer_button[]', this.bubble_array[i].footer_button)
             data.append('footer_uri[]', this.bubble_array[i].footer_uri)
             data.append('footer_message[]', this.bubble_array[i].footer_message)
+            data.append('footer_data[]', this.bubble_array[i].footer_data)
           }
           data.append('bubble_num',this.bubble_array.length)
           axios.post('api/bubbles',data)
@@ -1557,6 +1589,11 @@
         this.emptyAll();
         this.clearCarousel();
         this.carouselAreaShow = !this.carouselAreaShow
+        if(this.carouselAreaShow){
+          this.$nextTick(function(){
+            this.selectComponent('header',0)
+          })
+        }
       },
       clearCarousel(){
         this.bubble_array = [{
@@ -1566,7 +1603,7 @@
           ,body_gravity: 'top', body_align: 'start', body_size: 'md', body_bold: 'regular', body_color: '#111111',
           body_background: '#ffffff', footer_gravity: 'top', footer_align: 'center', footer_size: 'md', footer_bold: 'regular'
           ,footer_color: '#111111', footer_background: '#ffffff', footer_type: 'text', footer_button: 'uri',footer_uri: '',
-          footer_message: ''
+          footer_message: '', footer_data: '',
         }]
         this.header = ['header']
         this.body = ['body']
@@ -1579,9 +1616,10 @@
         this.imageSize = ['100%']
         this.bodyCSS = [{'margin-left':'0', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}]
         this.footerCSS = [{'margin-left':'auto', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}]
-        this.headerBackground = [{'background-color':'#ffffff'}]
-        this.bodyBackground = [{'background-color':'#ffffff'}]
-        this.footerBackground = [{'background-color':'#ffffff'}]
+        this.headerBackground = [{'background-color':'#ffffff', 'border': '3px dotted #111'}]
+        this.heroBackground = [{'background-color':'#ffffff', 'border': '3px dotted #111'}]
+        this.bodyBackground = [{'background-color':'#ffffff', 'border': '3px dotted #111'}]
+        this.footerBackground = [{'background-color':'#ffffff', 'border': '3px dotted #111'}]
 
         this.gravity = 'top'
         this.align = 'start'
@@ -1595,6 +1633,7 @@
         this.footer_button = 'uri'
         this.footer_uri = ''
         this.footer_message = ''
+        this.footer_data = ''
         this.selectedBubble = null
         this.selectedComponent = null
         this.carouselOpen = false
@@ -1834,6 +1873,9 @@
               } else if(bubble.footer_button=='message'&&bubble.footer_message.length==0){
                 alert("ボタンのメッセージを入力してください。");
                 return;
+              } else if(bubble.footer_button=='postback'&&bubble.footer_data.length==0){
+                alert("ボタンのデータを入力してください。");
+                return;
               }
             }
           }
@@ -1873,6 +1915,7 @@
             data.append('footer_button[]', this.bubble_array[i].footer_button)
             data.append('footer_uri[]', this.bubble_array[i].footer_uri)
             data.append('footer_message[]', this.bubble_array[i].footer_message)
+            data.append('footer_data[]', this.bubble_array[i].footer_data)
           }
           data.append('bubble_num',this.bubble_array.length)
           data.append('bubble_ids', this.selectedReaction.contents)
@@ -2119,6 +2162,9 @@
         this.$refs.result.scrollLeft = scrollLeft + moveWidth
         this.baseScroll = scrollLeft
         this.endPoint = this.endPoint+1
+        this.$nextTick(function(){
+          this.$refs.left.focus();
+        })
       },
       goLeft(){
         var width = this.$refs.result.clientWidth
@@ -2129,6 +2175,9 @@
         this.$refs.result.scrollLeft = scrollLeft - moveWidth
         this.baseScroll = scrollLeft
         this.endPoint = this.endPoint-1
+        this.$nextTick(function(){
+          this.$refs.right.focus();
+        })
       },
       mouseScroll(){
         var width = this.$refs.result.clientWidth
@@ -2154,7 +2203,7 @@
           ,body_gravity: 'top', body_align: 'start', body_size: 'md', body_bold: 'regular', body_color: '#111111',
           body_background: '#ffffff', footer_gravity: 'top', footer_align: 'center', footer_size: 'md', footer_bold: 'regular'
           ,footer_color: '#111111', footer_background: '#ffffff', footer_type: 'text', footer_button: 'uri',footer_uri: '',
-          footer_message: ''
+          footer_message: '', footer_data: '',
         }
         var headerStyle = {
           'margin-left':'0', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px',
@@ -2181,9 +2230,10 @@
         this.bodyCSS.push(bodyStyle)
         this.footerCSS.push(footerStyle)
 
-        this.headerBackground.push({'background-color':'#ffffff'})
-        this.bodyBackground.push({'background-color':'#ffffff'})
-        this.footerBackground.push({'background-color':'#ffffff'})
+        this.headerBackground.push({'background-color':'#ffffff','border': '3px dotted #111'})
+        this.heroBackground.push({'background-color':'#ffffff','border': '3px dotted #111'})
+        this.bodyBackground.push({'background-color':'#ffffff','border': '3px dotted #111'})
+        this.footerBackground.push({'background-color':'#ffffff','border': '3px dotted #111'})
       },
       removeBubble(id){
         var start = id
@@ -2504,6 +2554,7 @@
           break
           case 'hero':
           this.bubble_array[i].hero_background = this.background
+          this.headerBackground[i]['background-color'] = this.background
           this.heroCSS[i]['background-color'] = this.background
           break
           case 'body':
@@ -2562,6 +2613,10 @@
         var i = this.selectedBubble
         this.bubble_array[i].footer_message = this.footer_message
       },
+      syncFooterData(){
+        var i = this.selectedBubble
+        this.bubble_array[i].footer_data = this.footer_data
+      },
       syncHeroRatio(){
         var i = this.selectedBubble
         this.bubble_array[i].hero_ratio = this.heroWidth + ':' + this.heroHeight
@@ -2569,6 +2624,10 @@
       selectComponent(type,index){
         this.selectedComponent = type
         this.selectedBubble = index
+        this.clearHeaderCSS();
+        this.clearHeroCSS();
+        this.clearBodyCSS();
+        this.clearFooterCSS();
         switch(type){
           case 'header':
           this.gravity = this.bubble_array[index].header_gravity
@@ -2577,6 +2636,10 @@
           this.color = this.bubble_array[index].header_color
           this.background = this.bubble_array[index].header_background
           this.bold = this.bubble_array[index].header_bold
+          this.headerBackground[index].border = '5px solid red'
+          this.$nextTick(function(){
+            this.$refs.headerArea[index].focus();
+          })
           break
           case 'hero':
           var ratio = this.bubble_array[index].hero_ratio.split(":")
@@ -2585,6 +2648,10 @@
           this.align = this.bubble_array[index].hero_align
           this.size = this.bubble_array[index].hero_size
           this.background = this.bubble_array[index].hero_background
+          this.heroBackground[index].border = '5px solid red'
+          this.$nextTick(function(){
+            this.$refs.heroArea[index].focus();
+          })
           break
           case 'body':
           this.gravity = this.bubble_array[index].body_gravity
@@ -2593,6 +2660,10 @@
           this.color = this.bubble_array[index].body_color
           this.background = this.bubble_array[index].body_background
           this.bold = this.bubble_array[index].body_bold
+          this.bodyBackground[index].border = '5px solid red'
+          this.$nextTick(function(){
+            this.$refs.bodyArea[index].focus();
+          })
           break
           case 'footer':
           this.gravity = this.bubble_array[index].footer_gravity
@@ -2605,12 +2676,37 @@
           this.footer_button = this.bubble_array[index].footer_button
           this.footer_uri = this.bubble_array[index].footer_uri
           this.footer_message = this.bubble_array[index].footer_message
+          this.footer_data = this.bubble_array[index].footer_data
+          this.footerBackground[index].border = '5px solid red'
+          this.$nextTick(function(){
+            this.$refs.footerArea[index].focus();
+          })
           break
           default:
           console.log("error")
         }
         this.fontColor = {'background-color': this.color}
         this.backgroundColor = {'background-color': this.background}
+      },
+      clearHeaderCSS(){
+        for(var i in this.headerBackground){
+          this.headerBackground[i].border = '3px dotted #111'
+        }
+      },
+      clearHeroCSS(){
+        for(var i in this.heroBackground){
+          this.heroBackground[i].border = '3px dotted #111'
+        }
+      },
+      clearBodyCSS(){
+        for(var i in this.bodyBackground){
+          this.bodyBackground[i].border = '3px dotted #111'
+        }
+      },
+      clearFooterCSS(){
+        for(var i in this.footerBackground){
+          this.footerBackground[i].border = '3px dotted #111'
+        }
       },
       stretchCarouselToggle(){
         this.carouselOpen = !this.carouselOpen
@@ -2661,9 +2757,10 @@
             this.bodyCSS[i] = bodyStyle
             this.footerCSS[i] = footerStyle
 
-            this.headerBackground[i] = {'background-color':'#ffffff'}
-            this.bodyBackground[i] = {'background-color':'#ffffff'}
-            this.footerBackground[i] = {'background-color':'#ffffff'}
+            this.headerBackground[i] = {'background-color':'#ffffff', 'border': '3px dotted #111'}
+            this.heroBackground[i] = {'background-color':'#ffffff', 'border': '3px dotted #111'}
+            this.bodyBackground[i] = {'background-color':'#ffffff', 'border': '3px dotted #111'}
+            this.footerBackground[i] = {'background-color':'#ffffff', 'border': '3px dotted #111'}
 
             this.moveToSync(i,bubble,'header')
             this.moveToSync(i,bubble,'body')
@@ -2705,6 +2802,7 @@
           this.footer_button = bubble['footer_button']
           this.footer_uri = bubble['footer_uri']
           this.footer_message = bubble['footer_message']
+          this.footer_data = bubble['footer_data']
           break
           default:
           console.log("moveToSync error!")
@@ -2748,6 +2846,7 @@
         this.copied['footer_button']= this.footer_button
         this.copied['footer_uri']= this.footer_uri
         this.copied['footer_message']= this.footer_message
+        this.copied['footer_data']= this.footer_data
       },
       pasteCSS(){
         // var design = this.copiedCSS
@@ -2800,6 +2899,7 @@
             this.footer_button = this.copied['footer_button']
             this.footer_uri = this.copied['footer_uri']
             this.footer_message = this.copied['footer_message']
+            this.footer_data = this.copied['footer_data']
 
             this.syncFooterType();
             this.syncFooterButton();
@@ -2872,6 +2972,244 @@
       detailCarousel(ids){
         this.fetchBubbles(ids);
         this.showCarousel = true;
+      },
+      previousTag(index){
+        var i = 0
+        if(index!=0){
+          i = index - 1
+          var id = this.tags[i].id
+          this.selectTag(i,id)
+          this.$nextTick(function(){
+            this.$refs.tag[i].focus();
+          })
+        }
+      },
+      nextTag(index){
+        var i = 0
+        var length = this.tags.length
+        if(index<length-1){
+          i = index + 1
+          var id = this.tags[i].id
+          this.selectTag(i,id)
+          this.$nextTick(function(){
+            this.$refs.tag[i].focus();
+          })
+        }
+      },
+      previousOption(index){
+        var i = 0
+        if(index!=0){
+          i = index - 1
+          var id = this.options[i].id
+          this.selectOption(i,id)
+          this.$nextTick(function(){
+            this.$refs.option[i].focus();
+          })
+        }
+      },
+      nextOption(index){
+        var i = 0
+        var length = this.options.length
+        if(index<length-1){
+          i = index + 1
+          var id = this.options[i].id
+          this.selectOption(i,id)
+          this.$nextTick(function(){
+            this.$refs.option[i].focus();
+          })
+        }
+      },
+      afterTag(){
+        if(this.options.length>0){
+          var index = 0
+          var id = this.options[0].id
+          this.selectOption(index,id);
+        }
+      },
+      keyNumberCheck(e){
+        console.log(e.keyCode)
+        switch(e.keyCode){
+          case 13:
+          this.stretchCarouselToggle();
+          break;
+
+          case 37:
+          this.previousBubble();
+          break;
+          case 38:
+          this.previousComponent();
+          break;
+          case 39:
+          this.nextBubble();
+          break;
+          case 40:
+          this.nextComponent();
+          break;
+
+          case 48:
+          this.size = "5xl"
+          this.syncSize();
+          break;
+          case 49:
+          this.size = "xxs"
+          this.syncSize();
+          break;
+          case 50:
+          this.size = "xs"
+          this.syncSize();
+          break;
+          case 51:
+          this.size = "sm"
+          this.syncSize();
+          break;
+          case 52:
+          this.size = "md"
+          this.syncSize();
+          break;
+          case 53:
+          this.size = "lg"
+          this.syncSize();
+          break;
+          case 54:
+          this.size = "xl"
+          this.syncSize();
+          break;
+          case 55:
+          this.size = "xxl"
+          this.syncSize();
+          break;
+          case 56:
+          this.size = "3xl"
+          this.syncSize();
+          break;
+          case 57:
+          this.size = "4xl"
+          this.syncSize();
+          break;
+
+          case 66:
+          this.switchBold();
+          break;
+          case 67:
+          this.copyCSS();
+          break;
+          case 86:
+          this.pasteCSS();
+          break;
+
+          case 73:
+          this.gravityUp();
+          break;
+          case 74:
+          this.alignLeft();
+          break;
+          case 75:
+          this.gravityDown();
+          break;
+          case 76:
+          this.alignRight();
+          break;
+
+          case 78:
+          this.addBubble();
+          break;
+        }
+      },
+      alignRight(){
+        if(this.align=='start'){
+          this.align = 'center'
+        } else if(this.align=='center'){
+          this.align = 'end'
+        }
+        this.syncAlign();
+      },
+      alignLeft(){
+        if(this.align=='center'){
+          this.align = 'start'
+        } else if(this.align=='end'){
+          this.align = 'center'
+        }
+        this.syncAlign();
+      },
+      gravityUp(){
+        if(this.gravity=='center'){
+          this.gravity = 'top'
+        } else if(this.gravity=='bottom'){
+          this.gravity = 'center'
+        }
+        this.syncGravity();
+      },
+      gravityDown(){
+        if(this.gravity=='top'){
+          this.gravity = 'center'
+        } else if(this.gravity=='center'){
+          this.gravity = 'bottom'
+        }
+        this.syncGravity();
+      },
+      switchBold(){
+        if(this.bold == 'bold'){
+          this.bold = 'regular'
+        } else {
+          this.bold = 'bold'
+        }
+        this.syncBold();
+      },
+      nextComponent(){
+        var index = this.selectedBubble
+        switch(this.selectedComponent){
+          case 'header':
+          this.selectComponent('hero',index)
+          this.$nextTick(function(){
+            var i = this.selectedBubble
+            if(this.heros[i] == null){
+
+            }
+          })
+          break;
+          case 'hero':
+          this.selectComponent('body',index)
+          break;
+          case 'body':
+          this.selectComponent('footer',index)
+          break;
+        }
+      },
+      previousComponent(){
+        var index = this.selectedBubble
+        switch(this.selectedComponent){
+          case 'hero':
+          this.selectComponent('header',index)
+          break;
+          case 'body':
+          this.selectComponent('hero',index)
+          this.$nextTick(function(){
+            var i = this.selectedBubble
+            if(this.heros[i] == null){
+
+            }
+          })
+          break;
+          case 'footer':
+          this.selectComponent('body',index)
+          break;
+        }
+      },
+      nextBubble(){
+        var comp = this.selectedComponent
+        var index = 0
+        if(this.selectedBubble < this.bubble_array.length-1){
+          index = this.selectedBubble + 1
+        }
+        this.selectComponent(comp, index)
+      },
+      previousBubble(){
+        var comp = this.selectedComponent
+        var index = 0
+        if(this.selectedBubble >0){
+          index = this.selectedBubble - 1
+        }
+        this.selectComponent(comp, index)
       },
     },
     computed: {

@@ -19,7 +19,7 @@
   width: auto;
   text-align: left;
 }
-.material-icons {
+.setting {
   font-size: 25px;
   color: #111111;
   margin-right: 30px;
@@ -28,7 +28,7 @@
   line-height: 52px;
   padding-left: 10px;
 }
-.material-icons:hover {
+.setting:hover {
   font-size: 28px;
   opacity: 0.7;
   cursor: pointer;
@@ -124,6 +124,43 @@ input.tagInput {
   font-weight: 500;
   float: left;
 }
+.test {
+  height: 10em;
+}
+.in-panel {
+  height: 74vh;
+  max-height: 100%;
+  overflow: scroll;
+}
+.div-left {
+  width: 46%;
+  float: left;
+}
+.div-right {
+  height: 80%;
+  width: 49.5%;
+  float: right;
+  margin-top: 3em;
+}
+.ranking-mark {
+  font-size: 20px;
+  margin-left: 20px;
+}
+#first {
+  color: #ffcc00;
+}
+#second {
+  color: #aaaaaa;
+}
+#third {
+  color: #CD853F;
+}
+.pie-chart {
+  width: 100%;
+  height: 20em;
+  margin-top: 20px;
+}
+
 .waiting-screen {
   position: absolute;
   top: 0;

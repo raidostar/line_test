@@ -27,7 +27,7 @@
           </li>
 
           <li v-if="mode=='allMessages'">
-            <router-link class="pageLink selected-mode" to="/allMessages">トーク一覧</router-link>
+            <router-link class="pageLink selected-mode" to="/allMessages/all">トーク一覧</router-link>
           </li>
           <li v-else @click="changeMode('allMessages')">
             <router-link class="pageLink" to="/allMessages/all">トーク一覧</router-link>

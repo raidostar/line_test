@@ -4,49 +4,27 @@
   <%= render "devise/shared/error_messages", resource: resource %>
 
   <div class="field input-field">
-    <label>グルプ名</label>
-    <select class="group" name="user[group]" id="user_group">
-      <option value="FullouT">グルプ名を選択してください。</option>
-      <option value="Rakuten">Rakuten</option>
-      <option value="Softbank">Softbank</option>
-      <option value="GoogleJapan">GoogleJapan</option>
-      <option value="ShowMeTheMoney">ShowMeTheMoney</option>
-    </select>
-    <i class="material-icons help" title="i can help you">help</i>
+    <label for="user_グルプ名">グルプ名</label>
+    <input type="text" name="user[group]" id="user_group_key" >
   </div>
 
   <div class="field input-field">
-    <%= f.label :グルプキー %>
-    <input type="password" name="user[group_key]" id="user_group_key">
-    <div>
-      <i class="material-icons visibility" id="invisible" >
-        visibility_off
-      </i>
-      <i class="material-icons visibility" id="visible" >
-        visibility
-      </i>
-    </div>
-    <span id="checker"></span>
-    <a id="checkId">認証</a>
-  </div>
-
-  <div class="field input-field">
-    <%= f.label :email %>
+    <label for="user_email">E-mail</label>
     <%= f.email_field :email, autocomplete: "email" %>
   </div>
 
   <div class="field input-field">
-    <%= f.label :パスワード %>
+    <label for="user_パスワード">パスワード</label>
     <%= f.password_field :password, autocomplete: "new-password" %>
   </div>
 
   <div class="field input-field">
-    <%= f.label :パスワード確認 %>
+    <label for="user_パスワード確認">パスワード確認</label>
     <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
   </div>
 
   <div class="field input-field">
-    <%= f.label :代表番号 %>
+    <label for="user_代表番号">代表番号</label>
     <input type="text" name="user[group_phone_number]" id="user_group_phone">
   </div>
 
@@ -72,18 +50,13 @@
     sample += '<option value=\"Google Japan\"/>';
     sample += '<option value=\"Amazon Japan\"/>';
 
-    $(".help").attr('title', 'グルプの目録になければ、一応グルプを登録してから利用してください。グルプ登録はフルアウトにお問い合わせができます。')
-    $(".help").on('click', function(){
-      alert("グルプの目録になければ、一応グルプを登録してから利用してください。　グルプ登録はフルアウトにお問い合わせができます。")
-    })
-
     $("#group").html(sample);
 
     $('#checkId').on('click', function(){
-      var group = $('#user_group').val();
-      var group_key = $('#user_group_key').val();
+      var group = $('#user_group').val()
+      var group_key = $('#user_group_key').val()
 
-      var data = {"group": group, "group_key": group_key}
+      var data = { "group": group, "group_key": group_key }
       $.ajax({
         method: 'post',
         url: '/find_group_key',

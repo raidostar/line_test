@@ -9,6 +9,8 @@ class Api::ReactionsController < ApplicationController
         @reactions.push(reaction)
       end
       render json: @reactions, status: :ok
+    else
+      render json: @reactions, status: :ok
     end
   end
 

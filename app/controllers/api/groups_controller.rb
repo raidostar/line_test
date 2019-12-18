@@ -1,5 +1,6 @@
 class Api::GroupsController < ApplicationController
   def index
+    @groups = Group.all
   end
 
   def show_with_group_key
