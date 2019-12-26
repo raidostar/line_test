@@ -1,59 +1,57 @@
 <template>
   <div class="in-panel" ref="result">
+    <div v-show="loading" class="waiting-screen">
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
+    </div>
     <div class="message" v-for="msg in this.messages">
       <div class="chatting-line" v-if="msg.check_status!='answered'">
-        <div class="balloon-left">
-          <span v-if="msg.message_type=='text'" v-html="msg.contents">{{msg.contents}}</span>
-          <span v-else-if="msg.message_type=='stamp'"><img class="attachedStamp" :src="msg.contents"/></span>
-          <span v-else-if="msg.message_type=='image'"><img class="attachedImg" :src="msg.image.url+''"></span>
-          <span v-else>
-            <GmapMap
-            :center="mapConvert(msg.contents)"
-            :zoom="12"
-            map-type-id="terrain"
-            style="width: 16em; height: 16em;"
-            >
-            <GmapMarker
-            :position="mapConvert(msg.contents)"
-            :clickable="true"
-            :draggable="false"
-            />
-          </GmapMap>
-        </span>
+        <div class="balloon-left" v-if="msg.message_type=='text'">
+          <span v-html="msg.contents">{{msg.contents}}</span>
+        </div>
+        <div class="balloon-leftimage" v-else-if="msg.message_type=='stamp'">
+          <img class="attachedStamp" :src="getImgUrl(msg.contents)"/>
+        </div>
+        <div class="balloon-leftimage" v-else-if="msg.message_type=='image'">
+          <img class="attachedImg" :src="msg.image.url+''">
+        </div>
+        <span class="left-time">{{msg.created_at}}</span>
       </div>
-      <span class="left-time">{{msg.created_at}}</span>
-    </div>
-    <div v-else-if="(msg.check_status=='answered')">
-      <div class="balloon-right" v-if="msg.message_type=='text'">
-        <span v-html="msg.contents">{{msg.contents}}</span>
-      </div>
-      <div class="balloon-image" v-else-if="msg.message_type=='stamp'">
-        <img :src="getImgUrl(msg.contents)" style="width: 10em;"/>
-      </div>
-      <div class="balloon-image" v-else-if="msg.message_type=='image'">
-        <img class="attachedImg" :src="msg.image.url">
-      </div>
-      <div class="balloon-image" v-else-if="msg.message_type=='carousel'" style="height: max-content;">
-        <div class="carousel-box" style="margin-bottom: 1em;">
-          <div class="bubble-box" style="height: auto; display: inline-flex;">
-            <div v-for="(bubble,index) in bubbles">
-              <div class="bubble" style="height: inherit; width: 20.5em;" :style="bubbleChecker(bubble,msg.contents)">
-                <div style="height: 100%;">
-                  <div class="result-blocks header-block rounder1">
-                    <div class="header-text rounder1" v-html="bubble.header" :style="resultHeaderCSS[index]">
+      <div v-else-if="(msg.check_status=='answered')">
+        <div class="balloon-right" v-if="msg.message_type=='text'">
+          <span v-html="msg.contents">{{msg.contents}}</span>
+        </div>
+        <div class="balloon-image" v-else-if="msg.message_type=='stamp'">
+          <img :src="getImgUrl(msg.contents)" style="width: 10em;"/>
+        </div>
+        <div class="balloon-image" v-else-if="msg.message_type=='image'">
+          <img class="attachedImg" :src="msg.image.url">
+        </div>
+        <div class="balloon-image" v-else-if="msg.message_type=='carousel'" style="height: max-content;">
+          <div class="carousel-box" style="margin-bottom: 1em;">
+            <div class="bubble-box" style="height: auto; display: inline-flex;">
+              <div v-for="(bubble,index) in bubbles">
+                <div class="bubble" style="height: inherit; width: 20.5em;" :style="bubbleChecker(bubble,msg.contents)">
+                  <div style="height: 100%;">
+                    <div class="result-blocks header-block rounder1">
+                      <div class="header-text rounder1" v-html="bubble.header" :style="resultHeaderCSS[index]">
+                      </div>
                     </div>
-                  </div>
-                  <div class="result-blocks hero-block">
-                    <div class="carousel-img-area" v-show="bubble.image.url" style="bottom: -1%; display: grid; align-items: center;justify-content: center;">
-                      <img class="carousel-img" :src="bubble.image.url">
+                    <div class="result-blocks hero-block">
+                      <div class="carousel-img-area" v-show="bubble.image.url" style="bottom: -1%; display: grid; align-items: center;justify-content: center;">
+                        <img class="carousel-img" :src="bubble.image.url">
+                      </div>
                     </div>
-                  </div>
-                  <div class="result-blocks body-block">
-                    <div class="body-text" v-html="bubble.body" :style="resultBodyCSS[index]">
+                    <div class="result-blocks body-block">
+                      <div class="body-text" v-html="bubble.body" :style="resultBodyCSS[index]">
+                      </div>
                     </div>
-                  </div>
-                  <div class="result-blocks footer-block" style="line-height: 4.5vh">
-                    <div class="footer-text rounder2" v-html="bubble.footer" :style="resultFooterCSS[index]">
+                    <div class="result-blocks footer-block" style="line-height: 4.5vh">
+                      <div class="footer-text rounder2" v-html="bubble.footer" :style="resultFooterCSS[index]">
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -61,24 +59,23 @@
             </div>
           </div>
         </div>
+        <div class="balloon-image" v-else>
+          <GmapMap
+          :center="mapConvert(msg.contents)"
+          :zoom="12"
+          map-type-id="terrain"
+          style="width: 16em; height: 16em;"
+          >
+          <GmapMarker
+          :position="mapConvert(msg.contents)"
+          :clickable="true"
+          :draggable="false"
+          />
+        </GmapMap>
       </div>
-      <div class="balloon-image" v-else>
-        <GmapMap
-        :center="mapConvert(msg.contents)"
-        :zoom="12"
-        map-type-id="terrain"
-        style="width: 16em; height: 16em;"
-        >
-        <GmapMarker
-        :position="mapConvert(msg.contents)"
-        :clickable="true"
-        :draggable="false"
-        />
-      </GmapMap>
+      <span class="right-time">{{msg.created_at}}</span>
     </div>
-    <span class="right-time">{{msg.created_at}}</span>
   </div>
-</div>
 </div>
 </template>
 <script>
@@ -92,6 +89,11 @@
       resultBodyCSS: Array,
       resultFooterCSS: Array,
       getImgUrl: Function,
+    },
+    data: function(){
+      return {
+        loading: true,
+      }
     },
     methods: {
       mapConvert(contents){
@@ -122,6 +124,9 @@
         scrollTop = scrollHeight - height
         //console.log(scrollTop)
         this.$refs.result.scrollTop = scrollTop
+        this.$nextTick(function(){
+          this.loading = false
+        })
       },
 
     }
@@ -129,7 +134,7 @@
 </script>
 <style scoped>
 .in-panel {
-  height: auto;
+  height: 74vh;
   max-height: 100%;
   overflow-y: scroll;
   overflow-x: hidden;
@@ -153,7 +158,7 @@
   margin: 4px 0px;
   border-radius: 10px;
   padding: 8px 12px;
-  z-index: 3;
+  z-index: 1;
   float: left;
   word-break: keep-all;
   margin-left: 1em;
@@ -183,7 +188,7 @@
   margin: 4px 0px;
   border-radius: 10px;
   padding: 8px 12px;
-  z-index: 3;
+  z-index: 1;
   float: right;
   color: white;
   word-break: keep-all;
@@ -279,5 +284,18 @@
   float: right;
   font-size: 10px;
   margin-bottom: 10px;
+}
+.balloon-leftimage {
+  display: inline-block;
+  position: relative;
+  height: auto;
+  width: max-content;
+  margin: 0 auto 10px;
+  border-radius: 10px;
+  z-index: 1;
+  float: left;
+  color: white;
+  margin-right: 90%;
+  margin-left: 1em;
 }
 </style>

@@ -1,0 +1,69 @@
+.page {
+  height: 90vh;
+}
+.member-info {
+  width: 90%;
+  margin: 0 auto;
+}
+.member-value {
+  text-align: center;
+}
+select {
+  background-color: white;
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #f2f2f2;
+  border-radius: 2px;
+  height: 3rem;
+  display: -webkit-inline-box;
+}
+.search {
+  position: absolute;
+  top: 3em;
+  right: 2em;
+  font-size: 25px;
+  text-align: center;
+  color: #00b900;
+}
+.search:hover {
+  cursor: pointer;
+}
+.search:focus {
+  outline: none;
+}
+.search-keyword {
+  width: 30%;
+  float: right;
+}
+.setting {
+  float: right;
+  width: 12em;
+}
+.button {
+  width: 7em;
+  background-color: #C0C0C0;
+  color: #2C3250;
+  padding: 2px 5px;
+  border-radius: 10px;
+  border: 1px solid #C0C0C0;
+  box-shadow: 0 0 2px #666;
+  float: right;
+  font-size: 16px;
+  margin-right: 5em;
+  margin-top: 1.5em;
+}
+.button:hover {
+  text-decoration: none;
+  background-color: #2C3250;
+  color: white;
+}
+.button:focus {
+  outline: none;
+  background-color: #2C3250;
+  color: white;
+}
+.button:active {
+  -webkit-transform: translateY(2px);
+  transform: translateY(2px);
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0.15);
+}

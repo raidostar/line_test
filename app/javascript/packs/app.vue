@@ -1,35 +1,49 @@
 <template>
   <div id="app">
     <nav id="topbar" :class="{sticky: (position > 0)}">
-      <h3>LINE MANAGER
+      <div style="line-height: 3.5em;">
+        <span style="font-size: 25px; font-style: italic; font-weight: 600;">LINE MANAGER</span>
         <a class="loginOut" rel="nofollow" data-method="delete" href="/users/sign_out">
           {{userid}}
         </a>
-      </h3>
+      </div>
     </nav>
     <nav id="sidebar">
       <div class="side left nav-wrapper container">
         <ul class="hide-on-med-and-down">
+          <li class="category"><i class="material-icons">language</i>チャンネル</li>
+          <li v-if="mode=='channelManage'&&status!='client'">
+            <router-link class="pageLink selected-mode" to="/channelManage"">チャンネル管理</router-link>
+          </li>
+          <li v-else-if="mode!='channelManage'&&status!='client'" @click="changeMode('channelManage')">
+            <router-link class="pageLink home" to="/channelManage">チャンネル管理</router-link>
+          </li>
+          <select v-model="selectedChannel" @change="selectChannel" style="display: flex;height: 2.8em;">
+            <option value="">チャンネルを選択してください</option>
+            <option v-for="channel in channels" :value="channel.channel_id">
+              {{channel.channel_name}}
+            </option>
+          </select>
           <li v-if="mode==''">
-            <router-link class="pageLink selected-mode" to="/""><i class="material-icons">home</i>ホーム</router-link>
+            <router-link class="pageLink selected-mode" to="/"">チャンネル情報</router-link>
           </li>
           <li v-else @click="changeMode('')">
-            <router-link class="pageLink home" to="/"><i class="material-icons">home</i>ホーム</router-link>
+            <router-link class="pageLink home" to="/">チャンネル情報</router-link>
           </li>
 
           <li class="category"><i class="material-icons">format_align_justify</i>1対1のトーク</li>
-          <li v-if="mode=='friendslist'">
-            <router-link class="pageLink selected-mode" to="/friendslist">友達リスト</router-link>
+          <li v-if="mode=='friendsList'">
+            <router-link class="pageLink selected-mode" to="/friendsList">友達リスト</router-link>
           </li>
-          <li v-else @click="changeMode('friendslist')">
-            <router-link class="pageLink" to="/friendslist">友達リスト</router-link>
+          <li v-else @click="changeMode('friendsList')">
+            <router-link class="pageLink" to="/friendsList">友達リスト</router-link>
           </li>
 
           <li v-if="mode=='allMessages'">
-            <router-link class="pageLink selected-mode" to="/allMessages">トーク一覧</router-link>
+            <router-link class="pageLink selected-mode" to="/allMessages/all">トーク一覧</router-link>
           </li>
           <li v-else @click="changeMode('allMessages')">
-            <router-link class="pageLink" to="/allMessages">トーク一覧</router-link>
+            <router-link class="pageLink" to="/allMessages/all">トーク一覧</router-link>
           </li>
 
           <li v-if="mode=='personalMessages'">
@@ -61,11 +75,11 @@
             <router-link class="pageLink" to="/autoReply">自動応答</router-link>
           </li>
 
-          <li v-if="mode=='template'">
-            <router-link class="pageLink selected-mode" to="/template">テンプレート</router-link>
+          <li v-if="mode=='actionTemplate'">
+            <router-link class="pageLink selected-mode" to="/actionTemplate">テンプレート</router-link>
           </li>
-          <li v-else @click="changeMode('template')">
-            <router-link class="pageLink" to="/template">テンプレート</router-link>
+          <li v-else @click="changeMode('actionTemplate')">
+            <router-link class="pageLink" to="/actionTemplate">テンプレート</router-link>
           </li>
 
           <li v-if="mode=='tagManagement'">
@@ -89,14 +103,32 @@
             <router-link class="pageLink" to="/welcomeMessage">友だち追加時設定</router-link>
           </li>
 
-          <li v-if="mode=='richmenu'">
-            <router-link class="pageLink selected-mode" to="/richmenu">リッチメニュー</router-link>
+          <li v-if="mode=='richMenu'">
+            <router-link class="pageLink selected-mode" to="/richMenu">
+              リッチメニュー
+            </router-link>
           </li>
-          <li v-else @click="changeMode('richmenu')">
-            <router-link class="pageLink" to="/richmenu">リッチメニュー</router-link>
+          <li v-else @click="changeMode('richMenu')">
+            <router-link class="pageLink" to="/richMenu">
+              リッチメニュー
+            </router-link>
           </li>
 
           <li class="category"><i class="material-icons">person</i>マイページ</li>
+          <li v-if="mode=='membersManage'&&status=='master'">
+            <router-link class="pageLink selected-mode" to="/membersManage">メンバー管理</router-link>
+          </li>
+          <li v-else-if="mode!='membersManage'&&status=='master'" @click="changeMode('membersManage')">
+            <router-link class="pageLink" to="/membersManage">メンバー管理</router-link>
+          </li>
+
+          <li v-if="mode=='adminPage'&&status=='admin'">
+            <router-link class="pageLink selected-mode" to="/adminPage">グループ管理</router-link>
+          </li>
+          <li v-else-if="mode!='adminPage'&&status=='admin'" @click="changeMode('adminPage')">
+            <router-link class="pageLink" to="/adminPage">グループ管理</router-link>
+          </li>
+
           <li><a class="pageLink" href="users/edit">個人情報設定</a></li>
           <li><a class="pageLink" rel="nofollow" data-method="delete" href="/users/sign_out">ログアウト</a></li>
         </ul>
@@ -108,6 +140,103 @@
     <Footer msg="This is common footer rendered by vue's single file components"/>
   </div>
 </template>
+<script type="text/javascript">
+  import Header from './components/main/header.vue'
+  import Footer from './components/main/footer.vue'
+  import axios from 'axios'
 
-<script src="./app.js"/>
+  export default {
+    name: 'MyApp',
+    props: {
+      msg: String
+    },
+    components: {
+      Header,Footer
+    },
+    data: function(){
+      return {
+        position: undefined,
+        show: false,
+        userid: '',
+        loading: true,
+        mode: '',
+        status: '',
+        channels: [],
+        selectedChannel: '',
+      }
+    },
+    mounted: function(){
+      this.showCurrent();
+      this.sendMode();
+      this.fetchChannels();
+    },
+    methods: {
+      showCurrent(){
+        axios.post('api/show_current').then((res)=>{
+          // console.log(res.data)
+          if(res.data!=null){
+            // console.log(res.data)
+            this.userid = res.data.user.email
+            this.selectedChannel = res.data.user.target_channel
+            this.status = res.data.user.status
+          } else {
+            alert("権限がありません。フルアウトのCSD事業部にお問い合せてください。")
+            axios.delete('users/sign_out').then((res)=>{
+              location.href= '/users/sign_in'
+            },(error)=>{
+              console.log(error)
+            })
+          }
+        },(error)=>{
+          console.log(error)
+        })
+      },
+      fetchChannels(){
+        axios.post('api/fetch_channels').then((res)=>{
+          if(res.data!=null){
+            this.channels = res.data.channels
+            this.$nextTick(function(){
+              if(this.selectedChannel==null){
+                if(this.channels.length > 0){
+                  alert("チャンネルと連動します。")
+                  this.selectedChannel = this.channels[0].channel_id
+                  this.selectChannel();
+                } else {
+                  alert("まず、チャンネルを登録してご利用ください。");
+                  location.href = "/#/channelManage"
+                }
+              }
+            })
+          }
+        },(error)=>{
+          console.log(error)
+        })
+      },
+      sendMode(){
+        var url = window.location.href
+        var mode = url.substr(24,url.length)
+        this.changeMode(mode);
+      },
+      changeMode(mode){
+        this.mode = mode
+      },
+      selectChannel(){
+        if(this.selectedChannel==''){
+          alert("チャンネルを選択してください。")
+          return;
+        }
+        axios.post('api/save_target_channel', {
+          target_channel: this.selectedChannel
+        }).then((res)=>{
+          console.log(res.data.user.target_channel)
+          this.selectedChannel = res.data.user.target_channel
+          window.location.reload();
+        },(error)=>{
+          console.log(error)
+        })
+      },
+    }
+  }
+</script>
+<!-- <script src="./app.js"/> -->
 <style src="./app.css"/>

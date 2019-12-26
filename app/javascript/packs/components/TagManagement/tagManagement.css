@@ -1,0 +1,181 @@
+.page {
+  height: 88vh;
+  width: 100%;
+  overflow: scroll;
+}
+.col{
+  width: 33%;
+  height: 100%;
+  float: left;
+  border: 2px solid #222;
+  margin-left: 3px;
+  border-radius: 8px;
+  overflow: scroll;
+}
+.label{
+  border-bottom: 2px solid grey;
+  padding: 0;
+  margin: 0;
+  line-height: 40px;
+  font-size: 20px;
+  font-weight: 700;
+}
+.label button {
+  margin-left: 30px;
+}
+.folder {
+  font-size: 40px;
+  color: #00B900;
+  margin-right: -10px;
+}
+div.added-folder {
+  position: relative;
+  margin-top: 5px;
+  height: 37px;
+  line-height: 37px;
+  text-align: center;
+}
+.added-folder span {
+  font-size: 20px;
+}
+.added-folderBtn {
+  padding-top: 0px;
+  padding-bottom: 0px;
+  background-color: white;
+  color: black;
+  width: 100%;
+  float: left;
+  -webkit-appearance: media-sliderthumb;
+}
+/*.added-folderBtn:hover {
+  cursor: pointer;
+}*/
+.added-folderBtn span{
+  padding-right: 28px;
+}
+.added-folderBtn button{
+  line-height: 30px;
+}
+.added-folderBtn:focus {
+  outline: none;
+}
+.open-file-added {
+  font-size: 20px;
+  line-height: 39px;
+  padding-left: 4px;
+  padding-right: 33px;
+}
+.trashcan {
+  font-size: 20px;
+  color: #ffffff;
+  line-height: 39px;
+  float: right;
+  margin-right: 15px;
+}
+.trashcan:hover {
+  cursor: pointer;
+  color: #dc3545;
+}
+.add-tag {
+  font-size: 25px;
+  float: right;
+  line-height: 1.5em
+}
+.add-tag:hover {
+  cursor: pointer;
+  color: #000BB0;
+}
+.close-tag {
+  font-size: 25px;
+  float: right;
+  line-height: 1.5em;
+  color: #dc3545;
+}
+.close-tag:hover {
+  cursor: pointer;
+  color: #DC359E;
+}
+.add-tag-button {
+  width: 95%;
+  display: flex;
+  height: 2em;
+  background: #bbbbbb;
+  border: 3px solid #bbbbbb;
+  border-radius: 8px;
+  margin: 10px auto;
+}
+.add-tag-button:hover {
+  background: #cccccc;
+  border: 3px solid #cccccc;
+}
+.add-tag-button:focus {
+  outline: none;
+}
+.add-button {
+  margin: 0 auto;
+  font-size: 20px;
+  color: #666;
+}
+.add-button:hover {
+  color: #444;
+}
+.clear-tag {
+  float: right;
+  line-height: 4em;
+  font-size: 15px;
+  color: grey;
+  cursor: pointer;
+  padding-right: 36px;
+}
+.selected-tag {
+  padding-right: 10px;
+}
+.waiting-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #ffffff;
+  height: 100%;
+  width: 100%;
+}
+.spinner {
+  margin: 350px auto 0;
+  width: 70px;
+  text-align: center;
+}
+
+.spinner > div {
+  width: 18px;
+  height: 18px;
+  background-color: #333;
+
+  border-radius: 100%;
+  display: inline-block;
+  -webkit-animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+  animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+}
+
+.spinner .bounce1 {
+  -webkit-animation-delay: -0.32s;
+  animation-delay: -0.32s;
+}
+
+.spinner .bounce2 {
+  -webkit-animation-delay: -0.16s;
+  animation-delay: -0.16s;
+}
+
+@-webkit-keyframes sk-bouncedelay {
+  0%, 80%, 100% { -webkit-transform: scale(0) }
+  40% { -webkit-transform: scale(1.0) }
+}
+
+@keyframes sk-bouncedelay {
+  0%, 80%, 100% {
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  } 40% {
+    -webkit-transform: scale(1.0);
+    transform: scale(1.0);
+  }
+}

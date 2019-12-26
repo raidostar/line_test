@@ -1,6 +1,6 @@
 class Api::TagsController < ApplicationController
   def index
-    @tags = Tag.where(tag_group: params[:tag_group], user_group: current_user.group)
+    @tags = Tag.where(tag_group: params[:tag_group], channel_id: current_user.target_channel)
   end
 
   def show
@@ -66,9 +66,9 @@ class Api::TagsController < ApplicationController
   private
 
   def tag_params
-    params[:tag][:user_group] = current_user.group
+    params[:tag][:channel_id] = current_user.target_channel
     params.require(:tag).permit(
-      :name, :tag_group, :user_group
+      :name, :tag_group, :channel_id
       )
   end
 end

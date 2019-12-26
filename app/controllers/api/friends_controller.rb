@@ -1,8 +1,9 @@
 class Api::FriendsController < ApplicationController
   def index
-    group = current_user.group
-    @group = Group.select("group_id").where(group: group)
-    @friends = Friend.where(group_id: @group).order("last_message_time DESC")
+    channel_id = current_user.target_channel
+    @channel = Channel.find_by(channel_id: channel_id)
+    channel_destination = @channel.channel_destination
+    @friends = Friend.where(channel_destination: channel_destination).order("last_message_time DESC")
   end
 
   def show
@@ -18,11 +19,11 @@ class Api::FriendsController < ApplicationController
     id = params[:id]
     @friend = Friend.find(id)
     tags = params[:tags].split(",")
-    group = current_user.group
+    channel_id = current_user.target_channel
     tags.each do |tag|
-      @tag = Tag.where(name: tag, user_group: group, tag_group: 'friend')
+      @tag = Tag.where(name: tag, channel_id: channel_id, tag_group: 'friend')
       if !@tag.present?
-        @tag = Tag.new({name: tag, user_group: group, tag_group: 'friend'})
+        @tag = Tag.new({name: tag, channel_id: channel_id, tag_group: 'friend'})
         if @tag.save
         else
           render json: @tag.errors, status: :unprocessable_entity
@@ -32,14 +33,15 @@ class Api::FriendsController < ApplicationController
     if @friend.tags.present?
       temp_array = @friend.tags.split(",") - tags
       temp_array.each do |tag|
-        group = Group.find_by(group: group)
-        friends = Friend.where(group_id: group.group_id)
+        channel = Channel.find_by(channel_id: channel_id)
+        channel_destination = channel.channel_destination
+        friends = Friend.where(channel_destination: channel_destination)
         friends = friends.where("tags like ?","%#{tag}%").where.not(id: id)
         if !friends.present?
           @tag = Tag.find_by(name: tag, tag_group: 'friend')
 
           @tag.destroy
-          options = Option.where("target_friend like ?","%#{tag}%").where(user_group: group.group)
+          options = Option.where("target_friend like ?","%#{tag}%").where(channe_id: channel.channe_id)
           options.each do |option|
             temp_array = option.target_friend.split(",")
             temp_array.delete(tag)
@@ -59,9 +61,10 @@ class Api::FriendsController < ApplicationController
   def number_of_add_by_date
     time = Time.new
     startDay = time.days_ago(6).beginning_of_day
-    group = current_user.group
-    group_id = Group.select("group_id").where(group: group)
-    @friends = Friend.where(created_at: startDay..time, group_id: group_id)
+    channel_id = current_user.target_channel
+    @channel = Channel.find_by(channel_id: channel_id)
+    channel_destination = @channel.channel_destination
+    @friends = Friend.where(created_at: startDay..time, channel_destination: channel_destination)
     if @friends.present?
       render :index, status: :ok
     else
@@ -73,9 +76,10 @@ class Api::FriendsController < ApplicationController
   def number_of_block_by_date
     time = Time.new
     startDay = time.days_ago(6).beginning_of_day
-    group = current_user.group
-    group_id = Group.select("group_id").where(group: group)
-    @friends = Friend.where(block_at: startDay..time, group_id: group_id)
+    channel_id = current_user.target_channel
+    @channel = Channel.find_by(channel_id: channel_id)
+    channel_destination = @channel.channel_destination
+    @friends = Friend.where(block_at: startDay..time, channel_destination: channel_destination)
 
     if @friends.present?
       render :index, status: :ok
@@ -86,9 +90,10 @@ class Api::FriendsController < ApplicationController
   end
 
   def fetch_targets
-    group = current_user.group
-    group = Group.find_by(group: group)
-    friends = Friend.where(group_id: group.group_id).where.not(tags: nil)
+    channel_id = current_user.target_channel
+    @channel = Channel.find_by(channel_id: channel_id)
+    channel_destination = @channel.channel_destination
+    friends = Friend.where(channel_destination: channel_destination).where.not(tags: nil)
     data = []
     friends.each do |friend|
       data = data + friend.tags.split(",")
@@ -120,17 +125,18 @@ class Api::FriendsController < ApplicationController
 
       startTime = time.beginning_of_day
       endTime = time.end_of_day
-      group = "FullouT"
-      group_id = Group.select("group_id").where(group: group)
+      channel_id = current_user.target_channel
+      @channel = Channel.find_by(channel_id: channel_id)
+      channel_destination = @channel.channel_destination
 
-      @new_friends = Friend.where(follow_at: startTime..endTime, group_id: group_id)
+      @new_friends = Friend.where(follow_at: startTime..endTime, channel_destination: channel_destination)
       if @new_friends.present?
         info["add"]=@new_friends.length
       else
         info["add"]=0
       end
 
-      @block_friends = Friend.where(block_at: startTime..endTime, group_id: group_id)
+      @block_friends = Friend.where(block_at: startTime..endTime, channel_destination: channel_destination)
       if @block_friends.present?
         info["block"]=@block_friends.length
       else
@@ -150,7 +156,7 @@ class Api::FriendsController < ApplicationController
 
   def friends_params
     params.require(:friend).permit(
-      :id, :fr_account, :fr_name, :profile_pic, :profile_msg, :block, :created_at, :updated_at, :group_id, :last_message_time, :block_at, :follow_at, :tags
+      :id, :fr_account, :fr_name, :profile_pic, :profile_msg, :block, :created_at, :updated_at, :channel_destination, :last_message_time, :block_at, :follow_at, :tags
       )
   end
 

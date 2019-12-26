@@ -1,0 +1,336 @@
+.col {
+  float: left;
+  padding: 2px 5px;
+  margin: 0px 2px;
+  text-align: left;
+}
+.col-left {
+  width: 25%;
+}
+.col-center {
+  width: 49%;
+}
+.col-right {
+  width: 25%;
+}
+.label{
+  border-bottom: 2px solid grey;
+  padding: 0;
+  margin: 0;
+  line-height: 40px;
+  font-size: 20px;
+  font-weight: 700;
+}
+.material-icons {
+  font-size: 40px;
+  color: #00B900;
+  margin-right: 30px;
+}
+.label-friend {
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 5px;
+  padding: 0px;
+  margin: 0px;
+}
+.friendsList {
+  height: 79vh;
+  max-height: 100%;
+}
+.message {
+  width: 100%;
+}
+.message li {
+  height: 50px;
+  line-height: 50px;
+  text-align: left;
+  padding-left: 30px;
+  padding-top: 0px;
+  margin: 0 auto;
+}
+.chatting-content {
+  background-color: #EEECFF;
+  height: 79vh;
+  max-height: 100%;
+  overflow-y: scroll;
+}
+.chatting-text {
+  height: 2em;
+}
+.refresh {
+  border:0px white;
+  background-color: #00B900;
+  padding: 0;
+  margin: 0;
+  float: right;
+  width: 100%;
+  text-align: center;
+  opacity: 0.6;
+}
+.refresh:focus {
+  outline: none;
+}
+.refresh:hover {
+  opacity: 1.1;
+}
+.send {
+  font-size: 10px;
+}
+.profile_img {
+  width: 35px;
+  height: 100%;
+  border-radius: 100%;
+}
+.friendsList ul {
+  margin: 0px 5px;
+  padding: 0px 5px;
+  padding-top: 0px;
+}
+.friendsList li {
+  height: 50px;
+  text-align: left;
+  margin-right: 1.2em;
+}
+.friendsList button {
+  background-color: white;
+  color: black;
+  height: 42px;
+  margin:  0px 0px;
+  padding: 0px 0px;
+  padding-right: 1.5em;
+  padding-left: 1.5em;
+}
+.profile_img_for_one {
+  width: 9em;
+  height: 9em;
+  align-content: center;
+}
+.sticker {
+  width: 50px;
+  height: 50px;
+  margin: 0px 0px;
+  padding: 0px 0px;
+}
+.frBtn {
+  width: 100%;
+  height: 100%;
+  text-align: left;
+  -webkit-appearance: media-sliderthumb;
+}
+.frBtn:focus {
+  outline: none;
+}
+.rotate {
+  z-index: 1000;
+  animation: flip infinite;
+}
+.attachedImg {
+  width: 18em;
+  border-radius: 8px;
+  position: initial;
+}
+.balloon-left {
+  display: inline-block;
+  position: relative;
+  background: #fff;
+  height: auto;
+  width: max-content;
+  max-width: 23em;
+  margin: 4px 0px;
+  border-radius: 10px;
+  padding: 8px 12px;
+  z-index: 1;
+  float: left;
+  word-break: keep-all;
+  margin-left: 1em;
+  margin-right: 90%;
+}
+.balloon-left:after {
+  content: '';
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  z-index: -1;
+  bottom: 10px;
+  left: -3px;
+  top: 5px;
+  background: #fff;
+  -ms-transform: rotate(45deg); /* IE 9 */
+  -webkit-transform: rotate(45deg); /* Chrome, Safari, Opera */
+  transform: rotate(45deg);
+}
+.balloon-right {
+  display: inline-block;
+  position: relative;
+  background: #2c3e50;
+  height: auto;
+  width: max-content;
+  max-width: 50vh;
+  margin: 4px 0px;
+  border-radius: 10px;
+  padding: 8px 12px;
+  z-index: 3;
+  float: right;
+  color: white;
+  word-break: keep-all;
+  margin-right: 1em;
+  margin-left: 90%;
+}
+.balloon-right:after {
+  content: '';
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  z-index: -1;
+  bottom: 10px;
+  right: -3px;
+  top: 5px;
+  background: #2c3e50;
+  -ms-transform: rotate(45deg); /* IE 9 */
+  -webkit-transform: rotate(45deg); /* Chrome, Safari, Opera */
+  transform: rotate(45deg);
+}
+.attachedStamp {
+  width: 8em;
+}
+.carousel-box {
+  height: 100%;
+  float: left;
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+.balloon-image{
+  display: inline-block;
+  position: relative;
+  height: auto;
+  width: max-content;
+  margin: 0 auto 10px;
+  border-radius: 10px;
+  z-index: 1;
+  float: right;
+  color: white;
+  margin-left: 90%;
+}
+.balloon-leftimage {
+  display: inline-block;
+  position: relative;
+  height: auto;
+  width: max-content;
+  margin: 0 auto 10px;
+  border-radius: 10px;
+  z-index: 1;
+  float: left;
+  color: white;
+  margin-right: 90%;
+  margin-left: 1em;
+}
+.bubble-box {
+  width: max-content;
+  height: 100%;
+}
+.result-blocks {
+  /*margin: 2px 1px;*/
+}
+.header-block {
+  height: 15%;
+  text-align: left;
+}
+.hero-block {
+  width: 20.5em;
+  height: 58%;
+}
+.body-block {
+  min-height: 16%;
+  text-align: left;
+}
+.footer-block {
+  min-height: 12%;
+  text-align: center;
+  border-radius: 0 0 8px 8px;
+}
+.rounder1 {
+  border-radius: 8px 8px 0px 0px;
+}
+.rounder2 {
+  border-radius: 8px;
+}
+.carousel-img-area {
+  width: fit-content;
+  height: fit-content;
+}
+.carousel-img {
+  max-width: 20.5em;
+  max-height: 14.5em;
+}
+.left-time {
+  color: grey;
+  float: left;
+  font-size: 10px;
+  margin: 32px 10px;
+}
+.right-time {
+  color: grey;
+  float: right;
+  font-size: 10px;
+  margin-bottom: 10px;
+}
+.bubble{
+  min-width: 20.5em;
+}
+.profile-name {
+  margin-left: 1em;
+}
+.header-block {
+  height: 10%;
+  border-radius: 8px 8px 0 0;
+}
+.waiting-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #ffffff;
+  height: 100%;
+  width: 100%;
+  z-index: 2;
+}
+.spinner {
+  margin: 350px auto 0;
+  width: 70px;
+  text-align: center;
+}
+
+.spinner > div {
+  width: 18px;
+  height: 18px;
+  background-color: #333;
+
+  border-radius: 100%;
+  display: inline-block;
+  -webkit-animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+  animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+}
+
+.spinner .bounce1 {
+  -webkit-animation-delay: -0.32s;
+  animation-delay: -0.32s;
+}
+
+.spinner .bounce2 {
+  -webkit-animation-delay: -0.16s;
+  animation-delay: -0.16s;
+}
+
+@-webkit-keyframes sk-bouncedelay {
+  0%, 80%, 100% { -webkit-transform: scale(0) }
+  40% { -webkit-transform: scale(1.0) }
+}
+
+@keyframes sk-bouncedelay {
+  0%, 80%, 100% {
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  } 40% {
+    -webkit-transform: scale(1.0);
+    transform: scale(1.0);
+  }
+}

@@ -1,8 +1,9 @@
 class Api::NotifiesController < ApplicationController
   def index
-    group = current_user.group
-    group_id = Group.select("group_id").where(group: group)
-    @notifies = Notify.where(group_id: group_id).order("created_at DESC")
+    channel_id = current_user.target_channel
+    channel = Channel.find_by(channel_id: channel_id)
+    channel_destination = channel.channel_destination
+    @notifies = Notify.where(channel_destination: channel_destination).order("created_at DESC")
     render :index, status: :ok
   end
 
@@ -36,22 +37,20 @@ class Api::NotifiesController < ApplicationController
 
   def notify_params
     if params[:notify].present?
-      params[:notify][:sender] = current_user.group
-      params[:notify][:receiver] = 'ALL'
+      @channel = Channel.find_by(channel_id: current_user.target_channel)
+      params[:notify][:sender] = @channel.channel_name
       params[:notify][:hit_count] = 0
-      @group = Group.find_by(group: current_user.group)
-      params[:notify][:group_id] = @group.attributes["group_id"]
+      params[:notify][:channel_destination] = @channel.attributes["channel_destination"]
       params.require(:notify).permit(
-        :id, :sender, :receiver, :contents, :created_at, :updated_at, :notify_type, :group_id, :target_tag, :hit_count, :image
+        :id, :sender, :receiver, :contents, :created_at, :updated_at, :notify_type, :channel_destination, :target_tag, :hit_count, :image
         )
     else
-      params[:sender] = current_user.group
-      params[:receiver] = 'ALL'
+      @channel = Channel.find_by(channel_id: current_user.target_channel)
+      params[:sender] = @channel.channel_name
       params[:hit_count] = 0
-      @group = Group.find_by(group: current_user.group)
-      params[:group_id] = @group.attributes["group_id"]
+      params[:channel_destination] = @channel.attributes["channel_destination"]
       params.permit(
-        :id, :sender, :receiver, :contents, :created_at, :updated_at, :notify_type, :group_id, :target_tag, :hit_count, :image
+        :id, :sender, :receiver, :contents, :created_at, :updated_at, :notify_type, :channel_destination, :target_tag, :hit_count, :image
         )
     end
   end

@@ -6,7 +6,6 @@ class Api::BubblesArchivesController < ApplicationController
   def create
     bubble_ids = []
     bubble_num = params[:bubble_num].to_i
-
     for i in 0...bubble_num do
       header = params[:headers][i]
       image = params[:images][i]
@@ -42,6 +41,7 @@ class Api::BubblesArchivesController < ApplicationController
       footer_button = params[:footer_button][i]
       footer_uri = params[:footer_uri][i]
       footer_message = params[:footer_message][i]
+      footer_data = params[:footer_data][i]
 
       @bubbles_archive = BubblesArchive.new({
         header: header, image: image, body: body, footer: footer, header_gravity: header_gravity, header_align: header_align,
@@ -50,7 +50,7 @@ class Api::BubblesArchivesController < ApplicationController
         body_gravity: body_gravity, body_align: body_align, body_size: body_size, body_bold: body_bold, body_color: body_color,
         body_background: body_background, footer_gravity: footer_gravity, footer_align: footer_align, footer_size: footer_size,
         footer_bold: footer_bold, footer_color: footer_color, footer_background: footer_background, footer_type: footer_type,
-        footer_button: footer_button, footer_uri: footer_uri, footer_message: footer_message
+        footer_button: footer_button, footer_uri: footer_uri, footer_message: footer_message, footer_data: footer_data
       })
 
       if @bubbles_archive.save

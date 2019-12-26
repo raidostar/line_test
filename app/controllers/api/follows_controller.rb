@@ -12,7 +12,7 @@ class Api::FollowsController < ApplicationController
     infos = []
     datetime = DateTime.now
     datetime = datetime.beginning_of_day
-    group = current_user.group
+    channel_id = current_user.target_channel
     follower_info = {
       name: "友だち登録数",
       data: {}
@@ -27,7 +27,7 @@ class Api::FollowsController < ApplicationController
     }
     case params[:timeOption]
     when "oneWeek"
-      follows = Follow.where(group: group, date: ((datetime-7)..(datetime))).order("date")
+      follows = Follow.where(channel_id: channel_id, date: ((datetime-7)..(datetime))).order("date")
       follows.each do |follow|
         date = follow.date
         follower_info[:data][date.strftime("%m/%d")] = follow.follower
@@ -38,7 +38,7 @@ class Api::FollowsController < ApplicationController
       # infos.push(unblock_info)
       # infos.push(block_info)
     when "oneMonth"
-      follows = Follow.where(group: group, date: ((datetime-30)..(datetime-1))).order("date")
+      follows = Follow.where(channel_id: channel_id, date: ((datetime-30)..(datetime-1))).order("date")
       follows.each do |follow|
         date = follow.date
         if date.wday == 6
@@ -62,7 +62,7 @@ class Api::FollowsController < ApplicationController
       # infos.push(unblock_info)
       # infos.push(block_info)
     when "oneYear"
-      follows = Follow.where("extract(day from date) = ?",1).where(group: group).order("date")
+      follows = Follow.where("extract(day from date) = ?",1).where(channel_id: channel_id).order("date")
       follows.each do |follow|
         date = follow.date
         title = (date.month - 1).to_s+"月"
@@ -88,7 +88,7 @@ class Api::FollowsController < ApplicationController
   def fetch_data(para)
     @key = para
     infos = []
-    group = current_user.group
+    channel_id = current_user.target_channel
     follower_info = {
       name: "友だち登録数",
       data: {}
@@ -101,7 +101,7 @@ class Api::FollowsController < ApplicationController
       name: "ブロック数",
       data: {}
     }
-    follows = Follow.where(group: group).order("date")
+    follows = Follow.where(channel_id: channel_id).order("date")
     follow_array = follows.to_a
     case @key
     when "wdaily"
@@ -176,7 +176,7 @@ class Api::FollowsController < ApplicationController
 
   def follows_params
     params.require(:follow).permit(
-      :id, :group, :follower, :targetedReaches, :block, :created_at, :updated_at, :date
+      :id, :channel_name, :follower, :targetedReaches, :block, :created_at, :updated_at, :date, :channel_id
       )
   end
 end

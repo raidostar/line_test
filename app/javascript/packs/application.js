@@ -2,20 +2,22 @@ import Vue from 'vue/dist/vue.esm'
 import VueRouter from 'vue-router'
 import App from './app.vue'
 
-import Page1 from './pages/page1.vue'
-import Page2 from './pages/page2.vue'
-import Page3 from './pages/page3.vue'
-import Page4 from './pages/page4.vue'
-import Page5 from './pages/page5.vue'
-import Page6 from './pages/page6.vue'
-import Page7 from './pages/page7.vue'
-import Page8 from './pages/page8.vue'
-import Page9 from './pages/page9.vue'
-import Page10 from './pages/page10.vue'
-import Page11 from './pages/page11.vue'
-import Page12 from './pages/page12.vue'
-import Page13 from './pages/page13.vue'
-import personalPage from './pages/personalPage.vue'
+import Home from './pages/home.vue'
+import FriendsList from './pages/friendsList.vue'
+import AllMessages from './pages/allMessages.vue'
+import PersonalMessages from './pages/personalMessages.vue'
+import DataAnalysis from './pages/dataAnalysis.vue'
+import SendAll from './pages/sendAll.vue'
+import AutoReply from './pages/autoReply.vue'
+import ActionTemplate from './pages/actionTemplate.vue'
+import TagManagement from './pages/tagManagement.vue'
+import RemindReply from './pages/remindReply.vue'
+import WelcomeMessage from './pages/welcomeMessage.vue'
+import RichMenu from './pages/richMenu.vue'
+import AdminPage from './pages/adminPage.vue'
+import MembersManage from './pages/membersManage.vue'
+import PersonalPage from './pages/personalPage.vue'
+import ChannelManage from './pages/channelManage.vue'
 
 import axios from 'axios'
 import BootstrapVue from 'bootstrap-vue'
@@ -51,20 +53,22 @@ Vue.use(VueGoogleMaps, {
 })
 
 const routes = [
-  { path: '/', component: Page1 },
-  { path: '/friendslist', component: Page2 },
-  { path: '/allMessages', component: Page3 },
-  { path: '/personalMessages', component: Page4 },
-  { path: '/dataAnalysis', component: Page5 },
-  { path: '/sendAll', component: Page6 },
-  { path: '/autoReply', component: Page7 },
-  { path: '/template', component: Page8 },
-  { path: '/tagManagement', component: Page9 },
-  { path: '/remindReply', component: Page10 },
-  { path: '/welcomeMessage', component: Page11 },
-  { path: '/richmenu', component: Page12 },
-  { path: '/page13', component: Page13 },
-  { path: '/personalPage/:id', component: personalPage, props: true},
+  { path: '/', component: Home },
+  { path: '/friendsList', component: FriendsList },
+  { path: '/allMessages/:searchKeyword', component: AllMessages, props: true},
+  { path: '/personalMessages', component: PersonalMessages },
+  { path: '/dataAnalysis', component: DataAnalysis },
+  { path: '/sendAll', component: SendAll },
+  { path: '/autoReply', component: AutoReply },
+  { path: '/actionTemplate', component: ActionTemplate },
+  { path: '/tagManagement', component: TagManagement },
+  { path: '/remindReply', component: RemindReply },
+  { path: '/welcomeMessage', component: WelcomeMessage },
+  { path: '/richMenu', component: RichMenu },
+  { path: '/adminPage', component: AdminPage },
+  { path: '/membersManage', component: MembersManage},
+  { path: '/personalPage/:id', component: PersonalPage, props: true},
+  { path: '/channelManage', component: ChannelManage},
 ];
 
 const router = new VueRouter({ routes });

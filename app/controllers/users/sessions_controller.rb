@@ -1,23 +1,22 @@
-# frozen_string_literal: true
-
 class [scope]::SessionsController < Devise::SessionsController
   respond_to :json
-  #before_action :configure_sign_in_params, only: [:create]
+  # before_action :configure_sign_in_params, only: [:create]
+
 
   # GET /resource/sign_in
-  # def new
-  #   super
-  # end
+  def new
+    super
+  end
 
   # POST /resource/sign_in
-  # def create
-  #   @id = current_user.id
-  # end
+  def create
+    @id = current_user.id
+  end
 
   # DELETE /resource/sign_out
-  # def destroy
-  #   super
-  # end
+  def destroy
+    super
+  end
 
   # protected
 

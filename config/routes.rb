@@ -38,7 +38,7 @@ Rails.application.routes.draw do
   end
 
   namespace :api, format: 'json' do
-    resources :groups, only: [:index,:create]
+    resources :groups
   end
 
   namespace :api, format: 'json' do
@@ -61,20 +61,33 @@ Rails.application.routes.draw do
     resources :reactions
   end
 
-  post '/find_messages' => 'api/messages#index_with_id'
-  post '/show_current' => 'api/users#show_current_user'
+  namespace :api, format: 'json' do
+    resources :richactions
+  end
 
-  post '/number_of_monthly' => 'api/messages#get_number_of_monthly_message'
-  post '/number_of_weekly' => 'api/messages#get_number_of_weekly_message'
-  post '/number_of_daily' => 'api/messages#get_number_of_daily_message'
-  post '/number_of_seven_days' => 'api/messages#get_number_of_seven_days'
-  post '/find_group_key' => 'api/groups#show_with_group_key'
+  namespace :api, format: 'json' do
+    resources :richmenus
+  end
+
+  namespace :api, format: 'json' do
+    resources :postbacks
+  end
+
+  namespace :api, format: 'json' do
+    resources :channels
+  end
+
+  post '/find_messages' => 'api/messages#index_with_id'
+  post 'api/show_current' => 'api/users#show_current_user'
+  post 'api/timely_messages' => 'api/messages#timely_messages'
+  post 'users/api/find_group_key' => 'api/groups#find_group_key'
   # post '/add_number' => 'api/friends#number_of_add_by_date'
   # post '/block_number' => 'api/friends#number_of_block_by_date'
   # post '/week_date' => 'api/friends#get_date_info'
   post '/weekly_friend_info' => 'api/friends#get_weekly_friend_info'
   post '/create_notify' => 'api/showmes#create_notify'
   # get '/emojis' =>'api/showmes#index_emoji'
+  post 'users/api/idCheck' => 'api/users#id_check'
   get 'api/cancel_reaction' => 'api/reactions#cancel_reaction'
   get '*path', controller: 'application', action: 'render_404'
   post 'api/reactions_all' => 'api/reactions#index_all_except'
@@ -91,6 +104,7 @@ Rails.application.routes.draw do
   post 'api/fetch_follows_time_data' => 'api/follows#fetch_follows_time_data'
   post 'api/fetch_messages_data' => 'api/messages#fetch_messages_data'
   post 'api/fetch_messages_time_data' => 'api/messages#fetch_messages_time_data'
+  post 'api/fetch_personal_message_data' => 'api/messages#fetch_personal_message_data'
   post 'api/fetch_message_type_data' => 'api/messages#fetch_message_type_data'
   post 'api/fetch_message_check_data' => 'api/messages#fetch_message_check_data'
   post 'api/fetch_targets' => 'api/friends#fetch_targets'
@@ -102,4 +116,17 @@ Rails.application.routes.draw do
   post 'api/fetch_bubbles_archives' => 'api/bubbles_archives#fetch_bubbles_archives'
   post 'api/fetch_reply' => 'api/messages#fetch_reply'
   post 'api/update_bubbles' => 'api/bubbles#update_bubbles'
+  post 'api/set_richmenu' => 'api/showmes#set_richmenu'
+  post 'api/set_default_richmenu' => 'api/showmes#set_default_richmenu'
+  post 'api/unset_default_richmenu' => 'api/showmes#unset_default_richmenu'
+  post 'api/delete_richmenu' => 'api/showmes#delete_richmenu'
+  post 'api/load_all_richmenus' => 'api/showmes#load_all_richmenus'
+  post 'api/make_group_key' => 'api/groups#make_group_key'
+  post 'api/fetch_channels' => 'api/channels#fetch_channels'
+  post 'api/save_target_channel' => 'api/users#save_target_channel'
+  post 'api/update_follows' => 'api/showmes#update_follows'
+  post 'api/fetch_groups' => 'api/groups#fetch_groups'
+  post 'api/check_channel_limit' => 'api/groups#check_channel_limit'
+  post 'api/fetch_members' => 'api/users#fetch_members'
+  post 'api/users_update' => 'api/users#users_update'
 end

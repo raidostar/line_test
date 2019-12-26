@@ -1,0 +1,2 @@
+class Richaction < ApplicationRecord
+end
