@@ -82,10 +82,10 @@
 </template>
 <script>
   import axios from 'axios'
-  import messageHistory from '../components/personalPage/messageHistory.vue'
-  import messageTime from '../components/personalPage/messageTime.vue'
-  import messageType from '../components/personalPage/messageType.vue'
-  import messageResponse from '../components/personalPage/messageResponse.vue'
+  import messageHistory from '../components/PersonalPage/messageHistory.vue'
+  import messageTime from '../components/PersonalPage/messageTime.vue'
+  import messageType from '../components/PersonalPage/messageType.vue'
+  import messageResponse from '../components/PersonalPage/messageResponse.vue'
   export default {
     name: 'personalPage',
     props: {
@@ -340,10 +340,10 @@
         return result
       },
       getImgUrl(para) {
-        var images = require.context('../images/', false, /\.png$/)
-        return images('./' + para + ".png")
+        var images = 'https://cdn.lineml.jp/api/media/sticker/'+para
+        return images
       },
     }
   }
 </script>
-<style scoped src="../components/personalPage/personalPage.css"/>
+<style scoped src="../components/PersonalPage/personalPage.css"/>

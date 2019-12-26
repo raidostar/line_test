@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_12_13_061941) do
+ActiveRecord::Schema.define(version: 2019_12_24_080204) do
 
   create_table "bubbles", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "header"
@@ -84,6 +84,18 @@ ActiveRecord::Schema.define(version: 2019_12_13_061941) do
     t.string "footer_data"
   end
 
+  create_table "channels", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
+    t.string "channel_name"
+    t.string "channel_id"
+    t.string "channel_secret"
+    t.string "channel_token"
+    t.string "channel_user_id"
+    t.string "status"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "channel_destination"
+  end
+
   create_table "emojis", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "moji_text"
     t.string "img_url"
@@ -93,13 +105,14 @@ ActiveRecord::Schema.define(version: 2019_12_13_061941) do
   end
 
   create_table "follows", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
-    t.string "group"
+    t.string "channel_name"
     t.integer "follower"
     t.integer "targetedReaches"
     t.integer "blocks"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "date"
+    t.string "channel_id"
   end
 
   create_table "friends", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
@@ -110,7 +123,7 @@ ActiveRecord::Schema.define(version: 2019_12_13_061941) do
     t.boolean "block", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "group_id"
+    t.string "channel_destination"
     t.datetime "last_message_time"
     t.datetime "block_at"
     t.datetime "follow_at"
@@ -120,10 +133,14 @@ ActiveRecord::Schema.define(version: 2019_12_13_061941) do
 
   create_table "groups", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "group"
-    t.string "group_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "group_key"
+    t.string "password_digest"
+    t.boolean "admit", default: false
+    t.string "status"
+    t.string "channels"
+    t.integer "channels_limit"
+    t.integer "member_limit"
   end
 
   create_table "messages", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
@@ -137,7 +154,7 @@ ActiveRecord::Schema.define(version: 2019_12_13_061941) do
     t.string "sticker_id"
     t.string "package_id"
     t.string "fr_account"
-    t.string "group_id"
+    t.string "channel_destination"
     t.string "reply_token"
     t.string "check_status"
     t.string "image"
@@ -149,7 +166,7 @@ ActiveRecord::Schema.define(version: 2019_12_13_061941) do
     t.text "contents"
     t.string "notify_type"
     t.string "fr_account"
-    t.string "group_id"
+    t.string "channel_destination"
     t.string "target_tag"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -164,7 +181,7 @@ ActiveRecord::Schema.define(version: 2019_12_13_061941) do
     t.string "tag"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "user_group"
+    t.string "channel_id"
     t.string "target_day"
     t.string "target_time"
     t.string "target_keyword"
@@ -181,7 +198,7 @@ ActiveRecord::Schema.define(version: 2019_12_13_061941) do
     t.string "receiver"
     t.text "data"
     t.string "fr_account"
-    t.string "group_id"
+    t.string "channel_destination"
     t.string "reply_token"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -191,7 +208,7 @@ ActiveRecord::Schema.define(version: 2019_12_13_061941) do
     t.string "name"
     t.text "contents"
     t.string "reaction_type"
-    t.string "user_group"
+    t.string "channel_id"
     t.string "tag"
     t.integer "target_number"
     t.string "image"
@@ -225,7 +242,7 @@ ActiveRecord::Schema.define(version: 2019_12_13_061941) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "richmenu_id"
-    t.string "user_group"
+    t.string "channel_id"
     t.boolean "default_richmenu", default: false
   end
 
@@ -245,7 +262,7 @@ ActiveRecord::Schema.define(version: 2019_12_13_061941) do
     t.string "tag_group"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "user_group"
+    t.string "channel_id"
   end
 
   create_table "users", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
@@ -257,6 +274,9 @@ ActiveRecord::Schema.define(version: 2019_12_13_061941) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "group", default: "0"
+    t.string "status", default: "client"
+    t.string "target_channel"
+    t.boolean "admit", default: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end

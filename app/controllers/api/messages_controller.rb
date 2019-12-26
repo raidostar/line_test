@@ -2,9 +2,10 @@ class Api::MessagesController < ApplicationController
   require 'api/showmes_controller'
 
   def index
-    group = current_user.group
-    @group = Group.select("group_id").where(group: group)
-    @messages = Message.where(group_id: @group).order("id DESC")
+    channel_id = current_user.target_channel
+    @channel = Channel.find_by(channel_id: channel_id)
+    channel_destination = @channel.channel_destination
+    @messages = Message.where(channel_destination: channel_destination).order("id DESC")
   end
 
   def create
@@ -22,15 +23,20 @@ class Api::MessagesController < ApplicationController
   end
 
   def index_with_id
-    group = current_user.group
-    @group = Group.select("group_id").where(group: group)
-    @messages = Message.where(fr_account: params[:fr_account], group_id: @group).order("id")
+    channel_id = current_user.target_channel
+    @channel = Channel.find_by(channel_id: channel_id)
+    channel_destination = @channel.channel_destination
+    @messages = Message.where(fr_account: params[:fr_account], channel_destination: channel_destination).order("id")
     render :index, status: :ok
   end
 
   def timely_messages
     now = Time.new
-    group = current_user.group
+    channel_id = current_user.target_channel
+    channel = Channel.find_by(channel_id: channel_id)
+    channel_name = channel.channel_name
+    puts "channel_name"
+    channel_destination = channel.channel_destination
     timely = {}
     start_day = now.beginning_of_day
     end_day = now.end_of_day
@@ -39,9 +45,9 @@ class Api::MessagesController < ApplicationController
     start_month = now.beginning_of_month
     end_month = now.end_of_month
 
-    daily_messages = Message.where(created_at: start_day..end_day, receiver: group).length
-    weekly_messages = Message.where(created_at: start_week..end_week, receiver: group).length
-    monthly_messages = Message.where(created_at: start_month..end_month, receiver: group).length
+    daily_messages = Message.where(receiver: channel_name,created_at: start_day..end_day, channel_destination: channel_destination).length
+    weekly_messages = Message.where(receiver: channel_name,created_at: start_week..end_week, channel_destination: channel_destination).length
+    monthly_messages = Message.where(receiver: channel_name,created_at: start_month..end_month, channel_destination: channel_destination).length
 
     timely[:daily] = daily_messages
     timely[:weekly] = weekly_messages
@@ -81,8 +87,9 @@ class Api::MessagesController < ApplicationController
     datetime = DateTime.now
     start_time = datetime.beginning_of_day
     end_time = start_time + 1
-    group = current_user.group
-    group = Group.find_by(group: group)
+    channel_id = current_user.target_channel
+    channel = Channel.find_by(channel_id: channel_id)
+    channel_destination = channel.channel_destination
     if params[:reply_boolean] == false
       message_info = {
         name: "メッセージ数",
@@ -98,9 +105,9 @@ class Api::MessagesController < ApplicationController
     when "oneDay"
       for i in 0..23 do
         if params[:reply_boolean] == false
-          messages = Message.where(group_id: group.group_id, created_at: ((start_time)..(end_time))).where.not(check_status: 'answered')
+          messages = Message.where(channel_destination: channel_destination, created_at: ((start_time)..(end_time))).where.not(check_status: 'answered')
         else
-          messages = Message.where(group_id: group.group_id, check_status: 'answered', created_at: ((start_time)..(end_time)))
+          messages = Message.where(channel_destination: channel_destination, check_status: 'answered', created_at: ((start_time)..(end_time)))
         end
         hourly_messages = messages.where(created_at: (start_time+i.hour)..(start_time+(i+1).hour))
         time_record = (start_time+i.hour).hour.to_s
@@ -114,9 +121,9 @@ class Api::MessagesController < ApplicationController
       start_day = start_time - 6
       for i in 0..6 do
         if params[:reply_boolean] == false
-          messages = Message.where(group_id: group.group_id, created_at: ((start_day)..(end_time))).where.not(check_status: 'answered')
+          messages = Message.where(channel_destination: channel_destination, created_at: ((start_day)..(end_time))).where.not(check_status: 'answered')
         else
-          messages = Message.where(group_id: group.group_id, check_status: 'answered', created_at: ((start_day)..(end_time)))
+          messages = Message.where(channel_destination: channel_destination, check_status: 'answered', created_at: ((start_day)..(end_time)))
         end
         daily_messages = messages.where(created_at: (start_day+i.day)..(start_day+(i+1).day))
         time_record = (start_day+i.day).strftime("%m/%d")
@@ -126,9 +133,9 @@ class Api::MessagesController < ApplicationController
       start_day = start_time - 30
       for i in 0..30 do
         if params[:reply_boolean] == false
-          messages = Message.where(group_id: group.group_id, created_at: ((start_day)..(end_time))).where.not(check_status: 'answered')
+          messages = Message.where(channel_destination: channel_destination, created_at: ((start_day)..(end_time))).where.not(check_status: 'answered')
         else
-          messages = Message.where(group_id: group.group_id, check_status: 'answered', created_at: ((start_day)..(end_time)))
+          messages = Message.where(channel_destination: channel_destination, check_status: 'answered', created_at: ((start_day)..(end_time)))
         end
         daily_messages = messages.where(created_at: (start_day+i.day)..(start_day+(i+1).day))
         time_record = (start_day+i.day).strftime("%m/%d")
@@ -136,9 +143,9 @@ class Api::MessagesController < ApplicationController
       end
     when "oneYear"
       if params[:reply_boolean] == false
-        messages = Message.where('extract(year from created_at) = ?',datetime.year).where(group_id: group.group_id).where.not(check_status: 'answered')
+        messages = Message.where('extract(year from created_at) = ?',datetime.year).where(channel_destination: channel_destination).where.not(check_status: 'answered')
       else
-        messages = Message.where('extract(year from created_at) = ?',datetime.year).where(group_id: group.group_id,check_status: 'answered')
+        messages = Message.where('extract(year from created_at) = ?',datetime.year).where(channel_destination: channel_destination,check_status: 'answered')
       end
       for i in 0..11 do
         monthly_messages = messages.where('extract(month from created_at) = ?',i+1)
@@ -158,17 +165,18 @@ class Api::MessagesController < ApplicationController
 
   def messages_data(reply_boolean,timeOption)
     infos = []
-    group = current_user.group
-    group = Group.find_by(group: group)
+    channel_id = current_user.target_channel
+    channel = Channel.find_by(channel_id: channel_id)
+    channel_destination = channel.channel_destination
 
     if reply_boolean == false
-      messages = Message.where(group_id: group.group_id).where.not(check_status: 'answered')
+      messages = Message.where(channel_destination: channel_destination).where.not(check_status: 'answered')
       message_info = {
         name: "メッセージ値",
         data: {}
       }
     else
-      messages = Message.where(group_id: group.group_id, check_status: 'answered')
+      messages = Message.where(channel_destination: channel_destination, check_status: 'answered')
       message_info = {
         name: "返事値",
         data: {}
@@ -233,18 +241,19 @@ class Api::MessagesController < ApplicationController
 
   def personal_message_data(reply_boolean,id,time_option)
     infos = []
-    group = current_user.group
-    group = Group.find_by(group: group)
+    channel_id = current_user.target_channel
+    channel = Channel.find_by(channel_id: channel_id)
+    channel_destination = channel.channel_destination
 
     friend = Friend.find_by(id: id.to_i)
     if reply_boolean == false
-      messages = Message.where(group_id: group.group_id, fr_account: friend.fr_account).where.not(check_status: 'answered')
+      messages = Message.where(channel_destination: channel_destination, fr_account: friend.fr_account).where.not(check_status: 'answered')
       message_info = {
         name: "メッセージ値",
         data: {}
       }
     else
-      messages = Message.where(group_id: group.group_id, fr_account: friend.fr_account, check_status: 'answered')
+      messages = Message.where(channel_destination: channel_destination, fr_account: friend.fr_account, check_status: 'answered')
       message_info = {
         name: "返事値",
         data: {}
@@ -303,26 +312,28 @@ class Api::MessagesController < ApplicationController
 
   def fetch_message_type_data
     infos = []
-    group = current_user.group
-    group = Group.find_by(group: group)
+    channel_id = current_user.target_channel
+    channel = Channel.find_by(channel_id: channel_id)
+    channel_destination = channel.channel_destination
     message_align = {}
+
     if params[:reply_boolean] == false
       if params[:id].present?
         id = params[:id]
         friend = Friend.find_by(id: id.to_i)
         fr_account = friend.fr_account
-        messages = Message.where(group_id: group.group_id, fr_account: fr_account).where.not(check_status: 'answered')
+        messages = Message.where(channel_destination: channel_destination, fr_account: fr_account).where.not(check_status: 'answered')
       else
-        messages = Message.where(group_id: group.group_id).where.not(check_status: 'answered')
+        messages = Message.where(channel_destination: channel_destination).where.not(check_status: 'answered')
       end
     else
       if params[:id].present?
         id = params[:id]
         friend = Friend.find_by(id: id.to_i)
         fr_account = friend.fr_account
-        messages = Message.where(group_id: group.group_id, fr_account: fr_account, check_status: 'answered')
+        messages = Message.where(channel_destination: channel_destination, fr_account: fr_account, check_status: 'answered')
       else
-        messages = Message.where(group_id: group.group_id, check_status: 'answered')
+        messages = Message.where(channel_destination: channel_destination, check_status: 'answered')
       end
       carousel_message = messages.where(message_type: "carousel")
       message_align["キャルセル"] = carousel_message.length
@@ -342,8 +353,9 @@ class Api::MessagesController < ApplicationController
 
   def fetch_message_check_data
     infos = []
-    group = current_user.group
-    group = Group.find_by(group: group)
+    channel_id = current_user.target_channel
+    channel = Channel.find_by(channel_id: channel_id)
+    channel_destination = channel.channel_destination
     message_align = {}
 
     if params[:reply_boolean] == false
@@ -351,9 +363,9 @@ class Api::MessagesController < ApplicationController
         id = params[:id]
         friend = Friend.find_by(id: id)
         fr_account = friend.fr_account
-        messages = Message.where(group_id: group.group_id,fr_account: fr_account).where.not(check_status: 'answered')
+        messages = Message.where(channel_destination: channel_destination,fr_account: fr_account).where.not(check_status: 'answered')
       else
-        messages = Message.where(group_id: group.group_id).where.not(check_status: 'answered')
+        messages = Message.where(channel_destination: channel_destination).where.not(check_status: 'answered')
       end
 
       unreplied = messages.where(check_status: "unreplied")
@@ -375,9 +387,9 @@ class Api::MessagesController < ApplicationController
         id = params[:id]
         friend = Friend.find_by(id: id)
         fr_account = friend.fr_account
-        replied_messages = Message.where(group_id: group.group_id,check_status: 'replied',fr_account: fr_account)
+        replied_messages = Message.where(channel_destination: channel_destination,check_status: 'replied',fr_account: fr_account)
       else
-        replied_messages = Message.where(group_id: group.group_id,check_status: 'replied')
+        replied_messages = Message.where(channel_destination: channel_destination,check_status: 'replied')
       end
       replied_messages.each do |message|
         reply_tokens.push(message.reply_token)
@@ -389,9 +401,9 @@ class Api::MessagesController < ApplicationController
         id = params[:id]
         friend = Friend.find_by(id: id)
         fr_account = friend.fr_account
-        auto_replied_messages = Message.where(group_id: group.group_id,check_status: 'autoReplied',fr_account: fr_account)
+        auto_replied_messages = Message.where(channel_destination: channel_destination,check_status: 'autoReplied',fr_account: fr_account)
       else
-        auto_replied_messages = Message.where(group_id: group.group_id,check_status: 'autoReplied')
+        auto_replied_messages = Message.where(channel_destination: channel_destination,check_status: 'autoReplied')
       end
       auto_replied_messages.each do |message|
         reply_tokens.push(message.reply_token)
@@ -423,15 +435,15 @@ class Api::MessagesController < ApplicationController
 
   def message_params
     if params[:message].present?
-      @group = Group.find_by(group: current_user.group)
-      params[:message][:group_id] = @group.group_id
+      @channel = Channel.find_by(channel_id: current_user.target_channel)
+      params[:message][:channel_destination] = @channel.channel_destination
       params.require(:message).permit(
-        :id, :sender, :receiver, :contents ,:message_type, :message_id, :sticker_id, :package_id, :fr_account, :group_id, :reply_token, :check_status)
+        :id, :sender, :receiver, :contents ,:message_type, :message_id, :sticker_id, :package_id, :fr_account, :channel_destination, :reply_token, :check_status)
     else
-      @group = Group.find_by(group: current_user.group)
-      params[:group_id] = @group.group_id
+      @channel = Channel.find_by(channel_id: current_user.target_channel)
+      params[:channel_destination] = @channel.channel_destination
       params.permit(
-        :id, :sender, :receiver, :contents ,:message_type, :message_id, :sticker_id, :package_id, :fr_account, :group_id, :reply_token, :check_status
+        :id, :sender, :receiver, :contents ,:message_type, :message_id, :sticker_id, :package_id, :fr_account, :channel_destination, :reply_token, :check_status
         )
     end
   end

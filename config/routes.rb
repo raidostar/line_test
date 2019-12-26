@@ -38,7 +38,7 @@ Rails.application.routes.draw do
   end
 
   namespace :api, format: 'json' do
-    resources :groups, only: [:index,:create]
+    resources :groups
   end
 
   namespace :api, format: 'json' do
@@ -73,16 +73,21 @@ Rails.application.routes.draw do
     resources :postbacks
   end
 
+  namespace :api, format: 'json' do
+    resources :channels
+  end
+
   post '/find_messages' => 'api/messages#index_with_id'
-  post '/show_current' => 'api/users#show_current_user'
+  post 'api/show_current' => 'api/users#show_current_user'
   post 'api/timely_messages' => 'api/messages#timely_messages'
-  post '/find_group_key' => 'api/groups#show_with_group_key'
+  post 'users/api/find_group_key' => 'api/groups#find_group_key'
   # post '/add_number' => 'api/friends#number_of_add_by_date'
   # post '/block_number' => 'api/friends#number_of_block_by_date'
   # post '/week_date' => 'api/friends#get_date_info'
   post '/weekly_friend_info' => 'api/friends#get_weekly_friend_info'
   post '/create_notify' => 'api/showmes#create_notify'
   # get '/emojis' =>'api/showmes#index_emoji'
+  post 'users/api/idCheck' => 'api/users#id_check'
   get 'api/cancel_reaction' => 'api/reactions#cancel_reaction'
   get '*path', controller: 'application', action: 'render_404'
   post 'api/reactions_all' => 'api/reactions#index_all_except'
@@ -116,4 +121,12 @@ Rails.application.routes.draw do
   post 'api/unset_default_richmenu' => 'api/showmes#unset_default_richmenu'
   post 'api/delete_richmenu' => 'api/showmes#delete_richmenu'
   post 'api/load_all_richmenus' => 'api/showmes#load_all_richmenus'
+  post 'api/make_group_key' => 'api/groups#make_group_key'
+  post 'api/fetch_channels' => 'api/channels#fetch_channels'
+  post 'api/save_target_channel' => 'api/users#save_target_channel'
+  post 'api/update_follows' => 'api/showmes#update_follows'
+  post 'api/fetch_groups' => 'api/groups#fetch_groups'
+  post 'api/check_channel_limit' => 'api/groups#check_channel_limit'
+  post 'api/fetch_members' => 'api/users#fetch_members'
+  post 'api/users_update' => 'api/users#users_update'
 end

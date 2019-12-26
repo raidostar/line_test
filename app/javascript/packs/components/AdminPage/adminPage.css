@@ -1,0 +1,124 @@
+.page {
+  height: 90vh;
+}
+#result {
+  background-color: blue;
+  width: 20em;
+  height: 20em;
+  position: relative;
+  margin: 0 auto;
+}
+.group_info {
+  width: 90%;
+  margin: 0 auto;
+}
+.group_value {
+  text-align: center;
+}
+.group_input {
+}
+.groupButton {
+}
+.groupButton:focus {
+  outline: none;
+}
+.channel_buttons {
+  text-align: right;
+  margin-right: 3em;
+}
+button.button {
+  background-color: #C0C0C0;
+  color: #2C3250;
+  padding: 5px 5px;
+  border-radius: 10px;
+  border: 1px solid #C0C0C0;
+  box-shadow: 0 0 2px #666;
+  float: right;
+  font-size: 16px;
+  margin-right: 20px;
+}
+.button:hover {
+  text-decoration: none;
+  background-color: #2C3250;
+  color: white;
+}
+.button:focus {
+  outline: none;
+  background-color: #2C3250;
+  color: white;
+}
+.button:active {
+  -webkit-transform: translateY(2px);
+  transform: translateY(2px);
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0.15);
+}
+.page-setting {
+  float: right;
+  width: 15%;
+  height: 2.5em;
+  margin-right: 1em;
+}
+select {
+  background-color: white;
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #f2f2f2;
+  border-radius: 2px;
+  height: 3rem;
+  display: -webkit-inline-box;
+}
+.member-detail {
+  position: absolute;
+  width: 50%;
+  height: 88%;
+  top: 4em;
+  right: 7em;
+  background: #eeeee7;
+  border-radius: 8px;
+}
+.fadeInOut-enter-active{
+  animation: fadeIn .5s;
+}
+.fadeInOut-leave-active{
+  animation: fadeIn .5s reverse;
+}
+.group-name {
+  color: blue;
+}
+.group-name:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+.window {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: 100%;
+  width: 100%;
+}
+.member-value {
+  text-align: center;
+}
+.save {
+  font-size: 24px;
+  width: fit-content;
+  z-index: 2;
+  position: absolute;
+  top: 27.4em;
+  right: 8em;
+}
+.save:hover {
+  cursor: pointer;
+  color: blue;
+}
+.close {
+  width: fit-content;
+  z-index: 2;
+  position: absolute;
+  top: 29.6em;
+  right: 5em;
+}
+.close:hover {
+  cursor: pointer;
+  color: red;
+}

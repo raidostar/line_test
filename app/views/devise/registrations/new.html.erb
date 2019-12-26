@@ -5,22 +5,37 @@
 
   <div class="field input-field">
     <label for="user_グルプ名">グルプ名</label>
-    <input type="text" name="user[group]" id="user_group_key" >
+    <input type="text" name="user[group]" id="user_group" >
+    <span class="validation" id="group_checker"></span>
+  </div>
+
+  <div class="field input-field">
+    <label for="user_グルプキー">グルプキー</label>
+    <input type="password" id="user_group_key">
+
+    <i class="material-icons visibility" id="visible">visibility</i>
+    <i class="material-icons visibility" id="invisible">visibility_off</i>
+    <i class="material-icons" id="help">help</i>
+    <button id="checkId" type="button">CHECK</button>
+    <span class="validation" id="checker"></span>
   </div>
 
   <div class="field input-field">
     <label for="user_email">E-mail</label>
     <%= f.email_field :email, autocomplete: "email" %>
+    <span class="validation" id="idCheckResult"></span>
   </div>
 
   <div class="field input-field">
     <label for="user_パスワード">パスワード</label>
     <%= f.password_field :password, autocomplete: "new-password" %>
+    <span class="validation" id="pwdCheckResult"></span>
   </div>
 
   <div class="field input-field">
     <label for="user_パスワード確認">パスワード確認</label>
     <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
+    <span class="validation" id="pwdRecheckResult"></span>
   </div>
 
   <div class="field input-field">
@@ -42,56 +57,94 @@
         'X-CSRF-TOKEN': $('input[name="authenticity_token"]').val()
       }
     });
+
+    $('#checkId').on('click', groupkeyCheck);
+    $('#joinBtn').on('click', joinValidation);
+    $('#user_email').on('keyup', emailCheck);
+
     let validation = false;
     let visible = false;
-    var sample = ''
-    sample += '<option value=\"Rakuten\"/>';
-    sample += '<option value=\"Softbank\"/>';
-    sample += '<option value=\"Google Japan\"/>';
-    sample += '<option value=\"Amazon Japan\"/>';
 
-    $("#group").html(sample);
-
-    $('#checkId').on('click', function(){
+    function groupkeyCheck(){
+      this.validation = false
       var group = $('#user_group').val()
       var group_key = $('#user_group_key').val()
-
       var data = { "group": group, "group_key": group_key }
-      $.ajax({
-        method: 'post',
-        url: '/find_group_key',
-        data: data,
-        success: function(res){
-          if (res!=null){
-            $('#checker').html("認証完了");
-            $('#checker').css({"color": "green"});
-            validation = true;
-          } else {
-            $('#checker').html("認証できません。認証キーがなければ発給の後で登録ができます。");
-            $('#checker').css({"color": "red"});
+      if(group.length==0){
+        alert("グループの名前を入力してください。");
+        return false;
+      }else if(group_key.length==0){
+        alert("グループキーを入力してください。");
+        return false;
+      } else{
+        $.ajax({
+          method: 'post',
+          url: 'api/find_group_key',
+          data: data,
+          success: function(res){
+            if (res!=false){
+              $('#checker').html("認証完了");
+              $('#checker').css({"color": "green"});
+              return true
+            } else {
+              $('#checker').html("認証できません。認証キーがなければ発給の後で登録ができます。");
+              $('#checker').css({"color": "red"});
+              return false
+            }
+            this.validation = true
           }
-        }
-      })
-    })
+        })
+      }
+    }
 
-    $('#joinBtn').on('click', function(){
-      if (validation ==false){
+    function emailCheck(){
+      this.validation = false
+      let userId = $('#user_email').val();
+      if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(userId)){
+        $('#idCheckResult').html("メール形式が間違いました。");
+        $('#idCheckResult').css({"color": "red"});
+        return false;
+      } else{
+        var data = {"user_id" : userId}
+        $.ajax({
+          method : 'post',
+          url : 'api/idCheck',
+          data : JSON.stringify(data),
+          contentType : 'application/json; charset:utf-8',
+          success : function(num){
+            if(num==0){
+              $('#idCheckResult').html("このアカウントはできます。");
+              $('#idCheckResult').css({"color": "green"});
+              return true;
+            } else{
+              $('#idCheckResult').html("もう登録されたアカウントです。");
+              $('#idCheckResult').css({"color": "red"});
+              return false;
+            }
+            this.validation = true
+          }
+        })
+      }
+    }
+
+    function joinValidation(){
+      if (this.validation ==false){
         alert("認証してから登録できます。");
         return false;
       }
-    })
+      let userPwd = $('#user_password').val();
+    }
+
     var toggle = false
     $('.visibility').on('click',function(){
       if(toggle == false){
         $('#invisible').css({"opacity": 0});
         $('#visible').css({"opacity": 1});
-        $('#user_group_key').val('');
         $('#user_group_key').attr("type", "text");
         toggle = !toggle
       } else {
         $('#invisible').css({"opacity": 1});
         $('#visible').css({"opacity": 0});
-        $('#user_group_key').val('');
         $('#user_group_key').attr("type", "password");
         toggle = !toggle
       }
@@ -100,6 +153,12 @@
 </script>
 
 <style>
+  #help {
+    left: 833px;
+  }
+  #help:hover {
+    color: #00b900;
+  }
   .bigBox {
     width: 60%;
     margin: 0 auto;
@@ -116,7 +175,6 @@
     display: inline-block;
     font-size: 16px;
     letter-spacing: 5px;
-    text-align: center;
   }
   .button:hover {
     background-color: #039be5;
@@ -124,17 +182,26 @@
   }
   #checkId {
     float: right;
-    width: 50px;
+    width: auto;
     height: 30px;
-    line-height: 30px;
+    line-height: 0px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    -webkit-transition-duration: 0.4s;
+    transition-duration: 0.4s;
+    border-radius: 10px;
+    font-size: 16px;
     text-align: center;
     z-index: 200;
     position: absolute;
     top: 12px;
-    left: 850px;
+    left: 880px;
   }
   #checkId:hover {
     cursor: pointer;
+    background-color: #039be5;
+    color: white;
   }
   .material-icons {
     z-index: 100;

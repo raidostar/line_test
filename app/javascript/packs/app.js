@@ -18,6 +18,7 @@ export default {
       group: '',
       loading: true,
       mode: '',
+      status: '',
     }
   },
   mounted: function(){
@@ -25,14 +26,12 @@ export default {
     axios.post('/show_current').then((res)=>{
       this.userid = res.data.user.email
       this.group = res.data.user.group
+      this.status = res.data.user.status
     },(error)=>{
       console.log(error)
     })
   },
   methods: {
-    readyAlert(){
-      alert("まだ準備中でございます。")
-    },
     sendMode(){
       var url = window.location.href
       var mode = url.substr(24,url.length)

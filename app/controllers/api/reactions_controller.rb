@@ -15,8 +15,8 @@ class Api::ReactionsController < ApplicationController
   end
 
   def index_welcome_reaction
-    group = current_user.group
-    option = Option.find_by(user_group: group, option_type: 'welcomeReply')
+    channel_id = current_user.target_channel
+    option = Option.find_by(channel_id: channel_id, option_type: 'welcomeReply')
     @reactions = []
     if option.present?
       if option.match_reaction.present?
@@ -30,7 +30,7 @@ class Api::ReactionsController < ApplicationController
   def index_by_tag
     tag = Tag.find_by(id: params[:tag_id])
     @reactions = []
-    reactions = Reaction.where(user_group: current_user.group)
+    reactions = Reaction.where(channel_id: current_user.target_channel)
     reactions.each do |reaction|
       if reaction.tag.present?
         temp = reaction.tag.split(",")
@@ -47,7 +47,7 @@ class Api::ReactionsController < ApplicationController
   def index_all_except
     @option = Option.find(params[:option_id])
     temp = @option.match_reaction.split(",")
-    @reactions = Reaction.where(user_group: current_user.group).where.not(id: temp)
+    @reactions = Reaction.where(channel_id: current_user.target_channel).where.not(id: temp)
 
     render json: @reactions, status: :ok
   end
@@ -72,9 +72,9 @@ class Api::ReactionsController < ApplicationController
 
   def tag_create(tags)
     tags.each do |tag|
-      tagCheck = Tag.where(name: tag, tag_group: 'reaction', user_group: current_user.group)
+      tagCheck = Tag.where(name: tag, tag_group: 'reaction', channel_id: current_user.target_channel)
       if !tagCheck.present?
-        @tag = Tag.new(name: tag, tag_group: 'reaction', user_group: current_user.group)
+        @tag = Tag.new(name: tag, tag_group: 'reaction', channel_id: current_user.target_channel)
         if @tag.save
         else
           render json: @reaction.errors, status: :unprocessable_entity
@@ -178,17 +178,17 @@ class Api::ReactionsController < ApplicationController
 
   def reaction_params
     if params[:reaction].present?
-      params[:reaction][:user_group] = current_user.group
+      params[:reaction][:channel_id] = current_user.target_channel
       params[:reaction][:target_number] = 0
       params.require(:reaction).permit(
-        :id, :name, :contents, :reaction_type ,:user_group, :tag, :target_number,
+        :id, :name, :contents, :reaction_type ,:channel_id, :tag, :target_number,
         :image, :created_at, :updated_at, :match_option
         )
     else
-      params[:user_group] = current_user.group
+      params[:channel_id] = current_user.target_channel
       params[:target_number] = 0
       params.permit(
-        :id, :name, :contents, :reaction_type ,:user_group, :tag, :target_number, :created_at, :updated_at, :match_option, :image
+        :id, :name, :contents, :reaction_type ,:channel_id, :tag, :target_number, :created_at, :updated_at, :match_option, :image
         )
     end
   end
