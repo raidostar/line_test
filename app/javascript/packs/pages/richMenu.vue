@@ -449,13 +449,6 @@
         xRound = Math.round(xRound)
         yRound = Math.round(yRound)
 
-        // console.log("x:"+xRound)
-        // console.log("y:"+yRound)
-        // console.log("width:"+this.areaWidth)
-        // console.log("height:"+this.areaHeight)
-        // console.log("actualWidth:"+actualWidth)
-        // console.log("actualHeight:"+actualHeight)
-
         if(this.richActions.length>0){
           for(var action of this.richActions){
             var x = action.x
@@ -516,7 +509,6 @@
           return;
         }
         this.imageFile = files[0]
-        console.log(this.imageFile)
         this.createImage(files[0]);
       },
       createImage(file){
@@ -587,7 +579,6 @@
         }
       },
       checkNum(e){
-        //console.log(typeof(e.keyCode))
         var index = 0
         if(48<e.keyCode&&e.keyCode<58){
           index = e.keyCode - 49

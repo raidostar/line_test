@@ -929,7 +929,6 @@
       },
       fetchTargets(){
         axios.post('/api/fetch_targets').then((res)=>{
-          //console.log(res.data)
           this.targets = res.data
         },(error)=>{
           console.log(error)
@@ -940,9 +939,7 @@
           option_type: 'autoReply',
           tag_id: this.selectedTagId
         }).then((res)=>{
-          //console.log(res.data)
           this.options = res.data
-          //this.fetchOption();
           this.fetchTargets();
         },(error)=>{
           console.log(error)
@@ -979,7 +976,6 @@
             option_type: 'autoReply'
           }
         }
-        //this.$nextTick(() => document.getElementById('new-folder').focus());
       },
       createFolder(){
         if (!this.newFolder) return;
@@ -987,7 +983,6 @@
           alert("新しいファイルが追加されました。")
           this.newFolder = '';
           this.addShow = !this.addShow;
-          // this.flexableMargin = {'margin-top': '0px'}
           this.fetchTags();
         },(error)=>{
           console.log(error);
@@ -1161,7 +1156,6 @@
           for(let reaction of res.data){
             reaction.created_at = reaction.created_at.substr(0,16).replace('T',' ');
           }
-          //console.log(res.data.reactions)
           this.reactions = res.data
         },(error)=>{
           console.log(error)
@@ -1169,8 +1163,6 @@
       },
       fetchEmojis(){
         axios.get('api/emojis').then((res)=>{
-          // console.log("emojis")
-          // console.log(res.data.emojis)
           this.emojis = res.data.emojis
         },(error)=>{
           console.log(error)
@@ -1398,7 +1390,6 @@
           data.append('bubble_num',this.bubble_array.length)
           axios.post('api/bubbles',data)
           .then((res)=>{
-            console.log(res.data)
             const data = res.data.toString()
             axios.post('/api/reactions',{
               name: this.reactionName,
@@ -1407,7 +1398,6 @@
               match_option: this.selectedId,
               tag: this.tagtext.toString(),
             }).then((res)=>{
-              //console.log(res.data)
               alert("メッセージセーブ完了")
               this.reactionToggle();
               this.toggleCarousel();
@@ -1423,7 +1413,6 @@
           const latlng = this.marker_center
           geocoder.geocode({'location':this.marker_center,'language': 'ja'},(results,status)=>{
             if(status == 'OK'){
-              //console.log(results)
               let data = '['+results[5].formatted_address+']+[@map('+latlng.lat+','+latlng.lng+')]'
               axios.post('/api/reactions',{
                 name: this.reactionName,
@@ -1456,7 +1445,6 @@
             const latlng = this.marker_center
             geocoder.geocode({'location':this.marker_center,'language': 'ja'},(results,status)=>{
               if(status == 'OK'){
-                //console.log(results)
                 let data = '['+results[5].formatted_address+']+[@map('+latlng.lat+','+latlng.lng+')]'
                 axios.post('/api/reactions',{
                   name: this.reactionName,
@@ -1771,7 +1759,6 @@
             this.fetchBubbles(this.selectedReaction.contents)
             break
             default:
-            console.log(this.selectedReaction.reaction_type);
           }
           this.editMode = mode
         },(error)=>{
@@ -1933,7 +1920,6 @@
           data.append('bubble_num',this.bubble_array.length)
           data.append('bubble_ids', this.selectedReaction.contents)
           axios.post('/api/update_bubbles',data).then((res)=>{
-            console.log(res.data)
             const contents = res.data.toString()
             axios.put('/api/reactions/'+this.selectedReaction.id,{
               name: this.reactionName,
@@ -2010,7 +1996,6 @@
           tag: this.tagtext.toString(),
         }).then((res)=>{
           alert("条件修正完了！");
-          console.log(res.data)
           this.fetchOptions();
         },(error)=>{
           console.log(error)
@@ -2031,7 +2016,6 @@
         axios.post('api/keyword_check',{
           keyword: this.keyword
         }).then((res)=>{
-          console.log(res.data)
           if(res.data.length>0){
             alert("もうあるキーワードです。")
             return;
@@ -2105,8 +2089,6 @@
         })
       },
       linkOptionReaction(id){
-        // console.log(reactions)
-        // console.log(reactions.length)
         if(this.reactions.length>=5){
           alert("最大アクション値は５つです。")
           this.fetchReactions();
@@ -2735,8 +2717,6 @@
         axios.post('api/fetch_bubbles',{
           ids: ids
         }).then((res)=>{
-          // console.log("bubble수집")
-          console.log(res.data)
           this.carouselAreaShow = true;
           this.bubble_array = []
           this.bubbles = []
@@ -3040,7 +3020,6 @@
         }
       },
       keyNumberCheck(e){
-        console.log(e.keyCode)
         switch(e.keyCode){
           case 13:
           this.stretchCarouselToggle();

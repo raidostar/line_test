@@ -108,7 +108,6 @@
           id: this.id,
           reply_boolean: true
         }).then((res)=>{
-          //console.log(res.data)
           this.messageType = res.data
           this.firstType = res.data[0]
           this.secondType = res.data[1]
@@ -128,7 +127,6 @@
           id: this.id,
           reply_boolean: true
         }).then((res)=>{
-          console.log(res.data)
           for(var msg of res.data){
             if(msg[0]=="replied"){
               msg[0] = "直接応答"

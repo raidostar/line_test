@@ -46,7 +46,6 @@
         axios.post('api/fetch_follows_data',{
           timeOption: this.timeLineOption
         }).then((res)=>{
-          //console.log(res.data)
           this.timeLineFollows = res.data
           this.fetchFollowsTimeData();
         },(error)=>{
@@ -57,11 +56,10 @@
         axios.post('api/fetch_follows_time_data',{
           timeOption: this.timeOption
         }).then((res)=>{
-          //console.log(res.data)
           this.timelyFollows = res.data
           this.loading =false
         },(error)=>{
-          //console.log(error)
+          console.log(error)
         })
       }
     }

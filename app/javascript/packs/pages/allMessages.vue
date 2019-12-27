@@ -47,44 +47,46 @@
             <th>状態</th>
             <th>返事する</th>
           </tr>
-          <tr v-for="msg in getMessage" v-model="messageList">
-            <td><span>{{ msg.created_at }}</span></td>
-            <td>{{ msg.sender }}</td>
-            <td v-if="msg.message_type=='stamp'">
-              <a @click="detailImage(getImgUrl(msg.contents))">
-                <img class="stampBtnImg" :src="getImgUrl(msg.contents)"/>
-              </a>
-            </td>
-            <td v-else-if="msg.message_type=='image'">
-              <a @click="detailImage(msg.image.url)">
-                <img class="stampBtnImg" :src="msg.image.url"/>
-              </a>
-            </td>
-            <td v-else>
-              <a v-if="msg.contents.search('<img src=')>=0"
-                @click="showFullContents(msg.contents)"
-                v-html="msg.contents.substr(0,100)"
-                >
-              </a>
-              <a v-else @click="showFullContents(msg.contents)">
-                <span v-if="msg.contents.length>19" v-html="msg.contents.substr(0,20)+'...'"></span>
-                <span v-else v-html="msg.contents.substr(0,20)"></span>
-              </a>
-            </td>
-            <td>{{ msg.message_type }}</td>
-            <td v-if="msg.check_status=='autoReplied'">自動返事</td>
-            <td v-else-if="msg.check_status=='replied'">直接返事</td>
-            <td v-else-if="msg.check_status=='urgent'" style="color: red;">要対応</td>
-            <td v-else-if="msg.check_status=='checked'">確認完了</td>
-            <td v-else-if="msg.check_status=='unreplied'" style="color: blue;">未返事</td>
-            <td v-else style="color: grey;">未確認</td>
-            <td v-if="msg.check_status=='autoReplied'||msg.check_status=='replied'||msg.check_status=='checked'" >
-              <button class="replyBtn" @click="replyMessage(msg)" style="color: green;">
-                処理完了
-              </button>
-            </td>
-            <td v-else><button class="replyBtn" @click="replyMessage(msg)">返事</button></td>
-          </tr>
+          <transition-group name="flipInOut" tag="tbody">
+            <tr v-for="msg in getMessage" v-bind:key="msg.id" v-model="messageList">
+              <td><span>{{ msg.created_at }}</span></td>
+              <td>{{ msg.sender }}</td>
+              <td v-if="msg.message_type=='stamp'">
+                <a @click="detailImage(getImgUrl(msg.contents))">
+                  <img class="stampBtnImg" :src="getImgUrl(msg.contents)"/>
+                </a>
+              </td>
+              <td v-else-if="msg.message_type=='image'">
+                <a @click="detailImage(msg.image.url)">
+                  <img class="stampBtnImg" :src="msg.image.url"/>
+                </a>
+              </td>
+              <td v-else>
+                <a v-if="msg.contents.search('<img src=')>=0"
+                  @click="showFullContents(msg.contents)"
+                  v-html="msg.contents.substr(0,100)"
+                  >
+                </a>
+                <a v-else @click="showFullContents(msg.contents)">
+                  <span v-if="msg.contents.length>19" v-html="msg.contents.substr(0,20)+'...'"></span>
+                  <span v-else v-html="msg.contents.substr(0,20)"></span>
+                </a>
+              </td>
+              <td>{{ msg.message_type }}</td>
+              <td v-if="msg.check_status=='autoReplied'">自動返事</td>
+              <td v-else-if="msg.check_status=='replied'">直接返事</td>
+              <td v-else-if="msg.check_status=='urgent'" style="color: red;">要対応</td>
+              <td v-else-if="msg.check_status=='checked'">確認完了</td>
+              <td v-else-if="msg.check_status=='unreplied'" style="color: blue;">未返事</td>
+              <td v-else style="color: grey;">未確認</td>
+              <td v-if="msg.check_status=='autoReplied'||msg.check_status=='replied'||msg.check_status=='checked'" >
+                <button class="replyBtn" @click="replyMessage(msg)" style="color: green;">
+                  処理完了
+                </button>
+              </td>
+              <td v-else><button class="replyBtn" @click="replyMessage(msg)">返事</button></td>
+            </tr>
+          </transition-group>
         </table>
         <paginate
         :page-count="getPageCount"
@@ -441,13 +443,12 @@
 </div>
 </transition>
 <!-- preview area -->
-<transition name="tadaInOut">
-  <div class="detailWindow" v-show="showDetail">
+<transition name="fadeInOut">
+  <div class="detailWindow" v-show="showDetail" @click="closeDetail">
     <div class="detailPanel">
-      <a class="closeDetail" @click="closeDetail">X</a>
       <div class="detailContents">
         <div class="detail" readonly="readonly">
-          <span v-html="fullContents" v-if="fullContents.search('@map')<0"></span>
+          <div v-html="fullContents" v-if="fullContents.search('@map')<0" style="margin: 5px 10px;"></div>
           <GmapMap
           v-else
           :center="selected_center"
@@ -578,6 +579,9 @@
     },
     mounted: function(){
       this.fetchChannels();
+      setInterval(
+        this.fetchMessage
+      ,30000)
     },
     methods: {
       fetchChannels(){
@@ -807,8 +811,6 @@
       },
       fetchEmojis(){
         axios.get('api/emojis').then((res)=>{
-          // console.log("emojis")
-          // console.log(res.data.emojis)
           this.emojis = res.data.emojis
         },(error)=>{
           console.log(error)
@@ -845,7 +847,6 @@
             contents: this.contents,
           })
           .then((res)=>{
-            console.log(res.data)
             var reply_token = res.data.reply_token
             this.fetchReply(reply_token)
             this.emptyAll();
@@ -1018,7 +1019,6 @@
           data.append('bubble_num',this.bubble_array.length)
           axios.post('api/bubbles_archives',data)
           .then((res)=>{
-            //console.log(res.data)
             const data = res.data.toString()
             axios.post('/api/direct_reply',{
               message_id: this.selectedMessage.id,
@@ -1039,7 +1039,6 @@
           const latlng = this.marker_center
           geocoder.geocode({'location':this.marker_center,'language': 'ja'},(results,status)=>{
             if(status == 'OK'){
-              console.log(results)
               let data = '['+results[5].formatted_address+']+[@map('+latlng.lat+','+latlng.lng+')]'
               axios.post('api/direct_reply',{
                 message_id: this.selectedMessage.id,
@@ -1068,7 +1067,6 @@
             const latlng = this.marker_center
             geocoder.geocode({'location':this.marker_center,'language': 'ja'},(results,status)=>{
               if(status == 'OK'){
-                console.log(results)
                 let data = '['+results[5].formatted_address+']+[@map('+latlng.lat+','+latlng.lng+')]'
                 axios.post('api/direct_reply',{
                   message_id: this.selectedMessage.id,
@@ -1151,7 +1149,6 @@
         axios.post('api/fetch_reply',{
           reply_token: data
         }).then((res)=>{
-          //console.log(res.data)
           this.reverseMessageList = res.data.messages
           this.bubbles = []
           for(var msg of this.reverseMessageList){
@@ -1195,7 +1192,6 @@
           fr_account: fr_account
         }).then((res)=>{
           this.selectedFriend = res.data
-          //console.log(this.selectedFriend)
         },(error)=>{
           console.log(error)
         })
@@ -1729,8 +1725,6 @@
         axios.post('api/fetch_bubbles_archives',{
           ids: ids
         }).then((res)=>{
-          // console.log("bubble수집")
-          // console.log(res.data)
           for(var bubble of res.data){
             this.bubbles.push(bubble)
             var headerResult = {'display':'grid', 'height': '7vh'}
@@ -1762,10 +1756,6 @@
             this.resultBodyCSS.push(bodyResult)
             this.resultFooterCSS.push(footerResult)
           }
-          // console.log(this.bubbles)
-          // console.log(this.resultHeaderCSS)
-          // console.log(this.resultBodyCSS)
-          // console.log(this.resultFooterCSS)
         },(error)=>{
           console.log(error)
         })
@@ -2012,7 +2002,6 @@
         }
       },
       keyNumberCheck(e){
-        console.log(e.keyCode)
         switch(e.keyCode){
           case 13:
           this.stretchCarouselToggle();

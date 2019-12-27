@@ -598,6 +598,7 @@ div.inline-radio button:active{
   float: left;
   overflow-x: scroll;
   overflow-y: hidden;
+  height: 26em;
 }
 .bubble {
   background: white;
@@ -864,6 +865,11 @@ input[type=text]:not(.browser-default) {
   font-size: 20px;
   font-weight: 600;
 }
+.profile_none {
+  font-size: 42px;
+  color: #6495ed;
+}
+
 .waiting-screen {
   position: absolute;
   top: 0;

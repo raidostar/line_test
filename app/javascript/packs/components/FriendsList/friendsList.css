@@ -36,6 +36,7 @@ hr {
   width: 40px;
   height: 40px;
   border-radius: 100%;
+  margin-right: 10px;
 }
 .sticker {
   width: 50px;
@@ -109,8 +110,12 @@ hr {
   outline: none;
 }
 .setting {
+  margin: 10px;
   float: right;
   padding-right: 25px;
+}
+.page-setting {
+  width: 15em;
 }
 select {
   background-color: white;
@@ -133,8 +138,11 @@ a:not([href]):not([tabindex]):hover{
   width: 5em;
 }
 .personal {
-  margin: 0 auto;
   width: fit-content;
+  height: 3em;
+  line-height: 3em;
+  float: left;
+  margin-left: 29px;
 }
 
 .waiting-screen {
@@ -181,8 +189,13 @@ a:not([href]):not([tabindex]):hover{
   0%, 80%, 100% {
     -webkit-transform: scale(0);
     transform: scale(0);
-  } 40% {
-    -webkit-transform: scale(1.0);
-    transform: scale(1.0);
+    } 40% {
+      -webkit-transform: scale(1.0);
+      transform: scale(1.0);
+    }
   }
+.profile {
+  font-size: 48px;
+  margin-right: 10px;
+  color: #6495ed;
 }

@@ -209,7 +209,6 @@
     methods: {
       fetchGroups(){
         axios.post('api/fetch_groups').then((res)=>{
-          //console.log(res.data)
           this.groups = res.data
           for(var group of this.groups){
             if(group.channels!=null){
@@ -220,13 +219,12 @@
             }
           }
         },(error)=>{
-          console.log(errror)
+          console.log(error)
         })
       },
       makeGroupKey(index){
         this.selectedGroup = index
         axios.post('api/make_group_key').then((res)=>{
-          //console.log(res.data)
           this.groupKeyShow = true
           this.groupKey = res.data
         },(error)=>{
@@ -265,13 +263,12 @@
           channels_limit: this.groupChannelLimit,
           member_limit: this.groupMemberLimit,
         }).then((res)=>{
-          //console.log(res.data)
           alert("アップデート完了！");
           this.mode = 'read';
           this.clearGroupValues();
           this.fetchGroups();
         },(error)=>{
-          console.log(res.data)
+          console.log(error)
         })
       },
       createGroup(){
@@ -297,13 +294,12 @@
           channels_limit: this.groupChannelLimit,
           member_limit: this.groupMemberLimit,
         }).then((res)=>{
-          //console.log(res.data)
           alert("新規グループ登録完了！");
           this.mode='read'
           this.clearGroupValues();
           this.fetchGroups();
         },(error)=>{
-          console.log(res.data)
+          console.log(error)
         })
       },
       clearGroupValues(){
@@ -387,7 +383,6 @@
         axios.post('api/fetch_members',{
           group: group
         }).then((res)=>{
-          //console.log(res.data.users)
           this.members = res.data.users
           for(var member of this.members){
             this.statusList.push(member.status)
@@ -415,11 +410,9 @@
             users.push(user)
           }
         }
-        // console.log(users)
         axios.post('api/users_update',{
           users: users
         }).then((res)=>{
-          //console.log(res.data)
           alert("アップデート完了！");
           this.closeMemberDetail();
         },(error)=>{

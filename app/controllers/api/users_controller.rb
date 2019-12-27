@@ -5,9 +5,7 @@ class Api::UsersController < ApplicationController
     status = current_user.status
     if status == 'admin'
       group = params[:group]
-      puts group
       @users = User.where(group: group).where.not(status: 'admin')
-      puts @users
       render :index, status: :ok
     elsif status == 'master'
       group = current_user.group

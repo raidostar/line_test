@@ -105,7 +105,6 @@
         axios.post('api/fetch_message_type_data',{
           reply_boolean: true
         }).then((res)=>{
-          //console.log(res.data)
           this.messageType = res.data
           this.firstType = res.data[0]
           this.secondType = res.data[1]

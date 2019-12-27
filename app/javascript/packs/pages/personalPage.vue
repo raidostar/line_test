@@ -9,7 +9,8 @@
     </div>
     <div class="box">
       <h2 class="profile">
-        <img :src="friend.profile_pic" class="profile_img">
+        <img v-if="friend.profile_pic" :src="friend.profile_pic" class="profile_img">
+        <i v-else class="material-icons profile-image">account_circle</i>
         <span>{{friend.fr_name}}</span>
         <div style="float: right;" class="settings">
           <i class="material-icons setting" @click="detailToggle">settings</i>
@@ -47,8 +48,8 @@
             </span>
           </div>
           <div style="margin-top: 10px; float: right;">
-            <button @click="updateTag">設定</button>
-            <button>キャンセル</button>
+            <button class="profile_menu" @click="updateTag">設定</button>
+            <button class="profile_menu">キャンセル</button>
           </div>
         </div>
       </div>
@@ -132,7 +133,6 @@
         const url = '/api/friends/'+this.id
         axios.get(url).then((res)=>{
           this.friend = res.data.friend
-          //console.log(this.friend)
           let fr_account = this.friend.fr_account
           this.friend.created_at = this.friend.created_at.substr(0,16).replace('T',' ');
           if(this.friend.last_message_time != null){
@@ -213,9 +213,6 @@
         axios.post('api/fetch_bubbles_archives',{
           ids: ids
         }).then((res)=>{
-          // console.log("bubble수집")
-          // console.log(res.data)
-          //console.log(this.bubbles)
           for(var bubble of res.data){
             this.bubbles.push(bubble)
             var headerResult = {'display':'grid', 'height': '7vh'}
@@ -247,10 +244,6 @@
             this.resultBodyCSS.push(bodyResult)
             this.resultFooterCSS.push(footerResult)
           }
-          // console.log(this.bubbles)
-          // console.log(this.resultHeaderCSS)
-          // console.log(this.resultBodyCSS)
-          // console.log(this.resultFooterCSS)
           let height = this.$refs.result.clientHeight
           let scrollTop = this.$refs.result.scrollTop
           let scrollHeight = this.$refs.result.scrollHeight

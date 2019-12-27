@@ -118,11 +118,7 @@
         let height = this.$refs.result.clientHeight
         let scrollTop = this.$refs.result.scrollTop
         let scrollHeight = this.$refs.result.scrollHeight
-        // console.log(height)
-        // console.log(scrollTop)
-        // console.log(scrollHeight)
         scrollTop = scrollHeight - height
-        //console.log(scrollTop)
         this.$refs.result.scrollTop = scrollTop
         this.$nextTick(function(){
           this.loading = false

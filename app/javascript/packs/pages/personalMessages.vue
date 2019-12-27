@@ -15,11 +15,13 @@
       <ul class="friendsList">
         <li v-for="friend in friendsList">
           <button class="frBtn" v-if="friend==selectedFriend" style="background-color: #aac5F2">
-            <img :src="friend.profile_pic" class="profile_img">
+            <img v-if="friend.profile_pic" :src="friend.profile_pic" class="profile_img">
+            <i v-else class="material-icons profile">account_circle</i>
             <span class="profile-name">{{friend.fr_name}}</span>
           </button>
           <button class="frBtn" v-else @click="fetchMessages(friend)">
-            <img :src="friend.profile_pic" class="profile_img">
+            <img v-if="friend.profile_pic" :src="friend.profile_pic" class="profile_img">
+            <i v-else class="material-icons profile">account_circle</i>
             <span class="profile-name">{{friend.fr_name}}</span>
           </button>
         </li>
@@ -114,8 +116,9 @@
       友達プロファイル
     </div>
     <div style="text-align: center;" v-model="friend">
-      <div style="margin-top: 10px;">
-        <img :src="friend.profile_pic" class="profile_img_for_one">
+      <div style="margin-top: 10px;height: 10em;">
+        <img v-if="friend.profile_pic" :src="friend.profile_pic" class="profile_img_for_one">
+        <i v-else class="material-icons big-profile">account_box</i>
       </div>
       <div>
         {{friend.fr_name}}
@@ -178,7 +181,6 @@
       fetchFriends(){
         this.loading = true
         axios.get('/api/friends').then((res) => {
-          //console.log(res.data.friends)
           this.friendsList = res.data.friends
           this.fetchMessages(this.friendsList[0])
         }, (error) => {
@@ -209,8 +211,6 @@
         })
       },
       showFriend(req){
-        //console.log(req);
-        //console.log(this.friendsList)
         for(let friend of this.friendsList){
           let time = friend.created_at+""
           friend.created_at = time.substr(0,19).replace('T'," ")
@@ -279,7 +279,6 @@
             this.resultBodyCSS.push(bodyResult)
             this.resultFooterCSS.push(footerResult)
           }
-          //console.log(this.bubbles)
           let height = this.$refs.result.clientHeight
           let scrollTop = this.$refs.result.scrollTop
           let scrollHeight = this.$refs.result.scrollHeight
@@ -381,11 +380,6 @@
       //   let height = this.$refs.result.clientHeight
       //   let scrollTop = this.$refs.result.scrollTop
       //   let scrollHeight = this.$refs.result.scrollHeight
-      //   console.log(height)
-      //   console.log(scrollTop)
-      //   console.log(scrollHeight)
-      //   scrollTop = scrollHeight - height
-      //   console.log(scrollTop)
       //   this.$refs.result.scrollTop = scrollTop
       // },
     }

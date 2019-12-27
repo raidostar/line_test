@@ -116,6 +116,7 @@
   height: 100%;
   text-align: left;
   -webkit-appearance: media-sliderthumb;
+  line-height: 39px;
 }
 .frBtn:focus {
   outline: none;
@@ -329,8 +330,18 @@
   0%, 80%, 100% {
     -webkit-transform: scale(0);
     transform: scale(0);
-  } 40% {
-    -webkit-transform: scale(1.0);
-    transform: scale(1.0);
+    } 40% {
+      -webkit-transform: scale(1.0);
+      transform: scale(1.0);
+    }
   }
+.profile {
+  font-size: 40px;
+  color: #6495ed;
+  margin-right: 0px;
+}
+.big-profile {
+  margin-left: .6em;
+  font-size: 130px;
+  color: #6495ed;
 }

@@ -35,7 +35,6 @@ class Api::MessagesController < ApplicationController
     channel_id = current_user.target_channel
     channel = Channel.find_by(channel_id: channel_id)
     channel_name = channel.channel_name
-    puts "channel_name"
     channel_destination = channel.channel_destination
     timely = {}
     start_day = now.beginning_of_day

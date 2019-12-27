@@ -1,8 +1,7 @@
 <template>
   <div class="page" id="page0">
     <div class="channel_buttons">
-      <button class="button" v-if="mode!='create'" @click="changeMode('create')">チャンネル追加</button>
-      <button class="button" v-if="mode!='read'" @click="changeMode('read')">キャンセル</button>
+      <button class="button" @click="changeMode('create')">チャンネル追加</button>
     </div>
     <div class="setting">
       <select class="page-setting" v-model="parPage" @change="resetPage">
@@ -23,94 +22,117 @@
           <th>チャンネルTOKEN</th>
           <th>チャンネルユーザID</th>
           <th>連動</th>
-          <th v-if="mode=='create'"></th>
-          <th style="width: 6em;"></th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="(channel,index) in channels">
           <td class="channel">{{index+1}}</td>
           <td class="channel">
-            <input v-if="selectedChannel==index&&mode=='update'" type="text" v-model="channelName" style="margin: 0 auto;width: 90%;height: 2em;"/>
-            <span v-else>{{channel.channel_name}}</span>
+            <span class="channel-name" @click="selectToChange(index)">{{channel.channel_name}}</span>
           </td>
 
           <td class="channel channel_ok">
-            <input v-if="selectedChannel==index&&mode=='update'" type="text" v-model="channelId" style="margin: 0 auto;width: 90%;height: 2em;" />
-            <div v-else>
-              <span v-if="channel.channel_id">登録完了</span>
-              <span v-else>未登録</span>
-            </div>
+            <span v-if="channel.channel_id">登録完了</span>
+            <span v-else>未登録</span>
           </td>
 
           <td class="channel channel_ok">
-            <input v-if="selectedChannel==index&&mode=='update'" type="text" v-model="channelSecret" style="margin: 0 auto;width: 90%;height: 2em;" />
-            <div v-else>
-              <span v-if="channel.channel_secret">登録完了</span>
-              <span v-else>未登録</span>
-            </div>
+            <span v-if="channel.channel_secret">登録完了</span>
+            <span v-else>未登録</span>
           </td>
 
           <td class="channel channel_ok">
-            <input v-if="selectedChannel==index&&mode=='update'" type="text" v-model="channelToken" style="margin: 0 auto;width: 90%;height: 2em;" />
-            <div v-else>
-              <span v-if="channel.channel_token">登録完了</span>
-              <span v-else>未登録</span>
-            </div>
+            <span v-if="channel.channel_token">登録完了</span>
+            <span v-else>未登録</span>
           </td>
 
           <td class="channel channel_ok">
-            <input v-if="selectedChannel==index&&mode=='update'" type="text" v-model="channelUserId" style="margin: 0 auto;width: 90%;height: 2em;" />
-            <div v-else>
-              <span v-if="channel.channel_user_id">登録完了</span>
-              <span v-else>未登録</span>
-            </div>
+            <span v-if="channel.channel_user_id">登録完了</span>
+            <span v-else>未登録</span>
           </td>
 
           <td class="channel channel_ok" style="width: 6em;">
             <span v-if="channel.channel_destination">連動完了</span>
             <span v-else>未連動</span>
           </td>
-
-          <td style="width: 12em;">
-            <div class="buttons" v-if="selectedChannel==index&&mode=='update'">
-              <button class="button delete" @click="deleteChannel">
-                削除
-              </button>
-              <button class="button update" @click="updateChannel">
-                修正
-              </button>
-            </div>
-            <button v-else class="button" @click="selectToChange(index)">選択</button>
-          </td>
-        </tr>
-        <tr v-if="mode=='create'">
-          <td class="channel">{{channels.length+1}}</td>
-          <td class="channel">
-            <input type="text" v-model="channelName" placeholder="チャンネル名前入力" style="height: 2em;margin-bottom: 0px;" />
-          </td>
-          <td class="channel">
-            <input type="text" v-model="channelId" placeholder="チャンネル名前入力" style="height: 2em;margin-bottom: 0px;" />
-          </td>
-          <td class="channel">
-            <input type="text" v-model="channelSecret" placeholder="チャンネル名前入力" style="height: 2em;margin-bottom: 0px;" />
-          </td>
-          <td class="channel">
-            <input type="text" v-model="channelToken" placeholder="チャンネル名前入力" style="height: 2em;margin-bottom: 0px;" />
-          </td>
-          <td class="channel">
-            <input type="text" v-model="channelUserId" placeholder="チャンネル名前入力" style="height: 2em;margin-bottom: 0px;" />
-          </td>
-          <td></td>
-          <td class="channel">
-            <button class="button" @click="createChannel">セーブ</button>
-          </td>
         </tr>
       </tbody>
     </table>
-    <div class="channel-detail" v-if="showDetail">
-      detail
-    </div>
+    <!-- member list -->
+    <transition name="fadeInOut">
+      <div class="window" v-if="mode=='update'">
+        <div class="save" v-if="saveShow" @click="updateChannel">update</div>
+        <div class="close" @click="closeChannelDetail">close</div>
+        <div class="channel-detail">
+          <div>
+            <label class="profile-pic">
+              <i class="material-icons profile" v-if="!uploadedImage">account_circle</i>
+              <img v-else class="profile-image" :src="uploadedImage">
+              <input type="file" @change="onFileChange" class="imageBtn" ref="fileInput" accept="img/*">
+            </label>
+
+          </div>
+          <div class="channel-value">
+            <div class="values">チャンネル名前</div>
+            <input type="text" v-model="channelName" @keyup="hasChange" style="margin: 0 auto;width: 65%;height: 2em;text-align: center;"/>
+          </div>
+          <div class="channel-value">
+            <div class="values">チャンネルID</div>
+            <input type="text" v-model="channelId" @keyup="hasChange" style="margin: 0 auto;width: 65%;height: 2em;text-align: center;"/>
+          </div>
+          <div class="channel-value">
+            <div class="values">チャンネルSECRET</div>
+            <input type="text" v-model="channelSecret" @keyup="hasChange" style="margin: 0 auto;width: 65%;height: 2em;text-align: center;"/>
+          </div>
+          <div class="channel-value">
+            <div style="width: fit-content;">チャンネルTOKEN</div>
+            <textarea class="channel-token" @keyup="hasChange" v-model="channelToken" style="resize: none;"></textarea>
+          </div>
+          <div class="channel-value">
+            <div class="values">チャンネルユーザーID</div>
+            <input type="text" v-model="channelUserId" @keyup="hasChange" style="margin: 0 auto;width: 65%;height: 2em;text-align: center;"/>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <transition name="fadeInOut">
+      <div class="window" v-if="mode=='create'">
+        <div class="save" v-if="saveShow" @click="createChannel">save</div>
+        <div class="close" @click="closeChannelDetail">close</div>
+        <div class="channel-detail">
+          <div>
+            <label v-if="!uploadedImage" class="profile-pic">
+              <i class="material-icons profile">
+                account_circle
+              </i>
+              <input type="file" @change="onFileChange" class="imageBtn" ref="fileInput" accept="img/*">
+            </label>
+            <img v-else class="profile-image" :src="uploadedImage">
+          </div>
+          <div class="channel-value">
+            <div class="values">チャンネル名前</div>
+            <input type="text" v-model="channelName" @change="checkEmpty" style="margin: 0 auto;width: 65%;height: 2em;text-align: center;" placeholder="チャンネル名前入力"/>
+          </div>
+          <div class="channel-value">
+            <div class="values">チャンネルID</div>
+            <input type="text" v-model="channelId" @change="checkEmpty" style="margin: 0 auto;width: 65%;height: 2em;text-align: center;" placeholder="チャンネルアイディー入力"/>
+          </div>
+          <div class="channel-value">
+            <div class="values">チャンネルSECRET</div>
+            <input type="text" v-model="channelSecret" @change="checkEmpty" style="margin: 0 auto;width: 65%;height: 2em;text-align: center;" placeholder="チャンネルシークレット入力"/>
+          </div>
+          <div class="channel-value">
+            <div style="width: fit-content;">チャンネルTOKEN</div>
+            <textarea class="channel-token" placeholder="チャンネルトークン入力" @change="checkEmpty" v-model="channelToken" style="resize: none;"></textarea>
+          </div>
+          <div class="channel-value">
+            <div class="values">チャンネルユーザーID</div>
+            <input type="text" v-model="channelUserId" @change="checkEmpty" style="margin: 0 auto;width: 65%;height: 2em;text-align: center;" placeholder="チャンネルユーザーアイディー入力"/>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 <script type="text/javascript">
@@ -133,6 +155,9 @@
         currentPage: 1,
         selectedChannel: null,
         channelLimit: 0,
+        saveShow: false,
+        imageFile: null,
+        uploadedImage: '',
       }
     },
     mounted: function(){
@@ -140,17 +165,33 @@
       this.fetchChannels();
     },
     methods: {
+      onFileChange(e){
+        let files = e.target.files || e.dataTransfer.files;
+        if(!files[0].type.match(/image.*/)){
+          alert("イメージファイルをアップロードしてください。")
+          return;
+        }
+        this.imageFile = files[0]
+        this.createImage(files[0]);
+      },
+      createImage(file){
+        let reader = new FileReader();
+        let vm = this
+        reader.onload = (e) => {
+          this.uploadedImage = e.target.result;
+        }
+        reader.readAsDataURL(file);
+        this.hasChange();
+      },
       fetchChannelsLimit(){
         axios.post('api/check_channel_limit').then((res)=>{
-          //console.log(res.data)
           this.channelLimit = res.data
         },(error)=>{
-          console.log(res.data)
+          console.log(error)
         })
       },
       fetchChannels(){
         axios.post('api/fetch_channels').then((res)=>{
-          //console.log(res.data.channels)
           if(res.data != null){
             this.channels = res.data.channels
           }
@@ -184,20 +225,24 @@
           return;
         }
 
-        var channel = {}
-        channel['channel_name'] = this.channelName
-        channel['channel_id'] = this.channelId
-        channel['channel_secret'] = this.channelSecret
-        channel['channel_token'] = this.channelToken
-        channel['channel_user_id'] = this.channelUserId
+        var data = new FormData();
+        var file = this.imageFile
 
-        axios.post('api/channels',{
-          channel: channel
-        }).then((res)=>{
-          console.log(res.data)
+        data.append('channel_name', this.channelName)
+        data.append('image', file)
+        data.append('channel_id',this.channelId)
+        data.append('channel_secret',this.channelSecret)
+        data.append('channel_token',this.channelToken)
+        data.append('channel_user_id',this.channelUserId)
+
+        axios.post('api/channels',data)
+        .then((res)=>{
           alert("新規チャンネル登録完了！");
+          this.closeChannelDetail();
+          this.clearChannelValues();
           this.fetchChannels();
-          this.mode = 'read'
+        },(error)=>{
+          console.log(error)
         })
       },
       resetPage(){
@@ -220,31 +265,36 @@
         this.selectedChannel = index
         var channel = this.channels[index]
         this.channelName = channel.channel_name
+        if(channel.image!=null){
+          this.uploadedImage = channel.image.url
+        }
         this.channelId = channel.channel_id
         this.channelSecret = channel.channel_secret
         this.channelToken = channel.channel_token
         this.channelUserId = channel.channel_user_id
+        //this.channelShow = true
         this.changeMode('update');
       },
       updateChannel(){
         var i = this.selectedChannel
         var id = this.channels[i].id
-        var channel = {}
-        channel['channel_name'] = this.channelName;
-        channel['channel_id'] = this.channelId;
-        channel['channel_secret'] = this.channelSecret;
-        channel['channel_token'] = this.channelToken;
-        channel['channel_user_id'] = this.channelUserId;
-        axios.put('api/channels/'+id, {
-          channel: channel
-        }).then((res)=>{
-          console.log(res.data)
+        var data = new FormData();
+        var file = this.imageFile
+
+        data.append('channel_name', this.channelName)
+        data.append('image', file)
+        data.append('channel_id',this.channelId)
+        data.append('channel_secret',this.channelSecret)
+        data.append('channel_token',this.channelToken)
+        data.append('channel_user_id',this.channelUserId)
+        axios.put('api/channels/' + id, data)
+        .then((res)=>{
           alert("アップデート完了！");
-          this.mode = 'read';
+          this.closeChannelDetail();
           this.clearChannelValues();
           this.fetchChannels();
         },(error)=>{
-          console.log(res.data)
+          console.log(error)
         })
       },
       deleteChannel(){
@@ -257,6 +307,19 @@
           },(error)=>{
             console.log(error)
           })
+        }
+      },
+      closeChannelDetail(){
+        this.changeMode('read')
+        this.saveShow = false
+        this.clearChannelValues();
+      },
+      hasChange(){
+        this.saveShow = true;
+      },
+      checkEmpty(){
+        if(this.channelName!=''&&this.channelId!=''&&this.channelSecret!=''&&this.channelToken!=''&&this.channelUserId!=''){
+          this.hasChange();
         }
       }
     },

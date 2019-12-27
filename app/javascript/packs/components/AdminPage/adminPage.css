@@ -109,7 +109,7 @@ select {
 }
 .save:hover {
   cursor: pointer;
-  color: blue;
+  color: green;
 }
 .close {
   width: fit-content;

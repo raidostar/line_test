@@ -288,7 +288,6 @@
           name: name,
           tag_group: tag_group
         }).then((res)=>{
-          console.log(res.data)
           const tag = res.data.tag
           switch(tag.tag_group){
             case 'friend':
@@ -370,12 +369,9 @@
         this.editTo = ''
       },
       updateTag(id,name){
-        // console.log(id)
-        // console.log(name)
         axios.put('api/tags/'+id,{
           name: name
         }).then((res)=>{
-          console.log(res.data.tag)
           this.editTo = ''
           this.addTo = ''
           var tag = res.data.tag

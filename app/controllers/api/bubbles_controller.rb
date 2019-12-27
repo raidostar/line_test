@@ -43,7 +43,6 @@ class Api::BubblesController < ApplicationController
       footer_uri = params[:footer_uri][i]
       footer_message = params[:footer_message][i]
       footer_data = params[:footer_data][i]
-
       @bubble = Bubble.new({
         header: header, image: image, body: body, footer: footer, header_gravity: header_gravity, header_align: header_align,
         header_size: header_size,header_bold: header_bold,header_color: header_color,header_background: header_background,
@@ -53,7 +52,6 @@ class Api::BubblesController < ApplicationController
         footer_bold: footer_bold, footer_color: footer_color, footer_background: footer_background, footer_type: footer_type,
         footer_button: footer_button, footer_uri: footer_uri, footer_message: footer_message, footer_data: footer_data
       })
-
       if @bubble.save
         bubble_ids.push(@bubble.id)
       else

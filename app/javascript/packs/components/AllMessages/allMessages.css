@@ -79,10 +79,10 @@ select {
   box-shadow: 0 0 1px rgba(0, 0, 0, 0.15);
 }
 .fadeInOut-enter-active {
-  animation: fadeInLeft .5s;
+  animation: fadeIn .5s;
 }
 .fadeInOut-leave-active {
-  animation: fadeInLeft .5s reverse;
+  animation: fadeIn .5s reverse;
 }
 .right-panel {
   margin: 16px 10px;
@@ -376,11 +376,11 @@ label.stampBtn:focus {
   -webkit-transform: rotate(45deg); /* Chrome, Safari, Opera */
   transform: rotate(45deg);
 }
-.tadaInOut-enter-active{
-  animation: fadeIn .5s;
+.flipInOut-enter-active{
+  animation: fadeIn 1.0s;
 }
-.tadaInOut-leave-active{
-  animation: fadeIn .5s reverse;
+.flipInOut-leave-active{
+  animation: fadeOut .1s ;
 }
 .detailWindow {
   display: block;
@@ -399,7 +399,7 @@ label.stampBtn:focus {
   background-color: black;
   width: 25em;
   height: auto;
-  top: 8em;
+  top: 5em;
   left: 60em;
   opacity: 2;
   z-index: 20;
@@ -420,13 +420,12 @@ label.stampBtn:focus {
   padding-top: 50px;
   padding-bottom: 50px;
   padding-left: 30px;
-  margin-right: 60px;
   width: 90%;
-  height: 60vh;
+  height: 75vh;
 }
 .detail {
   background-color: white;
-  height: 48vh;
+  height: 61vh;
   border-radius: 8px;
   overflow: scroll;
 

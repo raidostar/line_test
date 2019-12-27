@@ -89,7 +89,6 @@
           reply_boolean: reply_boolean,
           time_option: this.timeOption
         }).then((res)=>{
-          //console.log(res.data)
           this.data = res.data
           this.rankingData(res.data)
         },(error)=>{
@@ -98,12 +97,9 @@
       },
       rankingData(data){
         this.total = 0
-        //console.log(data[0].data)
         let list = data[0].data
         this.timeRank = Object.keys(list).sort(function(a,b){return list[b]-list[a]})
         this.timeFreqRank = Object.values(list).sort(function(a,b){return b-a})
-        // console.log(this.timeRank)
-        // console.log(this.timeFreqRank)
         for(var i of this.timeFreqRank){
           this.total += i
         }

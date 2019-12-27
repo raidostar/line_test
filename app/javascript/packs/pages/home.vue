@@ -166,7 +166,6 @@
       updateFollows(){
         this.loading = true
         axios.post('api/update_follows').then((res)=>{
-          //console.log(res.data)
           this.friendsNum = res.data.follower
           this.addNum = res.data.targetedReaches
           this.blockNum = res.data.blocks
@@ -188,7 +187,6 @@
         axios.post('api/fetch_follows_data',{
           timeOption: this.timeLineOption
         }).then((res)=>{
-          console.log(res.data)
           this.timeLineFollows = res.data
         },(error)=>{
           console.log(error)
@@ -199,7 +197,6 @@
           reply_boolean: false,
           timeOption: this.timeLineOption
         }).then((res)=>{
-          //console.log(res.data)
           this.timeLineMessages = res.data
         },(error)=>{
           console.log(error)
@@ -210,7 +207,6 @@
           reply_boolean: true,
           timeOption: this.timeLineOption
         }).then((res)=>{
-          //console.log(res.data)
           this.timeLineReplies = res.data
         },(error)=>{
           console.log(error)
@@ -241,7 +237,6 @@
             d.date=d.date.substr(0,d.date.length-1);
             d.date=d.date+'('+this.dayType[dayNum]+')'
           }
-          //console.log(res.data)
           this.weeklyData = res.data
           this.loading = false
         },(error)=>{
@@ -256,7 +251,6 @@
           for(var msg of res.data){
             this.messages[msg[0]] = msg[1]
           }
-          // console.log(this.messages)
           this.loading = false
         },(error)=>{
           console.log(error)

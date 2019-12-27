@@ -50,7 +50,6 @@
           reply_boolean: false,
           timeOption: this.timeLineOption
         }).then((res)=>{
-          //console.log(res.data)
           this.timeLineMessages = res.data
           this.fetchMessagesTimeData();
         },(error)=>{
@@ -62,7 +61,6 @@
           reply_boolean: false,
           timeOption: this.timeOption
         }).then((res)=>{
-          //console.log(res.data)
           this.timelyMessages = res.data
           this.loading =false
         },(error)=>{

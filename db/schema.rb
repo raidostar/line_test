@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_12_24_080204) do
+ActiveRecord::Schema.define(version: 2019_12_27_011453) do
 
   create_table "bubbles", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "header"
@@ -94,6 +94,7 @@ ActiveRecord::Schema.define(version: 2019_12_24_080204) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "channel_destination"
+    t.string "image"
   end
 
   create_table "emojis", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|

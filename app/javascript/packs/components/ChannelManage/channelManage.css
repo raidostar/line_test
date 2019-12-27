@@ -59,6 +59,12 @@ select {
   height: 3rem;
   display: -webkit-inline-box;
 }
+.fadeInOut-enter-active{
+  animation: fadeIn .5s;
+}
+.fadeInOut-leave-active{
+  animation: fadeIn .5s reverse;
+}
 .page-setting {
   float: right;
   width: 15%;
@@ -72,4 +78,83 @@ select {
 .update {
   margin-right: 0.3em;
   background: #339900;
+}
+.window {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: 100%;
+  width: 100%;
+}
+.save {
+  font-size: 24px;
+  width: fit-content;
+  z-index: 2;
+  position: absolute;
+  top: 27.4em;
+  right: 8em;
+}
+.save:hover {
+  cursor: pointer;
+  color: green;
+}
+.close {
+  width: fit-content;
+  z-index: 2;
+  position: absolute;
+  top: 29.6em;
+  right: 5em;
+}
+.close:hover {
+  cursor: pointer;
+  color: red;
+}
+.channel-detail {
+  position: absolute;
+  width: 50%;
+  height: 88%;
+  top: 4em;
+  right: 7em;
+  background: #eeeee7;
+  border-radius: 8px;
+}
+.channel-name {
+  color: blue;
+}
+.channel-name:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+.channel-name:focus {
+  outline: none;
+}
+.channel-value {
+  margin: 10px 20px;
+  line-height: 50px;
+  font-size: 20px;
+  font-weight: 600;
+}
+.values {
+  width: fit-content;
+  float: left;
+}
+.channel-token {
+  background: #ffffff;
+  height: 10em;
+  font-size: 15px;
+  line-height: 30px;
+}
+.imageBtn {
+  display: none;
+}
+.profile {
+  font-size: 100px;
+  color: #6495ed;
+  cursor: pointer;
+}
+.profile-image {
+  border-radius: 100%;
+  width: 100px;
+  height: 100px;
+  cursor: pointer;
 }

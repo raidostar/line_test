@@ -649,11 +649,9 @@
           this.resultBodyCSS = []
           this.resultFooterCSS = []
           this.reactions = []
-          // console.log(res.data)
           for(let reaction of res.data){
             reaction.created_at = reaction.created_at.substr(0,16).replace('T',' ');
           }
-          //console.log(res.data.reactions)
           this.reactions = res.data
         },(error)=>{
           console.log(error)
@@ -661,8 +659,6 @@
       },
       fetchEmojis(){
         axios.get('api/emojis').then((res)=>{
-          // console.log("emojis")
-          // console.log(res.data.emojis)
           this.emojis = res.data.emojis
         },(error)=>{
           console.log(error)
@@ -853,7 +849,6 @@
           data.append('bubble_num',this.bubble_array.length)
           axios.post('api/bubbles',data)
           .then((res)=>{
-            console.log(res.data)
             const data = res.data.toString()
             axios.post('/api/reactions',{
               name: this.reactionName,
@@ -874,7 +869,6 @@
           const latlng = this.marker_center
           geocoder.geocode({'location':this.marker_center,'language': 'ja'},(results,status)=>{
             if(status == 'OK'){
-              //console.log(results)
               let data = '['+results[5].formatted_address+']+[@map('+latlng.lat+','+latlng.lng+')]'
               axios.post('/api/reactions',{
                 name: this.reactionName,
@@ -899,7 +893,6 @@
             const latlng = this.marker_center
             geocoder.geocode({'location':this.marker_center,'language': 'ja'},(results,status)=>{
               if(status == 'OK'){
-                //console.log(results)
                 let data = '['+results[5].formatted_address+']+[@map('+latlng.lat+','+latlng.lng+')]'
                 axios.post('/api/reactions',{
                   name: this.reactionName,
@@ -1209,7 +1202,6 @@
             this.fetchBubbles(this.selectedReaction.contents)
             break
             default:
-            console.log(this.selectedReaction.reaction_type);
           }
           this.editMode = mode
         },(error)=>{
@@ -1368,7 +1360,6 @@
           data.append('bubble_num',this.bubble_array.length)
           data.append('bubble_ids', this.selectedReaction.contents)
           axios.post('/api/update_bubbles',data).then((res)=>{
-            console.log(res.data)
             const contents = res.data.toString()
             axios.put('/api/reactions/'+this.selectedReaction.id,{
               name: this.reactionName,
@@ -2004,8 +1995,6 @@
         axios.post('api/fetch_bubbles',{
           ids: ids
         }).then((res)=>{
-          // console.log("bubble수집")
-          console.log(res.data)
           this.carouselAreaShow = true;
           this.bubble_array = []
           for(var i in res.data){
@@ -2264,7 +2253,6 @@
         }
       },
       keyNumberCheck(e){
-        console.log(e.keyCode)
         switch(e.keyCode){
           case 13:
           this.stretchCarouselToggle();

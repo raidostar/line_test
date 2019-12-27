@@ -12,7 +12,7 @@
       <div class="side left nav-wrapper container">
         <ul class="hide-on-med-and-down">
           <li class="category"><i class="material-icons">language</i>チャンネル</li>
-          <li v-if="mode=='channelManage'&&status!='client'">
+          <li v-if="mode=='channelManage'&&status!='client'" @click="reloadPage">
             <router-link class="pageLink selected-mode" to="/channelManage"">チャンネル管理</router-link>
           </li>
           <li v-else-if="mode!='channelManage'&&status!='client'" @click="changeMode('channelManage')">
@@ -24,29 +24,31 @@
               {{channel.channel_name}}
             </option>
           </select>
-          <li v-if="mode==''">
+          <li v-if="mode==''" @click="reloadPage">
             <router-link class="pageLink selected-mode" to="/"">チャンネル情報</router-link>
           </li>
           <li v-else @click="changeMode('')">
             <router-link class="pageLink home" to="/">チャンネル情報</router-link>
           </li>
 
-          <li class="category"><i class="material-icons">format_align_justify</i>1対1のトーク</li>
-          <li v-if="mode=='friendsList'">
+          <li class="category">
+            <i class="material-icons">format_align_justify</i>1対1のトーク
+          </li>
+          <li v-if="mode=='friendsList'" @click="reloadPage">
             <router-link class="pageLink selected-mode" to="/friendsList">友達リスト</router-link>
           </li>
           <li v-else @click="changeMode('friendsList')">
             <router-link class="pageLink" to="/friendsList">友達リスト</router-link>
           </li>
 
-          <li v-if="mode=='allMessages'">
+          <li v-if="mode=='allMessages'" @click="reloadPage">
             <router-link class="pageLink selected-mode" to="/allMessages/all">トーク一覧</router-link>
           </li>
           <li v-else @click="changeMode('allMessages')">
             <router-link class="pageLink" to="/allMessages/all">トーク一覧</router-link>
           </li>
 
-          <li v-if="mode=='personalMessages'">
+          <li v-if="mode=='personalMessages'" @click="reloadPage">
             <router-link class="pageLink selected-mode" to="/personalMessages">個別トーク</router-link>
           </li>
           <li v-else @click="changeMode('personalMessages')">
@@ -54,56 +56,56 @@
           </li>
 
           <li class="category"><i class="material-icons">email</i>メッセージ</li>
-          <li v-if="mode=='dataAnalysis'">
+          <li v-if="mode=='dataAnalysis'" @click="reloadPage">
             <router-link class="pageLink selected-mode" to="/dataAnalysis">データ分析</router-link>
           </li>
           <li v-else @click="changeMode('dataAnalysis')">
             <router-link class="pageLink" to="/dataAnalysis">データ分析</router-link>
           </li>
 
-          <li v-if="mode=='sendAll'">
+          <li v-if="mode=='sendAll'" @click="reloadPage">
             <router-link class="pageLink selected-mode" to="/sendAll">全配信</router-link>
           </li>
           <li v-else @click="changeMode('sendAll')">
             <router-link class="pageLink" to="/sendAll">全配信</router-link>
           </li>
 
-          <li v-if="mode=='autoReply'">
+          <li v-if="mode=='autoReply'" @click="reloadPage">
             <router-link class="pageLink selected-mode" to="/autoReply">自動応答</router-link>
           </li>
           <li v-else @click="changeMode('autoReply')">
             <router-link class="pageLink" to="/autoReply">自動応答</router-link>
           </li>
 
-          <li v-if="mode=='actionTemplate'">
+          <li v-if="mode=='actionTemplate'" @click="reloadPage">
             <router-link class="pageLink selected-mode" to="/actionTemplate">テンプレート</router-link>
           </li>
           <li v-else @click="changeMode('actionTemplate')">
             <router-link class="pageLink" to="/actionTemplate">テンプレート</router-link>
           </li>
 
-          <li v-if="mode=='tagManagement'">
+          <li v-if="mode=='tagManagement'" @click="reloadPage">
             <router-link class="pageLink selected-mode" to="/tagManagement">タグ管理</router-link>
           </li>
           <li v-else @click="changeMode('tagManagement')">
             <router-link class="pageLink" to="/tagManagement">タグ管理</router-link>
           </li>
 
-          <li v-if="mode=='remindReply'">
+          <li v-if="mode=='remindReply'" @click="reloadPage">
             <router-link class="pageLink selected-mode" to="/remindReply">リマインダ配信</router-link>
           </li>
           <li v-else @click="changeMode('remindReply')">
             <router-link class="pageLink" to="/remindReply">リマインダ配信</router-link>
           </li>
 
-          <li v-if="mode=='welcomeMessage'">
+          <li v-if="mode=='welcomeMessage'" @click="reloadPage">
             <router-link class="pageLink selected-mode" to="/welcomeMessage">友だち追加時設定</router-link>
           </li>
           <li v-else @click="changeMode('welcomeMessage')">
             <router-link class="pageLink" to="/welcomeMessage">友だち追加時設定</router-link>
           </li>
 
-          <li v-if="mode=='richMenu'">
+          <li v-if="mode=='richMenu'" @click="reloadPage">
             <router-link class="pageLink selected-mode" to="/richMenu">
               リッチメニュー
             </router-link>
@@ -115,14 +117,14 @@
           </li>
 
           <li class="category"><i class="material-icons">person</i>マイページ</li>
-          <li v-if="mode=='membersManage'&&status=='master'">
+          <li v-if="mode=='membersManage'&&status=='master'" @click="reloadPage">
             <router-link class="pageLink selected-mode" to="/membersManage">メンバー管理</router-link>
           </li>
           <li v-else-if="mode!='membersManage'&&status=='master'" @click="changeMode('membersManage')">
             <router-link class="pageLink" to="/membersManage">メンバー管理</router-link>
           </li>
 
-          <li v-if="mode=='adminPage'&&status=='admin'">
+          <li v-if="mode=='adminPage'&&status=='admin'" @click="reloadPage">
             <router-link class="pageLink selected-mode" to="/adminPage">グループ管理</router-link>
           </li>
           <li v-else-if="mode!='adminPage'&&status=='admin'" @click="changeMode('adminPage')">
@@ -235,6 +237,9 @@
           console.log(error)
         })
       },
+      reloadPage(){
+        window.location.reload();
+      }
     }
   }
 </script>

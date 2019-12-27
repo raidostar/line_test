@@ -1,5 +1,12 @@
 class Api::OptionsController < ApplicationController
   def index
+    if params[:option_type]=='welcomeReply'
+      option = Option.find_by(channel_id: current_user.target_channel, option_type: params[:option_type])
+      if !option.present?
+        @option = Option.new(channel_id: current_user.target_channel, option_type: params[:option_type])
+        @option.save
+      end
+    end
     @options = Option.where(channel_id: current_user.target_channel, option_type: params[:option_type])
   end
 

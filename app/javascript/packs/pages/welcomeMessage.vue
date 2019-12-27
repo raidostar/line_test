@@ -88,9 +88,10 @@
           </div>
 
           <div class="resultArea">
-            <img src="" class="profile_img">
             <div class="oneLine" v-for="reaction in reactions">
-              <div v-if="reaction.reaction_type=='text'" style="margin-bottom: 1em;">
+              <img v-if="channelImage" :src="channelImage" class="profile_img">
+              <i v-else class="material-icons profile_none">account_circle</i>
+              <div v-if="reaction.reaction_type=='text'" style="margin-bottom: 1em;width: 100%;height: 3em;">
                 <div class="balloon-left">
                   <span v-html="reaction.contents">{{reaction.contents}}</span>
                 </div>
@@ -108,7 +109,7 @@
                           </div>
                           <div class="result-blocks hero-block">
                             <div class="carousel-img-area" v-show="bubble.image.url" style="bottom: -1%; display: grid; align-items: center;justify-content: center;">
-                              <img class="carousel-img" :src="bubble.image.url">
+                              <img class="carousel-img" :src="bubble.image.url" style="width: 100%;">
                             </div>
                           </div>
                           <div class="result-blocks body-block">
@@ -247,6 +248,7 @@
                 <select class="css-option" v-model="footer_type" @change="syncFooterType">
                   <option value="text">テキスト</option>
                   <option value="button">ボタン</option>
+                  <option value="postback">ポストバック</option>
                 </select>
               </div>
               <div class="bubble-setting setting-footerType" v-if="selectedComponent=='footer'&&footer_type=='button'">
@@ -260,9 +262,13 @@
                 <p style="margin-bottom: 0">リンクURL</p>
                 <input class="uri-text" type="text" v-model="footer_uri" @keyup="syncFooterUri">
               </div>
-              <div class="bubble-setting color setting-message" v-if="selectedComponent=='footer'&&footer_type=='button'&&footer_button=='message'">
+              <div class="bubble-setting color setting-message" v-if="selectedComponent=='footer'&&footer_type=='button'&&(footer_button=='message'||footer_button=='postback')">
                 <p style="margin-bottom: 0">配信メッセージ</p>
                 <input class="uri-text" type="text" v-model="footer_message" @keyup="syncFooterMessage">
+              </div>
+              <div class="bubble-setting color setting-message" v-if="selectedComponent=='footer'&&footer_type=='button'&&footer_button=='postback'">
+                <p style="margin-bottom: 0">配信データ</p>
+                <input class="uri-text" type="text" v-model="footer_data" @keyup="syncFooterData">
               </div>
               <div class="design-buttons">
                 <button class="copyChu copy" @click="copyCSS">デザインコピー</button>
@@ -437,7 +443,7 @@
           ,body_gravity: 'top', body_align: 'start', body_size: 'md', body_bold: 'regular', body_color: '#111111',
           body_background: '#ffffff', footer_gravity: 'top', footer_align: 'center', footer_size: 'md', footer_bold: 'regular'
           ,footer_color: '#111111', footer_background: '#ffffff', footer_type: 'text', footer_button: 'uri',footer_uri: '',
-          footer_message: ''
+          footer_message: '', footer_data: ''
         }
         ],
         header: ['header'],
@@ -456,6 +462,7 @@
         footer_button: 'uri',
         footer_uri: '',
         footer_message: '',
+        footer_data: '',
         selectedBubble: null,
         selectedComponent: null,
         carouselOpen: false,
@@ -481,6 +488,7 @@
         copiedType: '',
         imageSize: '',
         loading: true,
+        channelImage: '',
       }
     },
     mounted: function(){
@@ -497,6 +505,18 @@
             this.fetchStamps();
             this.fetchReactions();
             this.fetchOption();
+            this.fetchCurrentChannel();
+          }
+        },(error)=>{
+          console.log(error)
+        })
+      },
+      fetchCurrentChannel(){
+        axios.post('api/fetch_current_channel')
+        .then((res)=>{
+          var channel = res.data.channel
+          if(channel.image!=null){
+           this.channelImage = channel.image.url
           }
         },(error)=>{
           console.log(error)
@@ -505,8 +525,6 @@
       fetchOption(){
         this.loading = true
         axios.get('api/options?option_type=welcomeReply').then((res)=>{
-          console.log(res.data.options[0].bool)
-          console.log(res.data.options[0].remind_after)
           var option = res.data.options[0]
           if(option != null){
             this.welcome_bool = option.bool
@@ -520,7 +538,6 @@
       fetchReactions(){
         this.loading = true
         axios.post('api/fetch_welcome_reactions').then((res)=>{
-          //console.log(res.data)
           this.bubbles = [];
           this.resultHeaderCSS = []
           this.resultBodyCSS = []
@@ -531,7 +548,6 @@
             }
             reaction.created_at = reaction.created_at.substr(0,16).replace('T',' ');
           }
-          //console.log(res.data)
           this.reactions = res.data
         },(error)=>{
           console.log(error)
@@ -645,8 +661,6 @@
       fetchEmojis(){
         this.loading = true
         axios.get('api/emojis').then((res)=>{
-          // console.log("emojis")
-          // console.log(res.data.emojis)
           this.emojis = res.data.emojis
           this.loading = false
         },(error)=>{
@@ -681,7 +695,7 @@
           this.selectedId = res.data.option.id
           this.createReaction();
         },(error)=>{
-          console.log(res.data)
+          console.log(error)
         })
       },
       createReaction(){
@@ -698,6 +712,7 @@
             alert("最大メッセージは５つです。");
             return;
           }
+          this.loading = true
           axios.post('/api/reactions', {
             name: "text_welcome_message",
             reaction_type: 'text',
@@ -719,6 +734,7 @@
           }
           let arr = this.selectStampUrl.split('-')
           let target = arr[0]
+          this.loading = true
           axios.post('/api/reactions',{
             name: "text_welcome_message",
             reaction_type: 'stamp',
@@ -738,6 +754,7 @@
             alert("最大メッセージは５つです。");
             return;
           }
+          this.loading = true
           axios.post('/api/reactions',{
             name: "text_welcome_message",
             reaction_type: 'text',
@@ -778,6 +795,7 @@
           data.append('tag','ALL');
           data.append('match_option', this.selectedId)
           axios.post('/api/reactions',data)
+          this.loading = true
           .then((res)=>{
             alert("メッセージセーブ完了")
             this.reactionClear();
@@ -790,6 +808,7 @@
             alert("最大メッセージは５つです。");
             return;
           }
+          this.loading = true
           axios.post('/api/reactions',{
             name: "text_welcome_message",
             reaction_type: 'text',
@@ -856,6 +875,9 @@
               } else if(bubble.footer_button=='message'&&bubble.footer_message.length==0){
                 alert("ボタンのメッセージを入力してください。");
                 return;
+              } else if(bubble.footer_button=='postback'&&bubble.footer_data.length==0){
+                alert("ボタンのデータを入力してください。");
+                return;
               }
             }
           }
@@ -895,11 +917,12 @@
             data.append('footer_button[]', this.bubble_array[i].footer_button)
             data.append('footer_uri[]', this.bubble_array[i].footer_uri)
             data.append('footer_message[]', this.bubble_array[i].footer_message)
+            data.append('footer_data[]', this.bubble_array[i].footer_data)
           }
           data.append('bubble_num',this.bubble_array.length)
+          this.loading = true
           axios.post('api/bubbles',data)
           .then((res)=>{
-            console.log(res.data)
             const data = res.data.toString()
             axios.post('/api/reactions',{
               name: "text_welcome_message",
@@ -908,7 +931,6 @@
               match_option: this.selectedId,
               tag: 'ALL',
             }).then((res)=>{
-              //console.log(res.data)
               alert("メッセージセーブ完了")
               this.fetchReactions();
               this.toggleCarousel();
@@ -928,8 +950,8 @@
           const latlng = this.marker_center
           geocoder.geocode({'location':this.marker_center,'language': 'ja'},(results,status)=>{
             if(status == 'OK'){
-              //console.log(results)
               let data = '['+results[5].formatted_address+']+[@map('+latlng.lat+','+latlng.lng+')]'
+              this.loading = true
               axios.post('/api/reactions',{
                 name: "text_welcome_message",
                 reaction_type: 'map',
@@ -950,6 +972,7 @@
             alert("最大メッセージは５つです。");
             return;
           }
+          this.loading = true
           axios.post('/api/reactions',{
             name: "text_welcome_message",
             reaction_type: 'text',
@@ -961,7 +984,6 @@
             const latlng = this.marker_center
             geocoder.geocode({'location':this.marker_center,'language': 'ja'},(results,status)=>{
               if(status == 'OK'){
-                //console.log(results)
                 let data = '['+results[5].formatted_address+']+[@map('+latlng.lat+','+latlng.lng+')]'
                 axios.post('/api/reactions',{
                   name: "text_welcome_message",
@@ -1004,7 +1026,8 @@
         this.$refs.chatting.innerHTML = "";
       },
       getImgUrl(para) {
-        var images = require.context('../images/', false, /\.png$/)
+        //var images = require.context('../images/', false, /\.png$/)
+        var images = 'https://cdn.lineml.jp/api/media/sticker/'+para
         return images('./' + para + ".png")
       },
       mapConvert(contents){
@@ -1043,7 +1066,7 @@
           ,body_gravity: 'top', body_align: 'start', body_size: 'md', body_bold: 'regular', body_color: '#111111',
           body_background: '#ffffff', footer_gravity: 'top', footer_align: 'center', footer_size: 'md', footer_bold: 'regular'
           ,footer_color: '#111111', footer_background: '#ffffff', footer_type: 'text', footer_button: 'uri',footer_uri: '',
-          footer_message: ''
+          footer_message: '', footer_data: ''
         }]
         this.header = ['header']
         this.body = ['body']
@@ -1072,6 +1095,7 @@
         this.footer_button = 'uri'
         this.footer_uri = ''
         this.footer_message = ''
+        this.footer_data = ''
         this.selectedBubble = null
         this.selectedComponent = null
         this.carouselOpen = false
@@ -1079,8 +1103,9 @@
       selectStamp(num){
         this.uploadedImage = "";
         this.stampAreaShow = true
-        let images = require.context('../images/', false, /\.png$/)
-        this.selectStampUrl = images('./' + num + ".png")
+        //let images = require.context('../images/', false, /\.png$/)
+        var images = 'https://cdn.lineml.jp/api/media/sticker/'+num
+        this.selectStampUrl = images
         this.flexablePadding = {"padding-right": "300px"}
       },
       loadProfile(fr_account){
@@ -1088,7 +1113,6 @@
           fr_account: fr_account
         }).then((res)=>{
           this.selectedFriend = res.data
-          console.log(this.selectedFriend)
         },(error)=>{
           console.log(error)
         })
@@ -1106,8 +1130,9 @@
         }
       },
       getImgUrl(para) {
-        var images = require.context('../images/', false, /\.png$/)
-        return images('./' + para + ".png")
+        //var images = require.context('../images/', false, /\.png$/)
+        var images = 'https://cdn.lineml.jp/api/media/sticker/'+para
+        return images
       },
       detailImage(url){
         let imageHTML = '<img class="fullSizeImage" src='+url+' style="width: 21em;height: 26em;">'
@@ -1150,7 +1175,7 @@
           ,body_gravity: 'top', body_align: 'start', body_size: 'md', body_bold: 'regular', body_color: '#111111',
           body_background: '#ffffff', footer_gravity: 'top', footer_align: 'center', footer_size: 'md', footer_bold: 'regular'
           ,footer_color: '#111111', footer_background: '#ffffff', footer_type: 'text', footer_button: 'uri',footer_uri: '',
-          footer_message: ''
+          footer_message: '', footer_data: ''
         }
         var headerStyle = {
           'margin-left':'0', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px',
@@ -1555,6 +1580,10 @@
         var i = this.selectedBubble
         this.bubble_array[i].footer_message = this.footer_message
       },
+      syncFooterData(){
+        var i = this.selectedBubble
+        this.bubble_array[i].footer_data = this.footer_data
+      },
       syncHeroRatio(){
         var i = this.selectedBubble
         this.bubble_array[i].hero_ratio = this.heroWidth + ':' + this.heroHeight
@@ -1598,6 +1627,7 @@
           this.footer_button = this.bubble_array[index].footer_button
           this.footer_uri = this.bubble_array[index].footer_uri
           this.footer_message = this.bubble_array[index].footer_message
+          this.footer_data = this.bubble_array[index].footer_data
           break
           default:
           console.log("error")
@@ -1650,10 +1680,6 @@
             this.resultBodyCSS.push(bodyResult)
             this.resultFooterCSS.push(footerResult)
           }
-          // console.log(this.resultHeaderCSS)
-          // console.log(this.resultHeaderCSS)
-          // console.log(this.resultHeaderCSS)
-          // console.log(this.bubbles)
           this.loading = false;
         },(error)=>{
           console.log(error)
@@ -1760,6 +1786,7 @@
         this.copied['footer_button']= this.footer_button
         this.copied['footer_uri']= this.footer_uri
         this.copied['footer_message']= this.footer_message
+        this.copied['footer_data']= this.footer_data
       },
       pasteCSS(){
         // var design = this.copiedCSS
@@ -1812,11 +1839,13 @@
             this.footer_button = this.copied['footer_button']
             this.footer_uri = this.copied['footer_uri']
             this.footer_message = this.copied['footer_message']
+            this.footer_data = this.copied['footer_data']
 
             this.syncFooterType();
             this.syncFooterButton();
             this.syncFooterUri();
             this.syncFooterMessage();
+            this.syncFooterData();
           }
         }
       },

@@ -3,7 +3,7 @@
     <div>
       <div>
         <div class="setting">
-          <select v-model="parPage" @change="resetPage">
+          <select class="page-setting" v-model="parPage" @change="resetPage">
             <option value=5>5ライン別表示</option>
             <option value=10>10ライン別表示</option>
             <option value=50>50ライン別表示</option>
@@ -19,41 +19,37 @@
         <tr>
           <th><input type="checkbox" name="allUser" value="1" class="checkbox"/></th>
           <th>状況</th>
-          <th>名前</th>
+          <th style="width: 14em;">名前</th>
           <th>ブロック状態</th>
           <th>最新のメッセージ</th>
           <th>タグ・友だち情報</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="fr in getFriend" >
+        <tr v-for="friend in getFriend" >
           <td><input type="checkbox" value="1" class="checkbox"/></td>
           <td><span>確認済み</span></td>
           <td>
             <div class="personal">
-              <img :src="fr.profile_pic" class="profile_img">
-              <router-link class="personalPage" :to="'/personalPage/'+fr.id">{{fr.fr_name}}</router-link>
+              <img v-if="friend.profile_pic" :src="friend.profile_pic" class="profile_img">
+              <i class="material-icons profile" v-else>account_circle</i>
+              <router-link class="personalPage" :to="'/personalPage/'+friend.id">{{friend.fr_name}}</router-link>
             </div>
           </td>
-          <td v-if="fr.block==false" style="color: green;">受信中</td>
+          <td v-if="friend.block==false" style="color: green;">受信中</td>
           <td v-else style="color: red;">ブロック</td>
-          <td v-if="fr.last_message!=null&&fr.last_message.search('https://cdn.lineml.jp/api/media')>=0">
-            <a @click="detailImage(fr.last_message)">
-              <img class="stampBtnImg" :src="fr.last_message"/>
-            </a>
-          </td>
-          <td v-else>
-            <a v-if="fr.last_message!=null&&fr.last_message.search('<img src=')>=0"
-              @click="showFullContents(fr.last_message)"
-              v-html="fr.last_message.substr(0,100)"
+          <td>
+            <a v-if="friend.last_message!=null&&friend.last_message.search('<img src=')>=0"
+              @click="showFullContents(friend.last_message)"
+              v-html="friend.last_message.substr(0,100)"
               >
             </a>
-            <a v-else @click="showFullContents(fr.last_message)">
-              <span v-if="fr.last_message!=null&&fr.last_message.length>10" v-html="fr.last_message.substr(0,10)+'...'"></span>
-              <span v-else-if="fr.last_message!=null&&fr.last_message.length<=10" v-html="fr.last_message.substr(0,20)"></span>
+            <a v-else @click="showFullContents(friend.last_message)">
+              <span v-if="friend.last_message!=null&&friend.last_message.length>10" v-html="friend.last_message.substr(0,10)+'...'"></span>
+              <span v-else-if="friend.last_message!=null&&friend.last_message.length<=10" v-html="friend.last_message.substr(0,20)"></span>
             </a>
           </td>
-          <td>{{fr.tags}}</td>
+          <td>{{friend.tags}}</td>
         </tr>
       </tbody>
     </table>

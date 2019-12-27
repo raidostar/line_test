@@ -102,7 +102,6 @@
           id: this.id,
           reply_boolean: false
         }).then((res)=>{
-          //console.log(res.data)
           this.messageType = res.data
           this.firstType = res.data[0]
           this.secondType = res.data[1]
@@ -121,7 +120,6 @@
           id: this.id,
           reply_boolean: false
         }).then((res)=>{
-          console.log(res.data)
           for(var msg of res.data){
             if(msg[0]=="checked"){
               msg[0] = "確認完了"

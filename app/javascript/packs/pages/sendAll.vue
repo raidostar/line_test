@@ -569,8 +569,6 @@
       },
       fetchEmojis(){
         axios.get('api/emojis').then((res)=>{
-          // console.log("emojis")
-          // console.log(res.data.emojis)
           this.emojis = res.data.emojis
         },(error)=>{
           console.log(error)
@@ -599,7 +597,6 @@
           for(let notify of res.data.notifies){
             notify.created_at = notify.created_at.substr(0,16).replace('T',' ');
           }
-          //console.log(res.data.notifies)
           this.notifies = res.data.notifies
           this.loading = false
         },(error)=>{
@@ -613,7 +610,7 @@
           return;
         }
         else if(this.contents&&!this.uploadedImage&&!this.stampAreaShow&&!this.mapShow&&!this.carouselAreaShow){//text only
-          axios.post('/create_notify', {
+          axios.post('api/create_notify', {
             notify_type: 'text',
             contents: this.contents
           }).then((res)=>{
@@ -628,7 +625,7 @@
         } else if(this.stampAreaShow&&!this.contents){//stamp only
           let arr = this.selectStampUrl.split('-')
           let target = arr[0]
-          axios.post('/create_notify',{
+          axios.post('api/create_notify',{
             notify_type: 'stamp',
             contents: target.substr(26,10)
           }).then((res)=>{
@@ -637,13 +634,13 @@
             console.log(error)
           })
         } else if(this.stampAreaShow&&this.contents){//text+stamp
-          axios.post('/create_notify',{
+          axios.post('api/create_notify',{
             notify_type: 'text',
             contents: this.contents
           }).then((res)=>{
             let arr = this.selectStampUrl.split('-')
             let target = arr[0]
-            axios.post('/create_notify',{
+            axios.post('api/create_notify',{
               notify_type: 'stamp',
               contents: target.substr(26,10)
             }).then((res)=>{
@@ -662,7 +659,7 @@
           data.append('notify_type','image');
           data.append('contents','[ NO TEXT ]');
           data.append('image',file);
-          axios.post('/create_notify',data)
+          axios.post('api/create_notify',data)
           .then((res)=>{
             alert("メッセージ送信完了！")
             this.formToggle();
@@ -676,7 +673,7 @@
           data.append('notify_type','text+image');
           data.append('contents',this.contents);
           data.append('image',file);
-          axios.post('/create_notify',data)
+          axios.post('api/create_notify',data)
           .then((res)=>{
             alert("メッセージ送信完了！")
             this.formToggle();
@@ -767,9 +764,8 @@
           data.append('bubble_num',this.bubble_array.length)
           axios.post('api/bubbles_archives',data)
           .then((res)=>{
-            console.log(res.data)
             const data = res.data.toString()
-            axios.post('create_notify',{
+            axios.post('api/create_notify',{
               notify_type: 'carousel',
               contents: data
             }).then((res)=>{
@@ -787,9 +783,8 @@
           const latlng = this.info.center
           geocoder.geocode({'location':this.info.center,'language': 'ja'},(results,status)=>{
             if(status == 'OK'){
-              //console.log(results)
               let data = '['+results[5].formatted_address+']+[@map('+latlng.lat+','+latlng.lng+')]'
-              axios.post('/create_notify',{
+              axios.post('api/create_notify',{
                 notify_type: 'map',
                 contents: data
               }).then((res)=>{
@@ -802,14 +797,13 @@
             }
           })
         } else {//text+map
-          axios.post('/create_notify',{notify_type: 'text',contents: this.contents}).then((res)=>{
+          axios.post('api/create_notify',{notify_type: 'text',contents: this.contents}).then((res)=>{
             let geocoder = new google.maps.Geocoder();
             const latlng = this.info.center
             geocoder.geocode({'location':this.info.center,'language': 'ja'},(results,status)=>{
               if(status == 'OK'){
-                //console.log(results)
                 let data = '['+results[5].formatted_address+']+[@map('+latlng.lat+','+latlng.lng+')]'
-                axios.post('/create_notify',{notify_type: 'map', contents: data}).then((res)=>{
+                axios.post('api/create_notify',{notify_type: 'map', contents: data}).then((res)=>{
                   alert("メッセージ送信完了！")
                   this.formToggle();
                   this.fetchNotifies();
@@ -825,7 +819,6 @@
         }
       },
       getImgUrl(para) {
-        //var images = require.context('../images/', false, /\.png$/)
         var images = 'https://cdn.lineml.jp/api/media/sticker/'+para
         return images
       },
@@ -1027,7 +1020,7 @@
         axios.post('api/notify_again',{
           id: id
         }).then((res)=>{
-          console.log(res.data)
+          alert("再送信完了！")
         },(error)=>{
           console.log(error)
         })
@@ -1550,8 +1543,6 @@
         axios.post('api/fetch_bubbles_archives',{
           ids: ids
         }).then((res)=>{
-          // console.log("bubble수집")
-          console.log(res.data)
           this.bubbles = []
           this.bubbles = res.data
           for(var bubble of res.data){
@@ -1880,7 +1871,6 @@
         alert(e.target)
       },
       keyNumberCheck(e){
-        console.log(e.keyCode)
         switch(e.keyCode){
           case 13:
           this.stretchCarouselToggle();

@@ -1,11 +1,6 @@
-class Api::ShowmesController < ApplicationController
+class Api::LinesController < ApplicationController
   require 'line/bot'
 
-  THUMBNAIL_URL = 'https://www.disney.co.jp/content/dam/disney/images/sns/studio_mstore_03.jpg'
-  THUMBNAIL_URL1 = 'https://www.disney.co.jp/content/disney/jp/deluxe/blog/maximum-guide/live-action-aladdin-subtitle/_jcr_content/par/navi_vertical_child/navi_vertical_child_par/image_only_1500734488/image.img.jpg/1570425883041.jpg'
-  LOTTO_URL = 'https://www.japannetbank.co.jp/lottery/images/index_img032.png'
-  HORIZONTAL_THUMBNAIL_URL = 'https://via.placeholder.com/1024x768'
-  QUICK_REPLY_ICON_URL = 'https://via.placeholder.com/64x64'
   DEFAULT_SLEEP = 1.freeze
 
   # set :app_base_url, ENV['APP_BASE_URL']
@@ -202,7 +197,6 @@ class Api::ShowmesController < ApplicationController
         contents_array.push(contents)
       end
     end
-    puts "send_welcome_message"
     reply_content(event,contents_array)
   end
 
@@ -392,7 +386,6 @@ class Api::ShowmesController < ApplicationController
       message_id = event.message['id']
       response = @client.get_message_content(message_id)
       tf = Tempfile.open("content")
-      puts tf
       tf.write(response.body)
       reply_text(event, "[MessageType::IMAGE]\nid:#{message_id}\nreceived #{tf.size} bytes data")
     when Line::Bot::Event::MessageType::Video
@@ -418,228 +411,90 @@ class Api::ShowmesController < ApplicationController
     when Line::Bot::Event::MessageType::Location
       handle_location(event)
     when Line::Bot::Event::MessageType::Text
-      case event.message['text']
-      when 'Naruto', 'ShowMeTheMoney'
-        reply_text(event, 0x100078.chr("UTF-8"))
+      if event['source']['type'] == 'user'
+        profile = @client.get_profile(event['source']['userId'])
+        profile = JSON.parse(profile.read_body)
+        channel_destination = @channel_destination
+        reply_token = event['replyToken']
+        event.message['text'] = unicode_converter(event.message['text'])
+        @message = Message.new({sender: profile['displayName'], receiver: @channel, contents: event.message['text'], message_type: 'text', message_id: event.message['id'], sticker_id: nil, package_id: nil, fr_account: profile['userId'], channel_destination: channel_destination, reply_token: reply_token, check_status: 'unchecked'})
+        save_message(@message)
+        update_friend_info(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],channel_destination,@message.contents)
 
-      when '버튼'
-        reply_content(event, {
-          type: 'template',
-          altText: 'Buttons alt text',
-          template: {
-            type: 'buttons',
-            thumbnailImageUrl: THUMBNAIL_URL,
-            title: 'My button sample',
-            text: 'Hello, my button',
-            actions: [
-              { label: 'Go to line.me', type: 'uri', uri: 'https://line.me', altUri: {desktop: 'https://line.me#desktop'} },
-              { label: 'Send postback', type: 'postback', data: 'hello world' },
-              { label: 'Send postback2', type: 'postback', data: 'hello world', text: 'hello world' },
-              { label: 'Send message', type: 'message', text: 'This is message' }
-            ]
-          }
-        })
+        message = Message.new({sender: @channel, receiver: profile['displayName'], message_id: event.message['id'],fr_account: profile['userId'], channel_destination: channel_destination, reply_token: reply_token, check_status: 'answered'})
+        auto_reply = option_checker(event,message)
+      else
+        reply_text(event, "Bot can't use profile API without user ID")
+      end
+    else
+      logger.info "Unknown message type: #{event.type}"
+      reply_text(event, "[UNKNOWN]\n#{event.type}")
+    end
+  end
 
-      # when "7"
-      #   text = (1..37).to_a.sample(7).to_s
-      #   reply_content(event,{
-      #     type: 'text',
-      #     text: "ロト７ナンバー\n"+text
-      #   })
-      # when "6"
-      #   text = (1..43).to_a.sample(6).to_s
-      #   reply_content(event,{
-      #     type: 'text',
-      #     text: "ロト６ナンバー\n"+text
-      #   })
-      # when "5"
-      #   text = (1..31).to_a.sample(5).to_s
-      #   reply_content(event,{
-      #     type: 'text',
-      #     text: "ミニロトナンバー\n"+text
-      #   })
+  def check_user(event)
+    fr_account = event['source']['userId']
+    channel_destination = @channel_destination
+    friend = Friend.find_by(fr_account: fr_account)
+    if friend.present?
+      puts "user check success"
+    else
+      response = @client.get_profile(fr_account)
+      case response
+      when Net::HTTPSuccess then
+        contact = JSON.parse(response.body)
+        fr_name = contact['displayName']
+        profile_pic = contact['pictureUrl']
+        profile_msg = contact['statusMessage']
+        add_friend(fr_account,fr_name,profile_pic,profile_msg,channel_destination)
+      else
+        p "#{response.code} #{response.body}"
+      end
+    end
+  end
 
-    # when "いまなんじ"
-    #   reply_content(event, {
-    #     type: 'template',
-    #     altText: 'Buttons alt text',
-    #     template: {
-    #       type: 'buttons',
-    #       thumbnailImageUrl: LOTTO_URL,
-    #       title: '宝くじ',
-    #       text: '自分の宝くじを選択してください。',
-    #       actions: [
-    #         { label: 'ロト7', type: 'postback', data: 7, text: 'ロト7'},
-    #         { label: 'ロト6', type: 'postback', data: 6, text: 'ロト6' },
-    #         { label: 'ミニロト', type: 'postback', data: 5, text: 'ミニロト' },
-    #       ]
-    #     }
-    #   })
+  def handle_sticker(event)
+    profile = @client.get_profile(event['source']['userId'])
+    profile = JSON.parse(profile.read_body)
+    messages = [{
+      type: 'sticker',
+      packageId: "#{event.message['packageId']}",
+      stickerId: "#{event.message['stickerId']}"
+    }]
 
-  when 'flex'
+    channel_destination = @channel_destination
+    reply_token = event['replyToken']
+    sticker_id = event.message['stickerId']
+    package_id = event.message['packageId']
+    @message = Message.new({sender: profile['displayName'], receiver: @channel, contents: "#{package_id}_#{sticker_id}", message_type: 'stamp', message_id: event.message['id'], sticker_id: sticker_id, package_id: package_id, fr_account: profile['userId'], channel_destination: channel_destination, reply_token: reply_token, check_status: 'unchecked'})
+    save_message(@message)
+
+    contents = '<img src="https://cdn.lineml.jp/api/media/sticker/' + @message.contents + '" style="width: 30px;">'
+    update_friend_info(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],channel_destination,contents)
+    reply_content(event, messages)
+  end
+
+  def handle_location(event)
+    message = event.message
     reply_content(event, {
-      type: "flex",
-      altText: "this is a flex message",
-      contents: {
-        type: "bubble",
-        header: {
-          type: "box",
-          layout: "vertical",
-          contents: [
-            {
-              type: "text",
-              text: "Header text",
-              size: "md",
-              weight: "regular",
-              align: "center",
-              position: "relative",
-              offsetBottom: "-15px",
-              color: "#111111",
-              wrap: true
-            }
-          ],
-          backgroundColor: "#dc3545"
-        },
-        hero: {
-          type: "image",
-          url: THUMBNAIL_URL,
-          size: "4xl",
-          aspectRatio: "1:1",
-          align: "start",
-          backgroundColor: "#00b900"
-        },
-        body: {
-          type: "box",
-          layout: "vertical",
-          contents: [
-            {
-              type: "text",
-              text: "Body text\nBody text\nBody text",
-              position: "relative",
-              offsetBottom: "-10px",
-              align: "center",
-              wrap: true
-            }
-          ],
-          backgroundColor: "#CC0000"
-        },
-        footer: {
-          type: "box",
-          layout: "horizontal",
-          contents: [
-            {
-              type: "text",
-              text: "footer",
-              position: "relative",
-              offsetBottom: "0px",
-              align: "center",
-              size: "xxl",
-              wrap: true
-            }
-          ]
-        }
-      }
+      type: 'location',
+      title: message['title'] || message['address'],
+      address: message['address'],
+      latitude: message['latitude'],
+      longitude: message['longitude']
     })
+  end
 
-  when 'bye'
-    case event['source']['type']
-    when 'user'
-      reply_text(event, "[BYE]\nBot can't leave from 1:1 chat")
-    when 'group'
-      reply_text(event, "[BYE]\nLeaving group")
-      @client.leave_group(event['source']['groupId'])
-    when 'room'
-      reply_text(event, "[BYE]\nLeaving room")
-      @client.leave_room(event['source']['roomId'])
-    end
-
-  else
-    if event['source']['type'] == 'user'
-      profile = @client.get_profile(event['source']['userId'])
-      profile = JSON.parse(profile.read_body)
-      channel_destination = @channel_destination
-      reply_token = event['replyToken']
-
-      @message = Message.new({sender: profile['displayName'], receiver: @channel, contents: event.message['text'], message_type: 'text', message_id: event.message['id'], sticker_id: nil, package_id: nil, fr_account: profile['userId'], channel_destination: channel_destination, reply_token: reply_token, check_status: 'unchecked'})
-      message = Message.new({sender: @channel, receiver: profile['displayName'], message_id: event.message['id'],fr_account: profile['userId'], channel_destination: channel_destination, reply_token: reply_token, check_status: 'answered'})
-
-      save_message(@message)
-      update_friend_info(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],channel_destination,@message.contents)
-      event.message['text'] = unicodeConverter(event.message['text'])
-      auto_reply = option_checker(event,message)
-      # reply_text(event, "ありがとうございます。")
+  def save_postback(postback)
+    if postback.save
+      return true
     else
-      reply_text(event, "Bot can't use profile API without user ID")
+      return false
     end
   end
-else
-  logger.info "Unknown message type: #{event.type}"
-  reply_text(event, "[UNKNOWN]\n#{event.type}")
-end
-end
 
-def check_user(event)
-  fr_account = event['source']['userId']
-  channel_destination = @channel_destination
-  friend = Friend.find_by(fr_account: fr_account)
-  if friend.present?
-    puts "user check success"
-  else
-    response = @client.get_profile(fr_account)
-    case response
-    when Net::HTTPSuccess then
-      contact = JSON.parse(response.body)
-      fr_name = contact['displayName']
-      profile_pic = contact['pictureUrl']
-      profile_msg = contact['statusMessage']
-      add_friend(fr_account,fr_name,profile_pic,profile_msg,channel_destination)
-    else
-      p "#{response.code} #{response.body}"
-    end
-  end
-end
-
-def handle_sticker(event)
-  profile = @client.get_profile(event['source']['userId'])
-  profile = JSON.parse(profile.read_body)
-  messages = [{
-    type: 'sticker',
-    packageId: "#{event.message['packageId']}",
-    stickerId: "#{event.message['stickerId']}"
-  }]
-
-  channel_destination = @channel_destination
-  reply_token = event['replyToken']
-  sticker_id = event.message['stickerId']
-  package_id = event.message['packageId']
-  @message = Message.new({sender: profile['displayName'], receiver: @channel, contents: "#{package_id}_#{sticker_id}", message_type: 'stamp', message_id: event.message['id'], sticker_id: sticker_id, package_id: package_id, fr_account: profile['userId'], channel_destination: channel_destination, reply_token: reply_token, check_status: 'unchecked'})
-  save_message(@message)
-  contents = "https://cdn.lineml.jp/api/media/sticker/"+@message.contents
-  update_friend_info(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],channel_destination,contents)
-  reply_content(event, messages)
-end
-
-def handle_location(event)
-  message = event.message
-  reply_content(event, {
-    type: 'location',
-    title: message['title'] || message['address'],
-    address: message['address'],
-    latitude: message['latitude'],
-    longitude: message['longitude']
-  })
-end
-
-def save_postback(postback)
-  if postback.save
-    return true
-  else
-    return false
-  end
-end
-
-def save_message(message)
-  if message.save
+  def save_message(message)
+    if message.save
       # render :index, status: :ok
       puts "message saved"
     else
@@ -691,7 +546,6 @@ def save_message(message)
   def update_message_profile(fr_account,fr_name,channel)
     @messages = Message.where(fr_account: fr_account, receiver: channel)
     if @messages.update(sender: fr_name)
-      # puts "profile updated"
       messages = Message.where(fr_account: fr_account, sender: channel)
       if messages.update(receiver: fr_name)
         puts "profile updated"
@@ -707,30 +561,35 @@ def save_message(message)
     contents = params[:contents]
     notify_type = params[:notify_type]
     image = params[:image]
+    target_tag = params[:target_tag]
     channel_id = current_user.target_channel
-    receiver = 'ALL'
     @channel = Channel.find_by(channel_id: channel_id)
     channel_destination = @channel.attributes["channel_destination"]
     sender = @channel.channel_name
+    if target_tag.present?
+      puts target_tag
+    else
+      receiver = 'ALL'
+    end
 
     @notify = Notify.new({sender: sender, receiver: receiver, contents: contents, notify_type: notify_type, channel_destination: channel_destination, image: image})
 
-    if @notify.notify_type == "text"
-      broadcast_text(channel_destination,contents)
-    elsif @notify.notify_type == "stamp"
-      broadcast_stamp(channel_destination,contents)
-    elsif @notify.notify_type == "image"
-      broadcast_image(channel_destination,@notify.image)
-    elsif @notify.notify_type == "text+image"
-      broadcast_text(channel_destination,contents)
-      broadcast_image(channel_destination,@notify.image)
-    elsif @notify.notify_type == "map"
-      address_array = map_converter(contents)
-      broadcast_map(channel_destination,address_array)
-      @notify.contents = address_array[0]
-    elsif @notify.notify_type == "carousel"
-      broadcast_carousel(channel_destination,contents)
-    end
+    # if @notify.notify_type == "text"
+    #   broadcast_text(channel_destination,contents)
+    # elsif @notify.notify_type == "stamp"
+    #   broadcast_stamp(channel_destination,contents)
+    # elsif @notify.notify_type == "image"
+    #   broadcast_image(channel_destination,@notify.image)
+    # elsif @notify.notify_type == "text+image"
+    #   broadcast_text(channel_destination,contents)
+    #   broadcast_image(channel_destination,@notify.image)
+    # elsif @notify.notify_type == "map"
+    #   address_array = map_converter(contents)
+    #   broadcast_map(channel_destination,address_array)
+    #   @notify.contents = address_array[0]
+    # elsif @notify.notify_type == "carousel"
+    #   broadcast_carousel(channel_destination,contents)
+    # end
     if @notify.save
       render json: @notify, status: :ok
     else
@@ -817,240 +676,365 @@ def save_message(message)
     client.broadcast(message)
   end
 
-  def unicodeConverter(text)
+  def unicode_converter(text)
     if text.include?"(waving hand)"
-      text = text.gsub("(waving hand)",0x100031.chr("UTF-8"))
+      result = include_check("(waving hand)")
+      text = text.gsub("(waving hand)",result)
     elsif text.include?"(love)"
-      text = text.gsub("(love)",0x100078.chr("UTF-8"))
+      result = include_check("(love)")
+      text = text.gsub("(love)",result)
     elsif text.include?"(hahaha)"
-      text = text.gsub("(hahaha)",0x100079.chr("UTF-8"))
+      result = include_check("(hahaha)")
+      text = text.gsub("(hahaha)", result)
     elsif text.include?"(please!)"
-      text = text.gsub("(please!)",0x10007A.chr("UTF-8"))
+      result = include_check("(please)")
+      text = text.gsub("(please!)",result)
     elsif text.include?"(shocked)"
-      text = text.gsub("(shocked)",0x10007B.chr("UTF-8"))
+      result = include_check("(shocked)")
+      text = text.gsub("(shocked)",result)
     elsif text.include?"(sad)"
-      text = text.gsub("(sad)",0x10007C.chr("UTF-8"))
+      result = include_check("(sad)")
+      text = text.gsub("(sad)",result)
     elsif text.include?"(oh no!)"
-      text = text.gsub("(oh no!)",0x10007D.chr("UTF-8"))
+      result = include_check("(oh no!)")
+      text = text.gsub("(oh no!)",result)
     elsif text.include?"(super angry)"
-      text = text.gsub("(super angry)",0x10007E.chr("UTF-8"))
+      result = include_check("(super angry)")
+      text = text.gsub("(super angry)",result)
     elsif text.include?"(hee)"
-      text = text.gsub("(hee)",0x10008C.chr("UTF-8"))
+      result = include_check("(hee)")
+      text = text.gsub("(hee)",result)
     elsif text.include?"(moon grin)"
-      text = text.gsub("(moon grin)",0x10008D.chr("UTF-8"))
+      result = include_check("(moon grin)")
+      text = text.gsub("(moon grin)",result)
     elsif text.include?"(oops)"
-      text = text.gsub("(oops)",0x10008E.chr("UTF-8"))
+      result = include_check("(oops)")
+      text = text.gsub("(oops)",result)
     elsif text.include?"(moon wink)"
-      text = text.gsub("(moon wink)",0x10008F.chr("UTF-8"))
+      result = include_check("(moon wink)")
+      text = text.gsub("(moon wink)",result)
     elsif text.include?"(content)"
-      text = text.gsub("(content)",0x100090.chr("UTF-8"))
+      result = include_check("(content)")
+      text = text.gsub("(content)",result)
     elsif text.include?"(gasp)"
-      text = text.gsub("(gasp)",0x100091.chr("UTF-8"))
+      result = include_check("(gasp)")
+      text = text.gsub("(gasp)",result)
     elsif text.include?"(blue)"
-      text = text.gsub("(blue)",0x100092.chr("UTF-8"))
+      result = include_check("(blue)")
+      text = text.gsub("(blue)",result)
     elsif text.include?"(nom nom)"
-      text = text.gsub("(nom nom)",0x100093.chr("UTF-8"))
+      result = include_check("(nom nom)")
+      text = text.gsub("(nom nom)",result)
     elsif text.include?"(ah...)"
-      text = text.gsub("(ah...)",0x100094.chr("UTF-8"))
+      result = include_check("(ah...)")
+      text = text.gsub("(ah...)",result)
     elsif text.include?"(at last!)"
-      text = text.gsub("(at last!)",0x100095.chr("UTF-8"))
+      result = include_check("(at last!)")
+      text = text.gsub("(at last!)",result)
     elsif text.include?"(haha)"
-      text = text.gsub("(haha)",0x10007F.chr("UTF-8"))
+      result = include_check("(haha)")
+      text = text.gsub("(haha)",result)
     elsif text.include?"(sparkling eyes)"
-      text = text.gsub("(sparkling eyes)",0x100080.chr("UTF-8"))
+      result = include_check("(sparkling eyes)")
+      text = text.gsub("(sparkling eyes)",result)
     elsif text.include?"(kiss me)"
-      text = text.gsub("(kiss me)",0x100081.chr("UTF-8"))
+      result = include_check("(kiss me)")
+      text = text.gsub("(kiss me)",result)
     elsif text.include?"(tongue out)"
-      text = text.gsub("(tongue out)",0x100082.chr("UTF-8"))
+      result = include_check("(tongue out)")
+      text = text.gsub("(tongue out)",result)
     elsif text.include?"(frozen)"
-      text = text.gsub("(frozen)",0x100083.chr("UTF-8"))
+      result = include_check("(frozen)")
+      text = text.gsub("(frozen)",result)
     elsif text.include?"(kony kiss)"
-      text = text.gsub("(kony kiss)",0x100096.chr("UTF-8"))
+      result = include_check("(kony kiss)")
+      text = text.gsub("(kony kiss)",result)
     elsif text.include?"(hmph)"
-      text = text.gsub("(hmph)",0x100097.chr("UTF-8"))
+      result = include_check("(hmph)")
+      text = text.gsub("(hmph)",result)
     elsif text.include?"(brr)"
-      text = text.gsub("(brr)",0x100098.chr("UTF-8"))
+      result = include_check("(brr)")
+      text = text.gsub("(brr)",result)
     elsif text.include?"(half dead)"
-      text = text.gsub("(half dead)",0x100099.chr("UTF-8"))
+      result = include_check("(half dead)")
+      text = text.gsub("(half dead)",result)
     elsif text.include?"(sharp)"
-      text = text.gsub("(sharp)",0x10009A.chr("UTF-8"))
+      result = include_check("(sharp)")
+      text = text.gsub("(sharp)",result)
     elsif text.include?"(panic)"
-      text = text.gsub("(panic)",0x10009B.chr("UTF-8"))
+      result = include_check("(panic)")
+      text = text.gsub("(panic)",result)
     elsif text.include?"(doze off)"
-      text = text.gsub("(doze off)",0x10009C.chr("UTF-8"))
+      result = include_check("(doze off)")
+      text = text.gsub("(doze off)",result)
     elsif text.include?"(aww)"
-      text = text.gsub("(aww)",0x10009D.chr("UTF-8"))
+      result = include_check("(aww)")
+      text = text.gsub("(aww)",result)
     elsif text.include?"(argh!)"
-      text = text.gsub("(argh!)",0x10009E.chr("UTF-8"))
+      result = include_check("(argh!)")
+      text = text.gsub("(argh!)",result)
     elsif text.include?"(brown)"
-      text = text.gsub("(brown)",0x100084.chr("UTF-8"))
+      result = include_check("(brown)")
+      text = text.gsub("(brown)",result)
     elsif text.include?"(eh?!)"
-      text = text.gsub("(eh?!)",0x100085.chr("UTF-8"))
+      result = include_check("(eh?!)")
+      text = text.gsub("(eh?!)",result)
     elsif text.include?"(goodnight)"
-      text = text.gsub("(goodnight)",0x100086.chr("UTF-8"))
+      result = include_check("(goodnight)")
+      text = text.gsub("(goodnight)",result)
     elsif text.include?"(stressed)"
-      text = text.gsub("(stressed)",0x100087.chr("UTF-8"))
+      result = include_check("(stressed)")
+      text = text.gsub("(stressed)",result)
     elsif text.include?"(worn out)"
-      text = text.gsub("(worn out)",0x100088.chr("UTF-8"))
+      result = include_check("(worn out)")
+      text = text.gsub("(worn out)",result)
     elsif text.include?"(what?!)"
-      text = text.gsub("(what?!)",0x100089.chr("UTF-8"))
+      result = include_check("(what?!)")
+      text = text.gsub("(what?!)",result)
     elsif text.include?"(james wink)"
-      text = text.gsub("(james wink)",0x10008A.chr("UTF-8"))
+      result = include_check("(james wink)")
+      text = text.gsub("(james wink)",result)
     elsif text.include?"(attracted)"
-      text = text.gsub("(attracted)",0x10008B.chr("UTF-8"))
+      result = include_check("(attracted)")
+      text = text.gsub("(attracted)",result)
     elsif text.include?"(who, me?)"
-      text = text.gsub("(who, me?)",0x10009F.chr("UTF-8"))
+      result = include_check("(who, me?)")
+      text = text.gsub("(who, me?)",result)
     elsif text.include?"(happy)"
-      text = text.gsub("(happy)",0x100001.chr("UTF-8"))
+      result = include_check("(happy)")
+      text = text.gsub("(happy)",result)
     elsif text.include?"(smile)"
-      text = text.gsub("(smile)",0x100002.chr("UTF-8"))
+      result = include_check("(smile)")
+      text = text.gsub("(smile)",result)
     elsif text.include?"(laugh)"
-      text = text.gsub("(laugh)",0x100003.chr("UTF-8"))
+      result = include_check("(laugh)")
+      text = text.gsub("(laugh)",result)
     elsif text.include?"(blush)"
-      text = text.gsub("(blush)",0x100004.chr("UTF-8"))
+      result = include_check("(blush)")
+      text = text.gsub("(blush)",result)
     elsif text.include?"(wink)"
-      text = text.gsub("(wink)",0x100005.chr("UTF-8"))
+      result = include_check("(wink)")
+      text = text.gsub("(wink)",result)
     elsif text.include?"(glad)"
-      text = text.gsub("(glad)",0x100006.chr("UTF-8"))
+      result = include_check("(glad)")
+      text = text.gsub("(glad)",result)
     elsif text.include?"(glow kiss)"
-      text = text.gsub("(glow kiss)",0x100007.chr("UTF-8"))
+      result = include_check("(glow kiss)")
+      text = text.gsub("(glow kiss)",result)
     elsif text.include?"(kiss)"
-      text = text.gsub("(kiss)",0x100008.chr("UTF-8"))
+      result = include_check("(kiss)")
+      text = text.gsub("(kiss)",result)
     elsif text.include?"(baffled)"
-      text = text.gsub("(baffled)",0x100009.chr("UTF-8"))
+      result = include_check("(baffled)")
+      text = text.gsub("(baffled)",result)
     elsif text.include?"(relief)"
-      text = text.gsub("(relief)",0x10000A.chr("UTF-8"))
+      result = include_check("(relief)")
+      text = text.gsub("(relief)",result)
     elsif text.include?"(grin)"
-      text = text.gsub("(grin)",0x10000B.chr("UTF-8"))
+      result = include_check("(grin)")
+      text = text.gsub("(grin)",result)
     elsif text.include?"(kidding)"
-      text = text.gsub("(kidding)",0x10000C.chr("UTF-8"))
+      result = include_check("(kidding)")
+      text = text.gsub("(kidding)",result)
     elsif text.include?"(funny)"
-      text = text.gsub("(funny)",0x10000D.chr("UTF-8"))
+      result = include_check("(funny)")
+      text = text.gsub("(funny)",result)
     elsif text.include?"(unamused)"
-      text = text.gsub("(unamused)",0x10000E.chr("UTF-8"))
+      result = include_check("(unamused)")
+      text = text.gsub("(unamused)",result)
     elsif text.include?"(smirk)"
-      text = text.gsub("(smirk)",0x10000F.chr("UTF-8"))
+      result = include_check("(smirk)")
+      text = text.gsub("(smirk)",result)
     elsif text.include?"(bittersmile)"
-      text = text.gsub("(bittersmile)",0x100010.chr("UTF-8"))
+      result = include_check("(bittersmile)")
+      text = text.gsub("(bittersmile)",result)
     elsif text.include?"(hm)"
-      text = text.gsub("(hm)",0x100011.chr("UTF-8"))
+      result = include_check("(hm)")
+      text = text.gsub("(hm)",result)
     elsif text.include?"(disappointed)"
-      text = text.gsub("(disappointed)",0x100012.chr("UTF-8"))
+      result = include_check("(disappointed)")
+      text = text.gsub("(disappointed)",result)
     elsif text.include?"(unbearable)"
-      text = text.gsub("(unbearable)",0x100013.chr("UTF-8"))
+      result = include_check("(unbearable)")
+      text = text.gsub("(unbearable)",result)
     elsif text.include?"(coldsweat)"
-      text = text.gsub("(coldsweat)",0x100014.chr("UTF-8"))
+      result = include_check("(coldsweat)")
+      text = text.gsub("(coldsweat)",result)
     elsif text.include?"(exasperated)"
-      text = text.gsub("(exasperated)",0x100015.chr("UTF-8"))
+      result = include_check("(exasperated)")
+      text = text.gsub("(exasperated)",result)
     elsif text.include?"(anguished)"
-      text = text.gsub("(anguished)",0x100016.chr("UTF-8"))
+      result = include_check("(anguished)")
+      text = text.gsub("(anguished)",result)
     elsif text.include?"(tired)"
-      text = text.gsub("(tired)",0x100017.chr("UTF-8"))
+      result = include_check("(tired)")
+      text = text.gsub("(tired)",result)
     elsif text.include?"(tear)"
-      text = text.gsub("(tear)",0x100018.chr("UTF-8"))
+      result = include_check("(tear)")
+      text = text.gsub("(tear)",result)
     elsif text.include?"(crying)"
-      text = text.gsub("(crying)",0x100019.chr("UTF-8"))
+      result = include_check("(crying)")
+      text = text.gsub("(crying)",result)
     elsif text.include?"(tearsofjoy)"
-      text = text.gsub("(tearsofjoy)",0x10001A.chr("UTF-8"))
+      result = include_check("(tearsofjoy)")
+      text = text.gsub("(tearsofjoy)",result)
     elsif text.include?"(astonished)"
-      text = text.gsub("(astonished)",0x10001B.chr("UTF-8"))
+      result = include_check("(astonished)")
+      text = text.gsub("(astonished)",result)
     elsif text.include?"(scream)"
-      text = text.gsub("(scream)",0x10001C.chr("UTF-8"))
+      result = include_check("(scream)")
+      text = text.gsub("(scream)",result)
     elsif text.include?"(pouting)"
-      text = text.gsub("(pouting)",0x10001D.chr("UTF-8"))
+      result = include_check("(pouting)")
+      text = text.gsub("(pouting)",result)
     elsif text.include?"(angry)"
-      text = text.gsub("(angry)",0x10001E.chr("UTF-8"))
+      result = include_check("(angry)")
+      text = text.gsub("(angry)",result)
     elsif text.include?"(dozing)"
-      text = text.gsub("(dozing)",0x10001F.chr("UTF-8"))
+      result = include_check("(dozing)")
+      text = text.gsub("(dozing)",result)
     elsif text.include?"(mask)"
-      text = text.gsub("(mask)",0x100020.chr("UTF-8"))
+      result = include_check("(mask)")
+      text = text.gsub("(mask)",result)
     elsif text.include?"(dazed)"
-      text = text.gsub("(dazed)",0x100021.chr("UTF-8"))
+      result = include_check("(dazed)")
+      text = text.gsub("(dazed)",result)
     elsif text.include?"(catface)"
-      text = text.gsub("(catface)",0x100022.chr("UTF-8"))
+      result = include_check("(catface)")
+      text = text.gsub("(catface)",result)
     elsif text.include?"(yummy)"
-      text = text.gsub("(yummy)",0x100023.chr("UTF-8"))
+      result = include_check("(yummy)")
+      text = text.gsub("(yummy)",result)
     elsif text.include?"(pig)"
-      text = text.gsub("(pig)",0x10005D.chr("UTF-8"))
+      result = include_check("(pig)")
+      text = text.gsub("(pig)",result)
     elsif text.include?"(cat)"
-      text = text.gsub("(cat)",0x10005F.chr("UTF-8"))
+      result = include_check("(cat)")
+      text = text.gsub("(cat)",result)
     elsif text.include?"(dog)"
-      text = text.gsub("(dog)",0x10005E.chr("UTF-8"))
+      result = include_check("(dog)")
+      text = text.gsub("(dog)",result)
     elsif text.include?"(ghost)"
-      text = text.gsub("(ghost)",0x1000A0.chr("UTF-8"))
+      result = include_check("(ghost)")
+      text = text.gsub("(ghost)",result)
     elsif text.include?"(jack o'lantern)"
-      text = text.gsub("(jack o'lantern)",0x1000A1.chr("UTF-8"))
+      result = include_check("(jack o'lantern)")
+      text = text.gsub("(jack o'lantern)",result)
     elsif text.include?"(devil)"
-      text = text.gsub("(devil)",0x100024.chr("UTF-8"))
+      result = include_check("(devil)")
+      text = text.gsub("(devil)",result)
     elsif text.include?"(skull and crossbones)"
-      text = text.gsub("(skull and crossbones)",0x1000A2.chr("UTF-8"))
+      result = include_check("(skull and crossbones)")
+      text = text.gsub("(skull and crossbones)",result)
     elsif text.include?"(poo)"
-      text = text.gsub("(poo)",0x1000A3.chr("UTF-8"))
+      result = include_check("(poo)")
+      text = text.gsub("(poo)",result)
     elsif text.include?"(fire)"
-      text = text.gsub("(fire)",0x1000A4.chr("UTF-8"))
+      result = include_check("(fire)")
+      text = text.gsub("(fire)",result)
     elsif text.include?"(yes)"
-      text = text.gsub("(yes)",0x1000A5.chr("UTF-8"))
+      result = include_check("(yes)")
+      text = text.gsub("(yes)",result)
     elsif text.include?"(no)"
-      text = text.gsub("(no)",0x1000A6.chr("UTF-8"))
+      result = include_check("(no)")
+      text = text.gsub("(no)",result)
     elsif text.include?"(toilet)"
-      text = text.gsub("(toilet)",0x1000A7.chr("UTF-8"))
+      result = include_check("(toilet)")
+      text = text.gsub("(toilet)",result)
     elsif text.include?"(surprise)"
-      text = text.gsub("(surprise)",0x100027.chr("UTF-8"))
+      result = include_check("(surprise)")
+      text = text.gsub("(surprise)",result)
     elsif text.include?"(sweat)"
-      text = text.gsub("(sweat)",0x100029.chr("UTF-8"))
+      result = include_check("(sweat)")
+      text = text.gsub("(sweat)",result)
     elsif text.include?"(dash)"
-      text = text.gsub("(dash)",0x10002A.chr("UTF-8"))
+      result = include_check("(dash)")
+      text = text.gsub("(dash)",result)
     elsif text.include?"(zzz)"
-      text = text.gsub("(zzz)",0x10002B.chr("UTF-8"))
+      result = include_check("(zzz)")
+      text = text.gsub("(zzz)",result)
     elsif text.include?"(libs)"
-      text = text.gsub("(libs)",0x10002C.chr("UTF-8"))
+      result = include_check("(libs)")
+      text = text.gsub("(libs)",result)
     elsif text.include?"(sparkle)"
-      text = text.gsub("(sparkle)",0x10002D.chr("UTF-8"))
+      result = include_check("(sparkle)")
+      text = text.gsub("(sparkle)",result)
     elsif text.include?"(eyes)"
-      text = text.gsub("(eyes)",0x10002E.chr("UTF-8"))
+      result = include_check("(eyes)")
+      text = text.gsub("(eyes)",result)
     elsif text.include?"(ear)"
-      text = text.gsub("(ear)",0x10002F.chr("UTF-8"))
+      result = include_check("(ear)")
+      text = text.gsub("(ear)",result)
     elsif text.include?"(lightning)"
-      text = text.gsub("(lightning)",0x10003A.chr("UTF-8"))
+      result = include_check("(lightning)")
+      text = text.gsub("(lightning)",result)
     elsif text.include?"(moon)"
-      text = text.gsub("(moon)",0x1000A8.chr("UTF-8"))
+      result = include_check("(moon)")
+      text = text.gsub("(moon)",result)
     elsif text.include?"(sun)"
-      text = text.gsub("(sun)",0x1000A9.chr("UTF-8"))
+      result = include_check("(sun)")
+      text = text.gsub("(sun)",result)
     elsif text.include?"(rain)"
-      text = text.gsub("(rain)",0x1000AA.chr("UTF-8"))
+      result = include_check("(rain)")
+      text = text.gsub("(rain)",result)
     elsif text.include?"(snow)"
-      text = text.gsub("(snow)",0x1000AB.chr("UTF-8"))
+      result = include_check("(snow)")
+      text = text.gsub("(snow)",result)
     elsif text.include?"(cloud)"
-      text = text.gsub("(cloud)",0x1000AC.chr("UTF-8"))
+      result = include_check("(cloud)")
+      text = text.gsub("(cloud)",result)
     elsif text.include?"(ok)"
-      text = text.gsub("(ok)",0x100033.chr("UTF-8"))
+      result = include_check("(ok)")
+      text = text.gsub("(ok)",result)
     elsif text.include?"(boo)"
-      text = text.gsub("(boo)",0x1000AD.chr("UTF-8"))
+      result = include_check("(boo)")
+      text = text.gsub("(boo)",result)
     elsif text.include?"(scissors)"
-      text = text.gsub("(scissors)",0x100030.chr("UTF-8"))
+      result = include_check("(scissors)")
+      text = text.gsub("(scissors)",result)
     elsif text.include?"(paper)"
-      text = text.gsub("(paper)",0x100031.chr("UTF-8"))
+      result = include_check("(paper)")
+      text = text.gsub("(paper)",result)
     elsif text.include?"(rock)"
-      text = text.gsub("(rock)",0x100032.chr("UTF-8"))
+      result = include_check("(rock)")
+      text = text.gsub("(rock)",result)
     elsif text.include?"(clap)"
-      text = text.gsub("(clap)",0x1000AE.chr("UTF-8"))
+      result = include_check("(clap)")
+      text = text.gsub("(clap)",result)
     elsif text.include?"(!!)"
-      text = text.gsub("(!!)",0x100035.chr("UTF-8"))
+      result = include_check("(!!)")
+      text = text.gsub("(!!)",result)
     elsif text.include?"(?)"
-      text = text.gsub("(?)",0x100036.chr("UTF-8"))
+      result = include_check("(?)")
+      text = text.gsub("(?)",result)
     elsif text.include?"(music note)"
-      text = text.gsub("(music note)",0x100039.chr("UTF-8"))
+      result = include_check("(music note)")
+      text = text.gsub("(music note)",result)
     elsif text.include?"(heart)"
-      text = text.gsub("(heart)",0x100037.chr("UTF-8"))
+      result = include_check("(heart)")
+      text = text.gsub("(heart)",result)
     elsif text.include?"(brokenheart)"
-      text = text.gsub("(brokenheart)",0x100038.chr("UTF-8"))
+      result = include_check("(brokenheart)")
+      text = text.gsub("(brokenheart)",result)
     elsif text.include?"(1 heart)"
-      text = text.gsub("(1 heart)",0x1000AF.chr("UTF-8"))
+      result = include_check("(1 heart)")
+      text = text.gsub("(1 heart)",result)
     elsif text.include?"(3 hearts)"
-      text = text.gsub("(3 hearts)",0x1000B0.chr("UTF-8"))
+      result = include_check("(3 hearts)")
+      text = text.gsub("(3 hearts)",result)
+    elsif text.include?"(hi)"
+      result = include_check("(hi)")
+      text = text.gsub("(hi)",result)
     end
     return text
   end
+
+  def include_check(text)
+    emoji = Emoji.find_by(moji_text: text)
+    result = '<img src="' + emoji.attributes['img_url'] + '" style="width: 30px;">'
+    return result
+  end
+
 
   def option_checker(event,message)
     event_type = event['type']

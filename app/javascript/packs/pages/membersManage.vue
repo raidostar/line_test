@@ -71,7 +71,6 @@
     methods: {
       fetchMembers(index){
         axios.post('api/fetch_members').then((res)=>{
-          //console.log(res.data.users)
           this.members = res.data.users
           for(var member of this.members){
             this.statusList.push(member.status)
@@ -92,11 +91,9 @@
             users.push(user)
           }
         }
-        // console.log(users)
         axios.post('api/users_update',{
           users: users
         }).then((res)=>{
-          console.log(res.data)
           alert("アップデート完了！");
         },(error)=>{
           console.log(error)

@@ -12,9 +12,6 @@ class Api::ChannelsController < ApplicationController
       @channels = @group.channels.split(",")
     end
 
-    puts channels_limit
-    puts @channels.length
-
     if channels_limit <= @channels.length
       puts 'rejected!'
     else
@@ -38,11 +35,16 @@ class Api::ChannelsController < ApplicationController
     if @group.channels.present?
       channel_ids = @group.channels.split(",")
       @channels = Channel.where(id: channel_ids)
-      puts "3"
       render :index, status: :ok
     else
       render json: nil, status: :ok
     end
+  end
+
+  def fetch_current_channel
+    channel_id = current_user.target_channel
+    @channel = Channel.find_by(channel_id: channel_id)
+    render :show, status: :ok
   end
 
   def update
@@ -60,8 +62,14 @@ class Api::ChannelsController < ApplicationController
   private
 
   def channels_params
-    params.require(:channel).permit(
-      :id, :channel_name, :channel_id, :channel_secret, :channel_token, :channel_user_id, :status,
-      )
+    if params[:channel].present?
+      params.require(:channel).permit(
+        :id, :channel_name, :channel_id, :channel_secret, :channel_token, :channel_user_id, :status, :image
+        )
+    else
+      params.permit(
+        :id, :channel_name, :channel_id, :channel_secret, :channel_token, :channel_user_id, :status, :image
+        )
+    end
   end
 end
