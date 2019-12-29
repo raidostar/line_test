@@ -81,7 +81,7 @@ Rails.application.routes.draw do
   post 'api/show_current' => 'api/users#show_current_user'
   post 'api/timely_messages' => 'api/messages#timely_messages'
   post 'users/api/find_group_key' => 'api/groups#find_group_key'
-  post '/weekly_friend_info' => 'api/friends#get_weekly_friend_info'
+  post 'api/weekly_friend_info' => 'api/friends#get_weekly_friend_info'
 
   post 'users/api/idCheck' => 'api/users#id_check'
   post 'api/create_notify' => 'api/lines#create_notify'

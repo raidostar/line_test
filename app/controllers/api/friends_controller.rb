@@ -118,33 +118,24 @@ class Api::FriendsController < ApplicationController
     for i in 1..7
       info = {}
 
-      time = Time.new
+      time = DateTime.now
+      time = time.beginning_of_day
+      date = time.days_ago(i+1)
       time = time.days_ago(i)
       str = time.strftime("%m-%d-%w")
       info["date"]=str
 
-      startTime = time.beginning_of_day
-      endTime = time.end_of_day
       channel_id = current_user.target_channel
       @channel = Channel.find_by(channel_id: channel_id)
       channel_destination = @channel.channel_destination
 
-      @new_friends = Friend.where(follow_at: startTime..endTime, channel_destination: channel_destination)
-      if @new_friends.present?
-        info["add"]=@new_friends.length
-      else
-        info["add"]=0
-      end
+      before_follow = Follow.find_by(channel_id: channel_id, date: date)
+      after_follow = Follow.find_by(channel_id: channel_id, date: time)
 
-      @block_friends = Friend.where(block_at: startTime..endTime, channel_destination: channel_destination)
-      if @block_friends.present?
-        info["block"]=@block_friends.length
-      else
-        info["block"]=0
-      end
-
-      gap = info["add"]-info["block"]
-      info["gap"] = gap
+      info["add"] = after_follow.follower - before_follow.follower
+      info['block'] = after_follow.blocks - before_follow.blocks
+      info["gap"] = after_follow.targetedReaches - before_follow.targetedReaches
+      info['current'] = after_follow.targetedReaches
 
       @timeArray.push(info)
     end

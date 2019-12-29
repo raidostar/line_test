@@ -566,12 +566,8 @@ class Api::LinesController < ApplicationController
     @channel = Channel.find_by(channel_id: channel_id)
     channel_destination = @channel.attributes["channel_destination"]
     sender = @channel.channel_name
-    if target_tag.present?
-      puts target_tag
-    else
-      receiver = 'ALL'
-    end
-
+    puts target_tag
+    receiver = target_tag
     @notify = Notify.new({sender: sender, receiver: receiver, contents: contents, notify_type: notify_type, channel_destination: channel_destination, image: image})
 
     # if @notify.notify_type == "text"

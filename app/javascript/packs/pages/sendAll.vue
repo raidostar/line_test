@@ -481,7 +481,7 @@
         },
         text_address: '',
         google: gmapApi,
-        selectedTag: '',
+        selectedTag: 'ALL',
         selectedCSS: {'background-color': '#444','color': 'white'},
         bubble_num: 0,
         bubble_array: [
@@ -604,15 +604,18 @@
         })
       },
       createNotify(){
-        if(!this.stampAreaShow&&!this.contents&&!this.uploadedImage&&!this.mapShow&&!this.carouselAreaShow){//empty
+        if(!this.stampAreaShow&&!this.contents&&!this.uploadedImage&&!this.mapShow&&!this.carouselAreaShow)
+        {//empty
           alert("empty")
           alert("一応メッセージを作成してください。")
           return;
         }
-        else if(this.contents&&!this.uploadedImage&&!this.stampAreaShow&&!this.mapShow&&!this.carouselAreaShow){//text only
+        else if(this.contents&&!this.uploadedImage&&!this.stampAreaShow&&!this.mapShow&&!this.carouselAreaShow)
+        {//text only
           axios.post('api/create_notify', {
             notify_type: 'text',
-            contents: this.contents
+            contents: this.contents,
+            target_tag: this.selectedTag
           }).then((res)=>{
             if (res.data != null){
               alert("メッセージ送信完了！")
@@ -627,7 +630,8 @@
           let target = arr[0]
           axios.post('api/create_notify',{
             notify_type: 'stamp',
-            contents: target.substr(26,10)
+            contents: target.substr(26,10),
+            target_tag: this.selectedTag
           }).then((res)=>{
             alert("メッセージ送信完了！")
           },(error)=>{
@@ -636,13 +640,15 @@
         } else if(this.stampAreaShow&&this.contents){//text+stamp
           axios.post('api/create_notify',{
             notify_type: 'text',
-            contents: this.contents
+            contents: this.contents,
+            target_tag: this.selectedTag
           }).then((res)=>{
             let arr = this.selectStampUrl.split('-')
             let target = arr[0]
             axios.post('api/create_notify',{
               notify_type: 'stamp',
-              contents: target.substr(26,10)
+              contents: target.substr(26,10),
+              target_tag: this.selectedTag
             }).then((res)=>{
               alert("メッセージ送信完了！")
               this.formToggle();
@@ -659,6 +665,7 @@
           data.append('notify_type','image');
           data.append('contents','[ NO TEXT ]');
           data.append('image',file);
+          data.append('target_tag',this.selectedTag);
           axios.post('api/create_notify',data)
           .then((res)=>{
             alert("メッセージ送信完了！")
@@ -673,6 +680,7 @@
           data.append('notify_type','text+image');
           data.append('contents',this.contents);
           data.append('image',file);
+          data.append('target_tag',this.selectedTag);
           axios.post('api/create_notify',data)
           .then((res)=>{
             alert("メッセージ送信完了！")
@@ -767,7 +775,8 @@
             const data = res.data.toString()
             axios.post('api/create_notify',{
               notify_type: 'carousel',
-              contents: data
+              contents: data,
+              target_tag: this.selectedTag
             }).then((res)=>{
               alert("メッセージ送信完了！")
               this.formToggle();
@@ -786,7 +795,8 @@
               let data = '['+results[5].formatted_address+']+[@map('+latlng.lat+','+latlng.lng+')]'
               axios.post('api/create_notify',{
                 notify_type: 'map',
-                contents: data
+                contents: data,
+                target_tag: this.selectedTag
               }).then((res)=>{
                 alert("メッセージ送信完了！")
                 this.formToggle();
@@ -797,7 +807,11 @@
             }
           })
         } else {//text+map
-          axios.post('api/create_notify',{notify_type: 'text',contents: this.contents}).then((res)=>{
+          axios.post('api/create_notify',{
+            notify_type: 'text',
+            contents: this.contents,
+            target_tag: this.selectedTag
+          }).then((res)=>{
             let geocoder = new google.maps.Geocoder();
             const latlng = this.info.center
             geocoder.geocode({'location':this.info.center,'language': 'ja'},(results,status)=>{

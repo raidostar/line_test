@@ -1,18 +1,30 @@
 <template>
   <div class="page">
+    <div v-show="loading" class="waiting-screen">
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
+    </div>
     <div class="col-left">
       <table class="status">
         <tr>
-          <th>有効友だち数</th>
-          <th>ブロック/友だち解除数</th>
+          <th class="follow-data">全友だち数</th>
+          <th class="follow-data">有効友だち数</th>
+          <th class="follow-data">ブロック/友だち解除数</th>
         </tr>
         <tr>
           <td class="text-center">
-            <b>{{ addNum }}</b>
+            <b>{{ friendsNum }}</b>
             <small>名</small>
           </td>
           <td class="text-center">
-            <b>{{ blockNum }}</b>
+            <b>{{ targetedReaches }}</b>
+            <small>名</small>
+          </td>
+          <td class="text-center">
+            <b>{{ blocks }}</b>
             <small>名</small>
           </td>
         </tr>
@@ -84,7 +96,7 @@
                 <td class="change text-center" id="gap" v-else style="color: green;">{{data.gap}}</td>
                 <td class="followNum text-center">{{data.add}}名</td>
                 <td class="blockNum text-center">{{data.block}}名</td>
-                <td class="friendsNum text-center">名</td>
+                <td class="friendsNum text-center">{{ data.current }}名</td>
               </tr>
             </tbody>
           </table>
@@ -107,13 +119,6 @@
         </div>
       </div>
     </div>
-    <div v-show="loading" class="waiting-screen">
-      <div class="spinner">
-        <div class="bounce1"></div>
-        <div class="bounce2"></div>
-        <div class="bounce3"></div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -129,8 +134,8 @@
         weeklyNum: 0,
         dailyNum: 0,
         friendsNum: 0,
-        addNum: 0,
-        blockNum: 0,
+        targetedReaches: 0,
+        blocks: 0,
         friends: [],
         dayType: ['日','月','火','水','木','金','土',],
         weeklyData: [],
@@ -167,8 +172,8 @@
         this.loading = true
         axios.post('api/update_follows').then((res)=>{
           this.friendsNum = res.data.follower
-          this.addNum = res.data.targetedReaches
-          this.blockNum = res.data.blocks
+          this.targetedReaches = res.data.targetedReaches
+          this.blocks = res.data.blocks
           this.loading = false
           this.fetchMessages();
           this.getTime();
@@ -229,7 +234,7 @@
       },
       weekly_data(){
         this.loading = true
-        axios.post('/weekly_friend_info').then((res)=>{
+        axios.post('api/weekly_friend_info').then((res)=>{
           for(let d of res.data){
             d.date = d.date.replace("-", "月");
             d.date = d.date.replace("-", "日");

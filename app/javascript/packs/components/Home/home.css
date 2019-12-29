@@ -20,7 +20,6 @@ tr {
   padding: 5px;
   margin: 0;
   height: 10px;
-  width: auto;
   background-color: #E0E0F8;
 }
 td {
@@ -208,4 +207,7 @@ b {
 .chart {
   height: 30vh;
   width: 402px;
+}
+.follow-data {
+  width: 15em;
 }

@@ -1,5 +1,5 @@
 class Api::MessagesController < ApplicationController
-  require 'api/showmes_controller'
+  require 'api/lines_controller'
 
   def index
     channel_id = current_user.target_channel
