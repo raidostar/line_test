@@ -1,22 +1,23 @@
 FROM ruby:2.5.5
 
 ENV APP_ROOT /my_app
-
 RUN apt-get update -qq && \
     apt-get install -y build-essential libpq-dev nodejs npm && \
-    npm install -g yarn@1.15.2 && \
-    gem install bundler
+    npm install webpack -g
 
-WORKDIR $APP_ROOT
+WORKDIR /tmp
+COPY package.json /tmp/
+RUN npm config set registry http://registry.npmjs.org/ && npm install
 
-ADD Gemfile* $APP_ROOT/
-RUN bundle install --without development
+WORKDIR /usr/src/app
+COPY . /usr/src/app/
+RUN cp -a /tmp/node_modules /usr/src/app/
 
-ADD package.json $APP_ROOT
-ADD yarn.lock $APP_ROOT
+RUN webpack
 
-RUN yarn install --check-files
+ENV NODE_ENV=production
+ENV PORT=4000
 
-ADD . $APP_ROOT
+CMD [ "/usr/local/bin/node", "./index.js" ]
 
-RUN bundle exec rake assets:precompile
+EXPOSE 4000
