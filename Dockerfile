@@ -1,23 +1,18 @@
 FROM ruby:2.5.5
+MAINTAINER fullout
 
-ENV APP_ROOT /my_app
 RUN apt-get update -qq && \
     apt-get install -y build-essential libpq-dev nodejs npm && \
-    npm install webpack -g
+    npm install -g yarn@1.15.2 && \
+    npm install webpack -g && \
+    gem install bundler
 
-WORKDIR /tmp
-COPY package.json /tmp/
-RUN npm config set registry http://registry.npmjs.org/ && npm install
+ENV APP_ROOT /line_manager
+WORKDIR $APP_ROOT
 
-WORKDIR /usr/src/app
-COPY . /usr/src/app/
-RUN cp -a /tmp/node_modules /usr/src/app/
+ADD ./Gemfile $APP_ROOT/Gemfile
+ADD ./Gemfile.lock $APP_ROOT/Gemfile.lock
 
-RUN webpack
-
-ENV NODE_ENV=production
-ENV PORT=4000
-
-CMD [ "/usr/local/bin/node", "./index.js" ]
-
-EXPOSE 4000
+RUN bundle install && \
+    gem install foreman
+ADD . $APP_ROOT

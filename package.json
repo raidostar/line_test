@@ -3,7 +3,6 @@
   "private": true,
   "dependencies": {
     "@rails/webpacker": "^4.0.7",
-    "@vue/cli": "^4.1.1",
     "add": "^2.0.6",
     "animate.css": "^3.7.2",
     "autoclean": "^1.0.2",
@@ -31,9 +30,9 @@
     "webpack-dev-server": "^3.8.0"
   },
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint",
+    "serve": "@vue/cli-service serve",
+    "build": "@vue/cli-service build",
+    "lint": "@vue/cli-service lint",
     "postinstall": "yarn build",
     "start": "node server.js"
   },
