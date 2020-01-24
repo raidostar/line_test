@@ -1,56 +1,59 @@
 <h2 class="center">会員登録</h2>
 <div class="bigBox">
-  <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
 
-  <div class="field input-field">
-    <label for="user_グルプ名">グルプ名</label>
-    <input type="text" name="user[group]" id="user_group" >
-    <span class="validation" id="group_checker"></span>
-  </div>
+  <form class="new_user" id="new_user" action="/users" method="post" accept-charset="UTF-8">
+    <input name="utf8" type="hidden" value="✓">
+    <input type="hidden" name="authenticity_token" value="bgH+dIsp6hmjPeNfQ925vYHrCGTzGZeLct8QHzXP9yIOwNEaScK+vE/zqTVAm56wrCStZMGbkHP8ZD3GgAQH7A==">
+    <div class="field input-field">
+      <label for="user_グルプ名">グルプ名</label>
+      <input type="text" name="user[group]" id="user_group" >
+      <span class="validation" id="group_checker"></span>
+    </div>
 
-  <div class="field input-field">
-    <label for="user_グルプキー">グルプキー</label>
-    <input type="password" id="user_group_key">
+    <div class="field input-field">
+      <label for="user_グルプキー">グルプキー</label>
+      <input type="password" id="user_group_key">
 
-    <i class="material-icons visibility" id="visible">visibility</i>
-    <i class="material-icons visibility" id="invisible">visibility_off</i>
-    <i class="material-icons" id="help">help</i>
-    <button id="checkId" type="button">CHECK</button>
-    <span class="validation" id="checker"></span>
-  </div>
+      <i class="material-icons visibility" id="visible">visibility</i>
+      <i class="material-icons visibility" id="invisible">visibility_off</i>
+      <i class="material-icons" id="help">help</i>
+      <button id="checkId" type="button">CHECK</button>
+      <span class="validation" id="checker"></span>
+    </div>
 
-  <div class="field input-field">
-    <label for="user_email">E-mail</label>
-    <%= f.email_field :email, autocomplete: "email" %>
-    <span class="validation" id="idCheckResult"></span>
-  </div>
+    <div class="field input-field">
+      <label for="user_email">E-mail</label>
+      <input type="text" name="user[email]" id="user_email">
+      <span class="validation" id="idCheckResult"></span>
+    </div>
 
-  <div class="field input-field">
-    <label for="user_パスワード">パスワード</label>
-    <%= f.password_field :password, autocomplete: "new-password" %>
-    <span class="validation" id="pwdCheckResult"></span>
-  </div>
+    <div class="field input-field">
+      <label for="user_パスワード">パスワード</label>
+      <input autocomplete="new_password" type="password" name="user[password]" id="user_password">
+      <span class="validation" id="pwdCheckResult"></span>
+    </div>
 
-  <div class="field input-field">
-    <label for="user_パスワード確認">パスワード確認</label>
-    <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
-    <span class="validation" id="pwdRecheckResult"></span>
-  </div>
+    <div class="field input-field">
+      <label for="user_パスワード確認">パスワード確認</label>
+      <input autocomplete="new_password" type="password" name="user[password_confirmation]" id="user_password_confirmation">
+      <span class="validation" id="pwdRecheckResult"></span>
+    </div>
 
-  <div class="field input-field">
-    <label for="user_代表番号">代表番号</label>
-    <input type="text" name="user[group_phone_number]" id="user_group_phone">
-  </div>
+    <div class="field input-field">
+      <label for="user_代表番号">代表番号</label>
+      <input type="text" name="user[group_phone_number]" id="user_group_phone">
+    </div>
 
-  <div class="actions">
-    <button id="joinBtn" class="button" type="submit" name="commit" data-disable-with="Sign up">登録する</button>
-  </div>
-  <% end %>
+    <div class="actions">
+      <button id="joinBtn" class="button" type="button" style="display: none;">
+        登録する
+      </button>
+    </div>
+  </form>
 
   <a class="right" href="/users/sign_in">ログイン画面に戻る</a>
 </div>
-<script>
+<script type="text/javascript">
   $(function(){
     $.ajaxSetup({
       headers: {
@@ -59,14 +62,13 @@
     });
 
     $('#checkId').on('click', groupkeyCheck);
-    $('#joinBtn').on('click', joinValidation);
     $('#user_email').on('keyup', emailCheck);
 
-    let validation = false;
+    let groupBool=false;
+    let emailBool=false;
     let visible = false;
 
     function groupkeyCheck(){
-      this.validation = false
       var group = $('#user_group').val()
       var group_key = $('#user_group_key').val()
       var data = { "group": group, "group_key": group_key }
@@ -82,23 +84,29 @@
           url: 'api/find_group_key',
           data: data,
           success: function(res){
-            if (res!=false){
-              $('#checker').html("認証完了");
-              $('#checker').css({"color": "green"});
-              return true
+            if (res!=null){
+              if(res==false){
+                $('#checker').html("認証できません。認証キーがなければ発給の後で登録ができます。");
+                $('#checker').css({"color": "red"});
+                return false
+              } else {
+                $('#checker').html("認証完了");
+                $('#checker').css({"color": "green"});
+                this.groupBool = true
+                $('#joinBtn').css({"display": "unset"})
+                return true
+              }
             } else {
-              $('#checker').html("認証できません。認証キーがなければ発給の後で登録ができます。");
+              $('#checker').html("グルプ無し");
               $('#checker').css({"color": "red"});
               return false
             }
-            this.validation = true
           }
         })
       }
     }
 
     function emailCheck(){
-      this.validation = false
       let userId = $('#user_email').val();
       if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(userId)){
         $('#idCheckResult').html("メール形式が間違いました。");
@@ -115,22 +123,25 @@
             if(num==0){
               $('#idCheckResult').html("このアカウントはできます。");
               $('#idCheckResult').css({"color": "green"});
+              this.emailBool = true
               return true;
             } else{
               $('#idCheckResult').html("もう登録されたアカウントです。");
               $('#idCheckResult').css({"color": "red"});
               return false;
             }
-            this.validation = true
+
           }
         })
       }
     }
 
     function joinValidation(){
-      if (this.validation ==false){
+      if (this.groupBool==false||this.emailBool==false){
         alert("認証してから登録できます。");
         return false;
+      } else {
+        return true;
       }
       let userPwd = $('#user_password').val();
     }

@@ -2,6 +2,7 @@ Rails.application.routes.draw do
   get 'groups/index'
   get 'groups/create'
   get 'groups/show'
+  get '/health' => 'api/healths#health'
   devise_for :users, contorllers: {
     sessions: 'users/sessions'
   }

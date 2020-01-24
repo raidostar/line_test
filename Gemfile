@@ -84,3 +84,4 @@ gem 'rack-cors'
 gem 'whenever', require: false
 gem 'fog-aws', '~> 3.5', '>= 3.5.2'
 gem 'carrierwave', '~> 2.0', '>= 2.0.1'
+gem 'unicorn', '~> 5.5', '>= 5.5.2'

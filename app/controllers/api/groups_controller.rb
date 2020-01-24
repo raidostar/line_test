@@ -23,11 +23,13 @@ class Api::GroupsController < ApplicationController
   end
 
   def find_group_key
+    result = nil
     group = params[:group]
     group_key = params[:group_key]
     group = Group.find_by(group: group)
-    result = group.authenticate(group_key)
-
+    if group.present?
+      result = group.authenticate(group_key)
+    end
     render json: result, status: :ok
   end
 

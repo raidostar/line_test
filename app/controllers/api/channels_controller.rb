@@ -18,7 +18,7 @@ class Api::ChannelsController < ApplicationController
       if @channel.save
         channel = Channel.last
         @channels.push(channel.id)
-        @group.update(channels: channels.join(","))
+        @group.update(channels: @channels.join(","))
         render :show, status: :ok
       else
         render json: @channel.errors, status: :unprocessable_entity

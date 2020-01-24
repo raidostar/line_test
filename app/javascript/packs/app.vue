@@ -92,10 +92,12 @@
           </li>
 
           <li v-if="mode=='remindReply'" @click="reloadPage">
-            <router-link class="pageLink selected-mode" to="/remindReply">リマインダ配信</router-link>
+            <!-- <router-link class="pageLink selected-mode" to="/remindReply">リマインダ配信</router-link> -->
+            <a class="pageLink" @click="readyAlert">リマインダ配信</a>
           </li>
           <li v-else @click="changeMode('remindReply')">
-            <router-link class="pageLink" to="/remindReply">リマインダ配信</router-link>
+            <!-- <router-link class="pageLink" to="/remindReply">リマインダ配信</router-link> -->
+            <a class="pageLink" @click="readyAlert">リマインダ配信</a>
           </li>
 
           <li v-if="mode=='welcomeMessage'" @click="reloadPage">
@@ -239,6 +241,10 @@
       },
       reloadPage(){
         window.location.reload();
+      },
+      readyAlert(){
+        alert("リマインダ配信はまだ準備中でございます。")
+        return;
       }
     }
   }

@@ -1,14 +1,49 @@
 version: '3'
-volumes:
-  bundle:
 services:
-  app:
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_USER: root
+      MYSQL_ROOT_PASSWORD: fullout2020
+      MYSQL_PASSWORD: fullout2020
+
+  webpacker:
     build: .
-    ports:
-      - 3000:3000
+    command: bundle exec bin/webpack-dev-server
     volumes:
-      - bundle:/usr/local/bundle
-      - .:/usr/src/app:delegated
-    stdin_open: true
-    tty: true
-    command: /bin/bash
+      - .:/line_manager
+    ports:
+      - "8080:8080"
+
+  web:
+    build: .
+    command: /bin/sh -c "rm -rf tmp/pids/server.pid && bundle exec puma -C config/puma.rb"
+    environment:
+      MYSQL_USER: root
+      MYSQL_ROOT_PASSWORD: fullout2020
+      MYSQL_PASSWORD: fullout2020
+      MYSQL_DATABASE: lineManage_db
+      MYSQL_HOST: mysql
+    volumes:
+      - .:/line_manager
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mysql
+      - webpacker
+
+  nginx:
+    build: containers/nginx
+    command: /usr/sbin/nginx -g 'daemon off;' -c /etc/nginx/nginx.conf
+    environment:
+      MYSQL_USER: root
+      MYSQL_ROOT_PASSWORD: fullout2020
+      MYSQL_PASSWORD: fullout2020
+      MYSQL_DATABASE: lineManage_db
+      MYSQL_HOST: mysql
+    volumes:
+      - .:/line_manager
+    ports:
+      - "80:80"
+    depends_on:
+      - web
