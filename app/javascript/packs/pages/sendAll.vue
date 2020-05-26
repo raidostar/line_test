@@ -22,19 +22,23 @@
             </div>
             <div class="bottom-panel">
               <p class="folder-title">配信する友達グループ</p>
-              <div v-for="(tag,index) in tags" class="added-folder">
-                <button class="added-folderBtn" id="added-folderBtn" v-if="tag==selectedTag" :style="selectedCSS" @click="selectTag(index)">
-                  <i class="material-icons open-file-added" style="margin-left: 1em;">people</i>
-                  <span>
-                    {{tag}}
-                  </span>
-                </button>
-                <button class="added-folderBtn" id="added-folderBtn" v-else @click="selectTag(index)">
-                  <i class="material-icons open-file-added" style="margin-left: 1em;">people</i>
-                  <span>
-                    {{tag}}
-                  </span>
-                </button>
+              <div class="folders">
+                <div v-for="(tag,index) in tags" class="added-folder">
+                  <button class="added-folderBtn" id="added-folderBtn" v-if="tag==selectedTag" :style="selectedCSS" @click="selectTag(index)">
+                    <i class="material-icons open-file-added" style="margin-left: 1em;">people</i>
+                    <span>
+                      {{tag.name}}
+                      <small class="target_number">ターゲット{{ tag.target_number }}名</small>
+                    </span>
+                  </button>
+                  <button class="added-folderBtn" id="added-folderBtn" v-else @click="selectTag(index)">
+                    <i class="material-icons open-file-added" style="margin-left: 1em;">people</i>
+                    <span>
+                      {{tag.name}}
+                      <small class="target_number">ターゲット{{ tag.target_number }}名</small>
+                    </span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -47,8 +51,8 @@
                 <i class="material-icons stamp">sentiment_satisfied_alt</i>
               </button>
               <label class="stampBtn">
-                <i class="material-icons stamp">gif</i>
-                <input type="file" @change="onFileChange" class="imageBtn" ref="fileInput" accept="img/*">
+                <i class="material-icons stamp">collections</i>
+                <input type="file" @change="onFileChange" @click="onFileChange" class="imageBtn" ref="fileInput" accept="img/*">
               </label>
               <button class="stampBtn" @click="toggleCarousel" title="キャルセル追加">
                 <i class="material-icons stamp">border_color</i>
@@ -152,14 +156,14 @@
                   <div v-else style="height: 5.2em;">
                     <div class="bubble-setting color setting-color" v-if="selectedComponent!='hero'">
                       <p style="margin-bottom: 0">文字色</p>
-                      <input class="color-text color-input" type="text" v-model="color" @keyup="syncColor" style="height: 2em; color: white;">
+                      <input class="color-text" type="text" v-model="color" @keyup="syncColor" style="height: 2em; color: white;margin: 1.5em;">
                       <div class="color-sample" :style="fontColor" v-model="color"></div>
                     </div>
                   </div>
                   <button class="colorExchange" @click="exchangeColor" v-if="selectedComponent!='hero'&&(selectedComponent!='footer'||footer_type!='button')">↑ 色逆に ↓</button>
                   <div class="bubble-setting color setting-background" style="height: 6em;">
                     <p style="margin-bottom: 0">背景色</p>
-                    <input class="color-text color-input" type="text" v-model="background" @keyup="syncBackground" style="height: 2em; color: white;">
+                    <input class="color-text" type="text" v-model="background" @keyup="syncBackground" style="height: 2em; color: white;margin: 1.5em;">
                     <div class="color-sample" :style="backgroundColor" v-model="backgroundColor"></div>
                   </div>
                   <div class="bubble-setting setting-footerType" v-if="selectedComponent=='footer'">
@@ -195,7 +199,7 @@
                   </div>
                   <label class="image-change" title="イメージ変更" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null">
                     イメージ変更
-                    <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
+                    <input type="file" @change="onImageChange" @click="onImageChange" class="imageBtn" ref="hero" accept="img/*">
                   </label>
                   <button class="image-remove" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null" @click="removeImage">
                     イメージ削除
@@ -217,7 +221,7 @@
                       <div class="blocks hero-block" v-if="selectedComponent=='hero'&&selectedBubble==index" style="border: 5px solid red">
                         <label class="add-label" title="イメージ追加">
                           <i class="material-icons add-bubble-image" v-if="!heros[index]">add</i>
-                          <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
+                          <input type="file" @change="onImageChange" @click="onImageChange" class="imageBtn" ref="hero" accept="img/*">
                         </label>
                         <div class="carousel-img-area" v-show="bubble.hero" :style="heroCSS[index]">
                           <img class="carousel-img" :src="bubble.hero" :style="imageCSS[index]">
@@ -226,7 +230,7 @@
                       <div class="blocks hero-block" @click="selectComponent('hero', index)" v-else style="border: 3px dotted #111;">
                         <label class="add-label" title="イメージ追加">
                           <i class="material-icons add-bubble-image" v-if="!heros[index]">add</i>
-                          <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
+                          <input type="file" @change="onImageChange" @click="onImageChange" class="imageBtn" ref="hero" accept="img/*">
                         </label>
                         <div class="carousel-img-area" v-show="bubble.hero" :style="heroCSS[index]">
                           <img class="carousel-img" :src="bubble.hero" :style="imageCSS[index]">
@@ -305,25 +309,23 @@
           <!-- submit button -->
           <button class="sendBtn" @click="createNotify">SEND</button>
         </div>
-
       </div>
     </transition>
     <transition name="slideInOut">
       <div v-show="!formShow">
         <select v-model="parPage" @change="resetPage">
-          <option value=5>5ラインで表示</option>
-          <option value=10>10ラインで表示</option>
-          <option value=50>50ラインで表示</option>
-          <option value=100>100ラインで表示</option>
-          <option value=500>500ラインで表示</option>
+          <option value=5>5個表示</option>
+          <option value=10>10個表示</option>
+          <option value=50>50個表示</option>
+          <option value=100>100個表示</option>
+          <option value=500>500個表示</option>
           <option :value="notifies.length">全体表示</option>
         </select>
         <table class="sc-list">
           <tr>
             <th>再送信</th>
-            <th>配信先</th>
+            <th>配信対象</th>
             <th>内容</th>
-
             <th>日時</th>
             <th>配信数</th>
             <th>タイプ</th>
@@ -355,6 +357,17 @@
                 <span>キャルセル</span>
               </a>
             </td>
+            <td v-else-if="notify.notify_type=='text+image'">
+              <a v-if="notify.contents.search('<img src=')>=0"
+                @click="showTextImage(notify)"
+                v-html="notify.contents.substr(0,100)"
+                >
+              </a>
+              <a v-else @click="showTextImage(notify)" >
+                <span v-if="notify.contents.length>19" v-html="notify.contents.substr(0,20)+'...'"></span>
+                <span v-else v-html="notify.contents.substr(0,20)"></span>
+              </a>
+            </td>
             <td v-else>
               <a v-if="notify.contents.search('<img src=')>=0"
                 @click="showFullContents(notify.contents)"
@@ -367,8 +380,15 @@
               </a>
             </td>
             <td>{{notify.created_at}}</td>
-            <td>{{notify.target_number}}</td>
-            <td>{{notify.notify_type}}</td>
+            <td>{{notify.hit_count}}</td>
+            <td>
+              <span v-if="notify.notify_type=='text'">テキスト</span>
+              <span v-else-if="notify.notify_type=='carousel'">カルーセル</span>
+              <span v-else-if="notify.notify_type=='stamp'">スタンプ</span>
+              <span v-else-if="notify.notify_type=='image'">イメージ</span>
+              <span v-else-if="notify.notify_type=='map'">マップ</span>
+              <span v-else-if="notify.notify_type=='text+image'">テキスト&イメージ</span>
+            </td>
           </tr>
         </table>
         <paginate
@@ -451,7 +471,7 @@
     data: function(){
       return {
         formShow: false,
-        tags: ['ALL'],
+        tags: [],
         contents: '',
         innerContent:'',
         notifies: [],
@@ -481,7 +501,7 @@
         },
         text_address: '',
         google: gmapApi,
-        selectedTag: '',
+        selectedTag: 'ALL',
         selectedCSS: {'background-color': '#444','color': 'white'},
         bubble_num: 0,
         bubble_array: [
@@ -536,20 +556,36 @@
         copied: {},
         copiedType: '',
         loading: true,
+        selected_center: null,
       }
     },
     mounted: function(){
-      this.fetchChannels();
+      this.accessCheck();
     },
     methods: {
+      accessCheck(){
+        this.loading = true
+        axios.post('/api/show_current').then((res)=>{
+          var status = res.data.user.status
+          var admit = res.data.user.admit
+          if((status=='client'||status=='master')&&!admit){
+            alert("このページの接続権限がありません。")
+            location.href = '/';
+          } else {
+            this.fetchChannels();
+          }
+        },(error)=>{
+          console.log(error)
+        })
+      },
       fetchChannels(){
-        axios.post('api/fetch_channels').then((res)=>{
+        axios.post('/api/fetch_channels').then((res)=>{
           if(res.data==null){
             alert("まず、チャンネルを登録してご利用ください。");
-            location.href = "/#/channelManage"
+            location.href = "/channelManage"
           } else {
             this.fetchNotifies();
-            this.setStampNum();
+            this.fetchStamps();
             this.fetchEmojis();
             this.fetchTags();
             this.innerContent = this.contents
@@ -559,18 +595,14 @@
         })
       },
       fetchTags(){
-        axios.get('api/tags?tag_group=friend').then((res)=>{
-          for(var t of res.data.tags){
-            this.tags.push(t.name)
-          }
+        axios.get('/api/tags?tag_group=friend').then((res)=>{
+          this.tags = res.data
         },(error)=>{
           console.log(error)
         })
       },
       fetchEmojis(){
-        axios.get('api/emojis').then((res)=>{
-          // console.log("emojis")
-          // console.log(res.data.emojis)
+        axios.get('/api/emojis').then((res)=>{
           this.emojis = res.data.emojis
         },(error)=>{
           console.log(error)
@@ -595,32 +627,33 @@
       },
       fetchNotifies(){
         this.loading = true
-        axios.get('api/notifies').then((res)=>{
+        axios.get('/api/notifies').then((res)=>{
           for(let notify of res.data.notifies){
             notify.created_at = notify.created_at.substr(0,16).replace('T',' ');
           }
-          //console.log(res.data.notifies)
           this.notifies = res.data.notifies
+
           this.loading = false
         },(error)=>{
           console.log(error)
         })
       },
       createNotify(){
-        if(!this.stampAreaShow&&!this.contents&&!this.uploadedImage&&!this.mapShow&&!this.carouselAreaShow){//empty
-          alert("empty")
-          alert("一応メッセージを作成してください。")
+        if(!this.stampAreaShow&&!this.contents&&!this.uploadedImage&&!this.mapShow&&!this.carouselAreaShow)
+        {//empty
+          alert("メッセージを作成してください。")
           return;
         }
-        else if(this.contents&&!this.uploadedImage&&!this.stampAreaShow&&!this.mapShow&&!this.carouselAreaShow){//text only
-          axios.post('/create_notify', {
+        else if(this.contents&&!this.uploadedImage&&!this.stampAreaShow&&!this.mapShow&&!this.carouselAreaShow)
+        {//text only
+          axios.post('/api/create_notify', {
             notify_type: 'text',
-            contents: this.contents
+            contents: this.contents,
+            target_tag: this.selectedTag,
+            hit_count: 1
           }).then((res)=>{
             if (res.data != null){
-              alert("メッセージ送信完了！")
-              this.formToggle();
-              this.fetchNotifies();
+              this.afterAxios();
             }
           }, (error) =>{
             console.log(error)
@@ -628,28 +661,31 @@
         } else if(this.stampAreaShow&&!this.contents){//stamp only
           let arr = this.selectStampUrl.split('-')
           let target = arr[0]
-          axios.post('/create_notify',{
+          axios.post('/api/create_notify',{
             notify_type: 'stamp',
-            contents: target.substr(26,10)
+            contents: target.substr(40,target.length),
+            target_tag: this.selectedTag,
+            hit_count: 1
           }).then((res)=>{
-            alert("メッセージ送信完了！")
+            this.afterAxios();
           },(error)=>{
             console.log(error)
           })
         } else if(this.stampAreaShow&&this.contents){//text+stamp
-          axios.post('/create_notify',{
+          axios.post('/api/create_notify',{
             notify_type: 'text',
-            contents: this.contents
+            contents: this.contents,
+            target_tag: this.selectedTag,
+            hit_count: 1
           }).then((res)=>{
             let arr = this.selectStampUrl.split('-')
             let target = arr[0]
-            axios.post('/create_notify',{
+            axios.post('/api/create_notify',{
               notify_type: 'stamp',
-              contents: target.substr(26,10)
+              contents: target.substr(40,target.length),
+              target_tag: this.selectedTag
             }).then((res)=>{
-              alert("メッセージ送信完了！")
-              this.formToggle();
-              this.fetchNotifies();
+              this.afterAxios();
             },(error)=>{
               console.log(error)
             })
@@ -662,11 +698,11 @@
           data.append('notify_type','image');
           data.append('contents','[ NO TEXT ]');
           data.append('image',file);
-          axios.post('/create_notify',data)
+          data.append('target_tag',this.selectedTag);
+          data.append('hit_count',1);
+          axios.post('/api/create_notify',data)
           .then((res)=>{
-            alert("メッセージ送信完了！")
-            this.formToggle();
-            this.fetchNotifies();
+            this.afterAxios();
           },(error)=>{
             console.log(error)
           })
@@ -676,11 +712,11 @@
           data.append('notify_type','text+image');
           data.append('contents',this.contents);
           data.append('image',file);
-          axios.post('/create_notify',data)
+          data.append('target_tag',this.selectedTag);
+          data.append('hit_count',1);
+          axios.post('/api/create_notify',data)
           .then((res)=>{
-            alert("メッセージ送信完了！")
-            this.formToggle();
-            this.fetchNotifies();
+            this.afterAxios();
           },(error)=>{
             console.log(error)
           })
@@ -765,17 +801,16 @@
             data.append('footer_data[]', this.bubble_array[i].footer_data)
           }
           data.append('bubble_num',this.bubble_array.length)
-          axios.post('api/bubbles_archives',data)
+          axios.post('/api/bubbles_archives',data)
           .then((res)=>{
-            console.log(res.data)
             const data = res.data.toString()
-            axios.post('create_notify',{
+            axios.post('/api/create_notify',{
               notify_type: 'carousel',
-              contents: data
+              contents: data,
+              target_tag: this.selectedTag,
+              hit_count: 1
             }).then((res)=>{
-              alert("メッセージ送信完了！")
-              this.formToggle();
-              this.fetchNotifies();
+              this.afterAxios();
             },(error)=>{
               console.log(error)
             })
@@ -787,32 +822,33 @@
           const latlng = this.info.center
           geocoder.geocode({'location':this.info.center,'language': 'ja'},(results,status)=>{
             if(status == 'OK'){
-              //console.log(results)
               let data = '['+results[5].formatted_address+']+[@map('+latlng.lat+','+latlng.lng+')]'
-              axios.post('/create_notify',{
+              axios.post('/api/create_notify',{
                 notify_type: 'map',
-                contents: data
+                contents: data,
+                target_tag: this.selectedTag,
+                hit_count: 1
               }).then((res)=>{
-                alert("メッセージ送信完了！")
-                this.formToggle();
-                this.fetchNotifies();
+                this.afterAxios();
               },(error)=>{
                 console.log(error)
               })
             }
           })
         } else {//text+map
-          axios.post('/create_notify',{notify_type: 'text',contents: this.contents}).then((res)=>{
+          axios.post('/api/create_notify',{
+            notify_type: 'text',
+            contents: this.contents,
+            target_tag: this.selectedTag,
+            hit_count: 1
+          }).then((res)=>{
             let geocoder = new google.maps.Geocoder();
             const latlng = this.info.center
             geocoder.geocode({'location':this.info.center,'language': 'ja'},(results,status)=>{
               if(status == 'OK'){
-                //console.log(results)
                 let data = '['+results[5].formatted_address+']+[@map('+latlng.lat+','+latlng.lng+')]'
-                axios.post('/create_notify',{notify_type: 'map', contents: data}).then((res)=>{
-                  alert("メッセージ送信完了！")
-                  this.formToggle();
-                  this.fetchNotifies();
+                axios.post('/api/create_notify',{notify_type: 'map', contents: data}).then((res)=>{
+                  this.afterAxios();
                 },(error)=>{
                   console.log(error)
                 })
@@ -824,43 +860,59 @@
 
         }
       },
+      afterAxios(){
+        alert("メッセージ送信完了！")
+        this.emptyAll();
+        this.closeAll('all')
+        this.formToggle();
+        this.fetchNotifies();
+      },
       getImgUrl(para) {
-        //var images = require.context('../images/', false, /\.png$/)
         var images = 'https://cdn.lineml.jp/api/media/sticker/'+para
         return images
       },
-      setStampNum(){
-        for(let i=1; i<47;i++){
-          let add = '1_'+i
+      fetchStamps(){
+        for(let i=34; i<74;i++){
+          let add = '11537_520027'+i
           this.stampNums.push(add)
         }
-        for(let i=100; i<180;i++){
-          let add = '1_'+i
+        for(let i=494; i<534;i++){
+          let add = '11538_51626'+i
           this.stampNums.push(add)
         }
-        for(let i=401; i<431;i++){
-          let add = '1_'+i
-          this.stampNums.push(add)
-        }
-        for(let i=501; i<528;i++){
-          let add = '1_'+i
+        for(let i=10; i<50;i++){
+          let add = '11539_521141'+i
           this.stampNums.push(add)
         }
       },
       toggleStamp(){
-        this.emojiShow = false;
-        this.mapShow = false;
+        this.closeAll('stamp');
         this.stampShow = !this.stampShow
       },
       selectStamp(num){
         this.uploadedImage = "";
         this.stampAreaShow = true
-        var images = require.context('../images/', false, /\.png$/)
-        this.selectStampUrl = images('./' + num + ".png")
+        //var images = require.context('../images/', false, /\.png$/)
+        this.selectStampUrl = 'https://cdn.lineml.jp/api/media/sticker/' + num
         this.flexablePadding = {"padding-right": "300px"}
       },
       closeStamp(){
+        this.stampShow = false;
         this.stampAreaShow = false;
+        this.flexablePadding = {"padding-right": "30px"}
+      },
+      closeCarousel(){
+        this.carouselAreaShow = false;
+        this.clearCarousel();
+      },
+      closeEmoji(){
+        this.emojiShow = false;
+        this.flexablePadding = {"padding-right": "30px"}
+      },
+      closeMap(){
+        this.mapShow = false;
+        this.default_center = {lat: 35.681236,lng: 139.767125}
+        this.marker_center = {lat: 35.681236,lng: 139.767125}
         this.flexablePadding = {"padding-right": "30px"}
       },
       resetPage(){
@@ -872,23 +924,42 @@
       showFullContents(contents){
         this.showDetail = true;
         this.fullContents = contents;
+        if(contents.search("@map")>=0){
+          let array = contents.split("+")
+          console.log(array[1])
+          array[1] = array[1].replace("[@map(","")
+          array[1] = array[1].replace(")]","")
+          var selected_location = array[1].split(",")
+          selected_location[0] = selected_location[0]*1
+          selected_location[1] = selected_location[1]*1
+          this.selected_center = {lat: selected_location[0],lng: selected_location[1]}
+        }
+      },
+      showTextImage(notify){
+        console.log(notify)
+        var contents = '<span>' + notify.contents + '</span><br/>'
+        contents += '<img class="fullSizeImage" src='+notify.image.url+' style="width: 21em;height: 26em;">'
+        this.fullContents = contents;
+        this.showDetail = true;
       },
       closeDetail(){
         this.showDetail = false
         this.showCarousel = false
       },
       toggleEmoji(){
-        this.stampShow = false;
+        this.closeAll('emoji');
         this.emojiShow = !this.emojiShow
       },
       onFileChange(e){
-        this.stampShow = false;
-        this.stampAreaShow = false;
-        this.mapShow = false;
+        this.closeAll('all')
         let files = e.target.files || e.dataTransfer.files;
-        if(!files[0].type.match(/image.*/)){
-          alert("イメージファイルをアップロードしてください。")
-          return;
+        if(files.length>0){
+          if(!files[0].type.match(/image.*/)){
+            alert("イメージファイルをアップロードしてください。")
+            return;
+          }
+        }else{
+          return
         }
         this.imageFile = files[0]
         this.createImage(files[0]);
@@ -903,18 +974,16 @@
         reader.readAsDataURL(file);
       },
       onImageChange(e){
-        this.uploadedImage = ""
-        this.stampShow = false;
-        this.stampAreaShow = false;
-        this.mapShow = false;
-        this.contents = ""
-        this.innerContent = ""
-
+        this.closeAll('carousel')
         let files = e.target.files || e.dataTransfer.files;
         var index = this.selectedBubble
-        if(!files[0].type.match(/image.*/)){
-          alert("イメージファイルをアップロードしてください。")
-          return;
+        if(files.length>0){
+          if(!files[0].type.match(/image.*/)){
+            alert("イメージファイルをアップロードしてください。")
+            return;
+          }
+        }else{
+          return
         }
         this.heros[index] = files[0]
         this.createCarouselImage(index,files[0]);
@@ -928,6 +997,7 @@
         reader.readAsDataURL(file);
       },
       closeImage(){
+        this.imageFile = null
         this.uploadedImage = ''
         this.flexablePadding = {"padding-right": "30px"}
       },
@@ -984,10 +1054,7 @@
         this.carouselOpen = false
       },
       toggleMap(){
-        this.uploadedImage = ""
-        this.stampShow = false
-        this.stampAreaShow = false
-        this.emojiShow = false
+        this.closeAll('map');
         this.mapShow = !this.mapShow
         if (this.mapShow==true){
           this.flexablePadding = {"padding-right": "430px"}
@@ -1021,13 +1088,14 @@
         this.showCarousel = true;
       },
       selectTag(index){
-        this.selectedTag = this.tags[index]
+        this.selectedTag = this.tags[index].name
       },
       sendAgain(id){
-        axios.post('api/notify_again',{
+        axios.post('/api/notify_again',{
           id: id
         }).then((res)=>{
-          console.log(res.data)
+          alert("再送信完了！")
+          this.fetchNotifies();
         },(error)=>{
           console.log(error)
         })
@@ -1471,9 +1539,7 @@
           this.background = this.bubble_array[index].header_background
           this.bold = this.bubble_array[index].header_bold
           this.headerBackground[index].border = '5px solid red'
-          this.$nextTick(function(){
-            this.$refs.headerArea[index].focus();
-          })
+
           break
           case 'hero':
           var ratio = this.bubble_array[index].hero_ratio.split(":")
@@ -1482,9 +1548,7 @@
           this.align = this.bubble_array[index].hero_align
           this.size = this.bubble_array[index].hero_size
           this.background = this.bubble_array[index].hero_background
-          this.$nextTick(function(){
-            this.$refs.heroArea[index].focus();
-          })
+
           break
           case 'body':
           this.gravity = this.bubble_array[index].body_gravity
@@ -1494,9 +1558,7 @@
           this.background = this.bubble_array[index].body_background
           this.bold = this.bubble_array[index].body_bold
           this.bodyBackground[index].border = '5px solid red'
-          this.$nextTick(function(){
-            this.$refs.bodyArea[index].focus();
-          })
+
           break
           case 'footer':
           this.gravity = this.bubble_array[index].footer_gravity
@@ -1511,9 +1573,7 @@
           this.footer_message = this.bubble_array[index].footer_message
           this.footer_data = this.bubble_array[index].footer_data
           this.footerBackground[index].border = '5px solid red'
-          this.$nextTick(function(){
-            this.$refs.footerArea[index].focus();
-          })
+
           break
           default:
           console.log("error")
@@ -1547,11 +1607,9 @@
         }
       },
       fetchBubbles(ids){
-        axios.post('api/fetch_bubbles_archives',{
+        axios.post('/api/fetch_bubbles_archives',{
           ids: ids
         }).then((res)=>{
-          // console.log("bubble수집")
-          console.log(res.data)
           this.bubbles = []
           this.bubbles = res.data
           for(var bubble of res.data){
@@ -1865,22 +1923,31 @@
         this.createCarouselImage(index,files[0]);
       },
       emptyAll(){
-        this.stampShow= false;
-        this.stampAreaShow= false;
-        this.emojiShow= false;
-        this.default_center = {lat: 35.681236,lng: 139.767125}
-        this.marker_center = {lat: 35.681236,lng: 139.767125}
-        this.mapShow = false
-        this.uploadedImage = ""
         this.contents = "";
         this.$refs.chatting.innerHTML = "";
         this.tag = ''
+      },
+      closeAll(except){
+        if(except != 'stamp'){
+          this.closeStamp();
+        }
+        if(except != 'emoji'){
+          this.closeEmoji();
+        }
+        if(except != 'image'){
+          this.closeImage();
+        }
+        if(except != 'carousel'){
+          this.closeCarousel();
+        }
+        if(except != 'map'){
+          this.closeMap();
+        }
       },
       closeByKey(e){
         alert(e.target)
       },
       keyNumberCheck(e){
-        console.log(e.keyCode)
         switch(e.keyCode){
           case 13:
           this.stretchCarouselToggle();
@@ -2016,7 +2083,7 @@
           this.$nextTick(function(){
             var i = this.selectedBubble
             if(this.heros[i] == null){
-
+              this.$refs.hero[i].click();
             }
           })
           break;
@@ -2039,7 +2106,7 @@
           this.$nextTick(function(){
             var i = this.selectedBubble
             if(this.heros[i] == null){
-
+              this.$refs.hero[i].click();
             }
           })
           break;

@@ -81,7 +81,7 @@
                 </td>
                 <td v-else-if="reaction.reaction_type=='carousel'">
                   <a @click="editAction(reaction.id,index,'read')">
-                    <span>キャルセル</span>
+                    <span>カルーセル</span>
                   </a>
                 </td>
                 <td v-else>
@@ -101,7 +101,13 @@
                   </button>
                 </td>
                 <td class="hitcount" style="text-align: center;">{{reaction.target_number}}</td>
-                <td style="text-align: center;">{{reaction.reaction_type}}</td>
+                <td style="text-align: center;">
+                  <span v-if="reaction.reaction_type=='text'">テキスト</span>
+                  <span v-else-if="reaction.reaction_type=='carousel'">カルーセル</span>
+                  <span v-else-if="reaction.reaction_type=='stamp'">スタンプ</span>
+                  <span v-else-if="reaction.reaction_type=='image'">イメージ</span>
+                  <span v-else-if="reaction.reaction_type=='map'">マップ</span>
+                </td>
                 <td>
                   <button class="edit-button" v-show="reaction.bool" @click="reactionDelete(reaction.id)">
                     削除
@@ -136,10 +142,10 @@
               <i class="material-icons stamp">sentiment_satisfied_alt</i>
             </button>
             <label class="stampBtn" title="イメージ追加">
-              <i class="material-icons stamp">gif</i>
-              <input type="file" @change="onFileChange" class="imageBtn" ref="fileInput" accept="img/*">
+              <i class="material-icons stamp">collections</i>
+              <input type="file" @change="onFileChange" @click="onFileChange" class="imageBtn" ref="fileInput" accept="img/*">
             </label>
-            <button class="stampBtn" @click="toggleCarousel" title="キャルセル追加">
+            <button class="stampBtn" @click="toggleCarousel" title="カルーセル追加">
               <i class="material-icons stamp">border_color</i>
             </button>
             <button class="stampBtn" @click="toggleMap" title="マップ追加">
@@ -302,7 +308,7 @@
                 </div>
                 <label class="image-change" title="イメージ変更" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null">
                   イメージ変更
-                  <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
+                  <input type="file" @change="onImageChange" @click="onImageChange" class="imageBtn" ref="hero" accept="img/*">
                 </label>
                 <button class="image-remove" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null" @click="removeImage">
                   イメージ削除
@@ -324,7 +330,7 @@
                     <div class="blocks hero-block" :style="heroBackground[index]" ref="heroArea" @click="selectComponent('hero',index)" tabindex="0" @keydown.shift="keyNumberCheck">
                       <label class="add-label" title="イメージ追加">
                         <i class="material-icons add-bubble-image" v-if="!heros[index]">add</i>
-                        <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
+                        <input type="file" @change="onImageChange" @click="onImageChange" class="imageBtn" ref="hero" accept="img/*">
                       </label>
                       <div class="carousel-img-area" v-show="bubble.hero" :style="heroCSS[index]">
                         <img class="carousel-img" :src="bubble.hero" :style="imageCSS[index]">
@@ -544,17 +550,36 @@
       }
     },
     mounted: function(){
-      this.fetchChannels();
+      this.accessCheck();
     },
     methods: {
+      accessCheck(){
+        this.loading = true
+        axios.post('/api/show_current').then((res)=>{
+          var status = res.data.user.status
+          var admit = res.data.user.admit
+          if((status=='client'||status=='master')&&!admit){
+            alert("このページの接続権限がありません。\nCSD事業部に問い合わせてください。")
+            axios.delete('users/sign_out').then((res)=>{
+              location.href = '/';
+            },(error)=>{
+              console.log(error)
+            })
+          } else {
+            this.fetchChannels();
+          }
+        },(error)=>{
+          console.log(error)
+        })
+      },
       fetchChannels(){
-        axios.post('api/fetch_channels').then((res)=>{
+        axios.post('/api/fetch_channels').then((res)=>{
           if(res.data==null){
             alert("まず、チャンネルを登録してご利用ください。");
-            location.href = "/#/channelManage"
+            location.href = "/channelManage"
           } else {
             this.fetchTags();
-            this.setStampNum();
+            this.fetchStamps();
             this.fetchEmojis();
             this.innerContent = this.contents
           }
@@ -565,7 +590,7 @@
       fetchTags(){
         this.loading = true
         axios.get('/api/tags?tag_group=reaction').then((res)=>{
-          this.tags = res.data.tags
+          this.tags = res.data
           this.loading = false
           var id = this.tags[0].id
           this.$nextTick(function(){
@@ -587,6 +612,23 @@
         this.contents = "";
         this.$refs.chatting.innerHTML = "";
         this.tag = ''
+      },
+      closeAll(except){
+        if(except != 'stamp'){
+          this.closeStamp();
+        }
+        if(except != 'emoji'){
+          this.closeEmoji();
+        }
+        if(except != 'image'){
+          this.closeImage();
+        }
+        if(except != 'carousel'){
+          this.closeCarousel();
+        }
+        if(except != 'map'){
+          this.closeMap();
+        }
       },
       selectTag(index,id){
         this.panelShow = false;
@@ -641,7 +683,7 @@
         }
       },
       fetchReactions(){
-        axios.post('api/reactions_by_tag',{
+        axios.post('/api/reactions_by_tag',{
           tag_id: this.selectedId
         }).then((res)=>{
           this.bubbles = []
@@ -649,20 +691,16 @@
           this.resultBodyCSS = []
           this.resultFooterCSS = []
           this.reactions = []
-          // console.log(res.data)
           for(let reaction of res.data){
             reaction.created_at = reaction.created_at.substr(0,16).replace('T',' ');
           }
-          //console.log(res.data.reactions)
           this.reactions = res.data
         },(error)=>{
           console.log(error)
         })
       },
       fetchEmojis(){
-        axios.get('api/emojis').then((res)=>{
-          // console.log("emojis")
-          // console.log(res.data.emojis)
+        axios.get('/api/emojis').then((res)=>{
           this.emojis = res.data.emojis
         },(error)=>{
           console.log(error)
@@ -703,7 +741,7 @@
           axios.post('/api/reactions',{
             name: this.reactionName,
             reaction_type: 'stamp',
-            contents: target.substr(26,10),
+            contents: target.substr(40,target.length),
             tag: this.tagtext.toString(),
           })
           .then((res)=>{
@@ -723,7 +761,7 @@
             axios.post('/api/reactions',{
               name: this.reactionName,
               reaction_type: 'stamp',
-              contents: target.substr(26,10),
+              contents: target.substr(40,target.length),
               tag: this.tagtext.toString(),
             }).then((res)=>{
               this.afterAxios();
@@ -774,7 +812,7 @@
           for(var bubble of this.bubble_array){
             let bubbleLength = bubble.header.length+bubble.body.length+bubble.footer.length
             if(bubbleLength==0){
-              alert("作成されないキャルセルがあります。");
+              alert("作成されないカルーセルがあります。");
               return;
             }
             if(bubble.header_color.substr(0,1)!='#'&&bubble.header_color.length!=7){
@@ -851,9 +889,8 @@
             data.append('footer_data[]', this.bubble_array[i].footer_data)
           }
           data.append('bubble_num',this.bubble_array.length)
-          axios.post('api/bubbles',data)
+          axios.post('/api/bubbles',data)
           .then((res)=>{
-            console.log(res.data)
             const data = res.data.toString()
             axios.post('/api/reactions',{
               name: this.reactionName,
@@ -874,7 +911,6 @@
           const latlng = this.marker_center
           geocoder.geocode({'location':this.marker_center,'language': 'ja'},(results,status)=>{
             if(status == 'OK'){
-              //console.log(results)
               let data = '['+results[5].formatted_address+']+[@map('+latlng.lat+','+latlng.lng+')]'
               axios.post('/api/reactions',{
                 name: this.reactionName,
@@ -899,7 +935,6 @@
             const latlng = this.marker_center
             geocoder.geocode({'location':this.marker_center,'language': 'ja'},(results,status)=>{
               if(status == 'OK'){
-                //console.log(results)
                 let data = '['+results[5].formatted_address+']+[@map('+latlng.lat+','+latlng.lng+')]'
                 axios.post('/api/reactions',{
                   name: this.reactionName,
@@ -920,6 +955,8 @@
       },
       afterAxios(){
         alert("アクションセーブ完了");
+        this.emptyAll();
+        this.closeAll('all')
         this.reactionToggle();
         this.fetchTags();
         this.fetchReactions();
@@ -929,30 +966,25 @@
         var images = 'https://cdn.lineml.jp/api/media/sticker/'+para
         return images
       },
-      setStampNum(){
-        for(let i=1; i<47;i++){
-          let add = '1_'+i
+      fetchStamps(){
+        for(let i=34; i<74;i++){
+          let add = '11537_520027'+i
           this.stampNums.push(add)
         }
-        for(let i=100; i<180;i++){
-          let add = '1_'+i
+        for(let i=494; i<534;i++){
+          let add = '11538_51626'+i
           this.stampNums.push(add)
         }
-        for(let i=401; i<431;i++){
-          let add = '1_'+i
-          this.stampNums.push(add)
-        }
-        for(let i=501; i<528;i++){
-          let add = '1_'+i
+        for(let i=10; i<50;i++){
+          let add = '11539_521141'+i
           this.stampNums.push(add)
         }
       },
       toggleStamp(){
-        this.emojiShow = false;
-        this.mapShow = false;
+        this.closeAll('stamp')
         this.stampShow = !this.stampShow
       },
-      selectStamp(num){
+      selectStamp(para){
         this.uploadedImage = "";
         this.stampAreaShow = true
         //let images = require.context('../images/', false, /\.png$/)
@@ -961,7 +993,20 @@
         this.flexablePadding = {"padding-right": "300px"}
       },
       closeStamp(){
+        this.stampShow = false;
         this.stampAreaShow = false;
+        this.flexablePadding = {"padding-right": "30px"}
+      },
+      closeCarousel(){
+        this.carouselAreaShow = false;
+        this.clearCarousel();
+      },
+      closeEmoji(){
+        this.emojiShow = false;
+        this.flexablePadding = {"padding-right": "30px"}
+      },
+      closeMap(){
+        this.mapShow = false;
         this.flexablePadding = {"padding-right": "30px"}
       },
       resetPage(){
@@ -986,13 +1031,11 @@
         this.showDetail = false
       },
       toggleEmoji(){
-        this.stampShow = false;
+        this.closeAll('emoji')
         this.emojiShow = !this.emojiShow
       },
       onFileChange(e){
-        this.stampShow = false;
-        this.stampAreaShow = false;
-        this.mapShow = false;
+        this.closeAll('all')
         let files = e.target.files || e.dataTransfer.files;
         if(!files[0].type.match(/image.*/)){
           alert("イメージファイルをアップロードしてください。")
@@ -1011,12 +1054,7 @@
         reader.readAsDataURL(file);
       },
       onImageChange(e){
-        this.uploadedImage = ""
-        this.stampShow = false;
-        this.stampAreaShow = false;
-        this.mapShow = false;
-        this.contents = ""
-        this.innerContent = ""
+        this.closeAll('carousel')
 
         let files = e.target.files || e.dataTransfer.files;
         var index = this.selectedBubble
@@ -1036,6 +1074,7 @@
         reader.readAsDataURL(file);
       },
       closeImage(){
+        this.imageFile = null
         this.uploadedImage = ''
         this.flexablePadding = {"padding-right": "30px"}
       },
@@ -1093,10 +1132,7 @@
         this.carouselOpen = false
       },
       toggleMap(){
-        this.uploadedImage = ""
-        this.stampShow = false
-        this.stampAreaShow = false
-        this.emojiShow = false
+        this.closeAll('map')
         this.mapShow = !this.mapShow
         if (this.mapShow==true){
           this.flexablePadding = {"padding-right": "315px"}
@@ -1209,7 +1245,6 @@
             this.fetchBubbles(this.selectedReaction.contents)
             break
             default:
-            console.log(this.selectedReaction.reaction_type);
           }
           this.editMode = mode
         },(error)=>{
@@ -1252,7 +1287,7 @@
           axios.put('/api/reactions/'+this.selectedReaction.id,{
             name: this.reactionName,
             reaction_type: 'stamp',
-            contents: target.substr(26,10),
+            contents: target.substr(40,target.length),
             image: null,
             tag: this.tagtext.toString(),
           })
@@ -1289,7 +1324,7 @@
           for(var bubble of this.bubble_array){
             let bubbleLength = bubble.header.length+bubble.body.length+bubble.footer.length
             if(bubbleLength==0){
-              alert("作成されないキャルセルがあります。");
+              alert("作成されないカルーセルがあります。");
               return;
             }
             if(bubble.header_color.substr(0,1)!='#'&&bubble.header_color.length!=7){
@@ -1368,7 +1403,6 @@
           data.append('bubble_num',this.bubble_array.length)
           data.append('bubble_ids', this.selectedReaction.contents)
           axios.post('/api/update_bubbles',data).then((res)=>{
-            console.log(res.data)
             const contents = res.data.toString()
             axios.put('/api/reactions/'+this.selectedReaction.id,{
               name: this.reactionName,
@@ -1919,9 +1953,7 @@
           this.background = this.bubble_array[index].header_background
           this.bold = this.bubble_array[index].header_bold
           this.headerBackground[index].border = '5px solid red'
-          this.$nextTick(function(){
-            this.$refs.headerArea[index].focus();
-          })
+
           break
           case 'hero':
           var ratio = this.bubble_array[index].hero_ratio.split(":")
@@ -1931,9 +1963,7 @@
           this.size = this.bubble_array[index].hero_size
           this.background = this.bubble_array[index].hero_background
           this.heroBackground[index].border = '5px solid red'
-          this.$nextTick(function(){
-            this.$refs.heroArea[index].focus();
-          })
+
           break
           case 'body':
           this.gravity = this.bubble_array[index].body_gravity
@@ -1943,9 +1973,7 @@
           this.background = this.bubble_array[index].body_background
           this.bold = this.bubble_array[index].body_bold
           this.bodyBackground[index].border = '5px solid red'
-          this.$nextTick(function(){
-            this.$refs.bodyArea[index].focus();
-          })
+
           break
           case 'footer':
           this.gravity = this.bubble_array[index].footer_gravity
@@ -1960,9 +1988,7 @@
           this.footer_message = this.bubble_array[index].footer_message
           this.footer_data = this.bubble_array[index].footer_data
           this.footerBackground[index].border = '5px solid red'
-          this.$nextTick(function(){
-            this.$refs.footerArea[index].focus();
-          })
+
           break
           default:
           console.log("error")
@@ -2001,11 +2027,9 @@
         }
       },
       fetchBubbles(ids){
-        axios.post('api/fetch_bubbles',{
+        axios.post('/api/fetch_bubbles',{
           ids: ids
         }).then((res)=>{
-          // console.log("bubble수집")
-          console.log(res.data)
           this.carouselAreaShow = true;
           this.bubble_array = []
           for(var i in res.data){
@@ -2264,7 +2288,6 @@
         }
       },
       keyNumberCheck(e){
-        console.log(e.keyCode)
         switch(e.keyCode){
           case 13:
           this.stretchCarouselToggle();
@@ -2400,7 +2423,7 @@
           this.$nextTick(function(){
             var i = this.selectedBubble
             if(this.heros[i] == null){
-
+              this.$refs.hero[i].click();
             }
           })
           break;
@@ -2423,7 +2446,7 @@
           this.$nextTick(function(){
             var i = this.selectedBubble
             if(this.heros[i] == null){
-
+              this.$refs.hero[i].click();
             }
           })
           break;

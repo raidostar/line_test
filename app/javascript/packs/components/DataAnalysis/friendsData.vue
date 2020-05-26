@@ -9,8 +9,8 @@
     </div>
     <div class="statistics">
       <select v-model="timeLineOption" @change="fetchFollowsData">
-        <option value="oneWeek">最近一週間</option>
-        <option value="oneMonth">最近一ヶ月間</option>
+        <option value="oneWeek">直近一週間</option>
+        <option value="oneMonth">直近一ヶ月間</option>
         <option value="oneYear">今年</option>
       </select>
       <line-chart class="chart" :data="timeLineFollows" :colors="['#212529','#006400','#FF4500']"/>
@@ -43,10 +43,9 @@
     },
     methods: {
       fetchFollowsData(){
-        axios.post('api/fetch_follows_data',{
+        axios.post('/api/fetch_follows_data',{
           timeOption: this.timeLineOption
         }).then((res)=>{
-          //console.log(res.data)
           this.timeLineFollows = res.data
           this.fetchFollowsTimeData();
         },(error)=>{
@@ -54,14 +53,14 @@
         })
       },
       fetchFollowsTimeData(){
-        axios.post('api/fetch_follows_time_data',{
+        axios.post('/api/fetch_follows_time_data',{
           timeOption: this.timeOption
         }).then((res)=>{
-          //console.log(res.data)
+          console.log(res.data)
           this.timelyFollows = res.data
           this.loading =false
         },(error)=>{
-          //console.log(error)
+          console.log(error)
         })
       }
     }

@@ -1,141 +1,179 @@
 <template>
   <div class="page" id="page13">
-    <div class="channel_buttons">
-      <button class="button" v-if="mode=='read'" @click="changeMode('create')">グループ追加</button>
-      <button class="button" v-else @click="changeMode('read')">キャンセル</button>
+    <div class="waiting-screen" v-if="!adminBool">
+      <div class="admin-check">
+        <div class="admin-inner">
+          <p style="font-size: 18px;">
+            <b>再確認するためにまた入力してください。</b>
+          </p>
+          <div class="admin-key">
+            <span>グループキー</span>
+            <input type="password" v-model="adminGroupKey" style="width: 50%;padding-left: 20px;">
+          </div>
+          <div class="admin-key">
+            <span>パスワード</span>
+            <input type="password" v-model="adminPassword" style="width: 50%;padding-left: 20px;">
+          </div>
+          <button @click="adminCheck">確認</button>
+        </div>
+      </div>
     </div>
-    <div class="setting">
-      <select class="page-setting" v-model="parPage" @change="resetPage">
-        <option value=5>5ライン別表示</option>
-        <option value=10>10ライン別表示</option>
-        <option value=50>50ライン別表示</option>
-        <option value=100>100ライン別表示</option>
-        <option value=500>500ライン別表示</option>
-        <option :value="groups.length">全体表示</option>
-      </select>
+    <div v-if="loading" class="waiting-screen">
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
     </div>
-    <table class="group_info">
-      <thead>
-        <tr>
-          <th></th>
-          <th>グループ名前</th>
-          <th>グループキー</th>
-          <th>グループ承認</th>
-          <th>グループ等級</th>
-          <th>チャンネル数</th>
-          <th>チャンネル可能</th>
-          <th>メンバー可能</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- group list -->
-        <tr v-for="(group,index) in groups">
-          <td class="group_value">
-            {{ index+1 }}
-          </td>
-          <td class="group_value">
-            <input v-if="selectedGroup==index&&mode=='update'" type="text" v-model="groupName" placeholder="チャンネル名前入力" style="height: 2em;margin-bottom: 0px;text-align: center;"/>
-            <span class="group-name" v-else @click="fetchMembers(index)">{{ group.group }}</span>
-          </td>
-          <td class="group_value">
-            <div v-if="selectedGroup==index&&mode=='update'">
-              <span v-if="groupKey.length>0" v-model="groupKey">
+    <div v-if="!loading&&adminBool">
+      <div class="channel_buttons">
+        <button class="button" v-if="mode=='read'" @click="changeMode('create')">グループ追加</button>
+        <button class="button" v-else @click="changeMode('read')">キャンセル</button>
+      </div>
+      <div class="setting">
+        <select class="page-setting" v-model="parPage" @change="resetPage">
+          <option value=5>5個表示</option>
+          <option value=10>10個表示</option>
+          <option value=50>50個表示</option>
+          <option value=100>100個表示</option>
+          <option value=500>500個表示</option>
+          <option :value="groups.length">全体表示</option>
+        </select>
+      </div>
+      <table class="group_info">
+        <thead>
+          <tr>
+            <th></th>
+            <th>グループ名</th>
+            <th>グループキー</th>
+            <th>グループ承認</th>
+            <th>グループ等級</th>
+            <th>チャネル数</th>
+            <th>チャネル可能</th>
+            <th>メンバー可能</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- group list -->
+          <tr v-for="(group,index) in groups">
+            <td class="group_value">
+              {{ index+1 }}
+            </td>
+            <td class="group_value">
+              <input v-if="selectedGroup==index&&mode=='update'" type="text" v-model="groupName" placeholder="グループ名入力" style="height: 2em;margin-bottom: 0px;text-align: center;"/>
+              <span class="group-name" v-else @click="fetchMembers(index)">{{ group.group }}</span>
+            </td>
+            <td class="group_value">
+              <div v-if="selectedGroup==index&&mode=='update'">
+                <span v-if="groupKey.length>0" v-model="groupKey">
+                  {{ groupKey }}
+                </span>
+                <button class="button" v-if="groupKey.length==0" @click="makeGroupKey(index)" style="float: none;margin:0 auto;">
+                  新規発行
+                </button>
+              </div>
+              <div v-else>
+                <span v-if="group.group_key">発行完了</span>
+                <span v-else>未発行</span>
+              </div>
+            </td>
+            <td class="group_value">
+              <select v-if="selectedGroup==index&&mode=='update'" v-model="groupAdmit" style="display: flex; width: 90%; margin: 0 auto;">
+                <option value=true>承認完了</option>
+                <option value=false>未承認</option>
+              </select>
+              <div v-else>
+                <span v-if="group.admit" style="color: green;">承認完了</span>
+                <span v-else style="color: red;">未承認</span>
+              </div>
+            </td>
+            <td class="group_value">
+              <select v-if="selectedGroup==index&&mode=='update'" v-model="groupStatus" @change="changeStatus" style="display: flex; width: 95%; margin: 0 auto;">
+                <option value="normal">普通</option>
+                <option value="silver">シルバー</option>
+                <option value="gold">ゴルド</option>
+                <option value="premium">プレミアム</option>
+              </select>
+              <div v-else>
+                <span v-if="group.status=='normal'">普通</span>
+                <span v-else-if="group.status=='silver'">シルバー</span>
+                <span v-else-if="group.status=='gold'">ゴルド</span>
+                <span v-else-if="group.status=='premium'">プレミアム</span>
+                <span v-else>未登録</span>
+              </div>
+            </td>
+            <td class="group_value">{{ channelNum[index] }}</td>
+            <td class="group_value">
+              <input v-if="selectedGroup==index&&mode=='update'" type="number" v-model="groupChannelLimit" @change="checkLimit" placeholder="可能チャネル数設定" style="height: 2em;margin-bottom: 0px;width: 50%;text-align: center;"/>
+              <span v-else>{{ group.channels_limit }}</span>
+            </td>
+            <td class="group_value">
+              <input v-if="selectedGroup==index&&mode=='update'" type="number" v-model="groupMemberLimit" @change="checkLimit" placeholder="可能チャネル数設定" style="height: 2em;margin-bottom: 0px;width: 50%;text-align: center;"/>
+              <span v-else>{{ group.member_limit }}</span>
+            </td>
+            <td class="group_value">
+              <button v-if="selectedGroup==index&&mode=='update'" class="button" @click="updateGroup" style="background: #00b900;">
+                修正
+              </button>
+              <button v-else class="button" @click="selectToChange(index)">選択</button>
+            </td>
+          </tr>
+
+          <!-- make a new group -->
+          <tr v-if="mode=='create'">
+            <td class="group_value">{{groups.length+1}}</td>
+            <td class="group_value">
+              <input type="text" v-model="groupName" placeholder="グループ名入力" style="height: 2em;margin-bottom: 0px;text-align: center;"/>
+            </td>
+            <td class="group_value">
+              <span v-if="groupKey" v-model="groupKey">
                 {{ groupKey }}
               </span>
-              <button class="button" v-if="groupKey.length==0" @click="makeGroupKey(index)" style="float: none;margin:0 auto;">
+              <button class="button" v-else-if="!groupKey" @click="makeGroupKey(index)" style="float: none; margin: 0 auto;">
                 新規発行
               </button>
-            </div>
-            <div v-else>
-              <span v-if="group.group_key">発行完了</span>
-              <span v-else>未発行</span>
-            </div>
-          </td>
-          <td class="group_value">
-            <select v-if="selectedGroup==index&&mode=='update'" v-model="groupAdmit" style="display: flex; width: 90%; margin: 0 auto;">
-              <option value=true>承認完了</option>
-              <option value=false>未承認</option>
-            </select>
-            <div v-else>
-              <span v-if="group.admit" style="color: green;">承認完了</span>
-              <span v-else style="color: red;">未承認</span>
-            </div>
-          </td>
-          <td class="group_value">
-            <select v-if="selectedGroup==index&&mode=='update'" v-model="groupStatus" @change="changeStatus" style="display: flex; width: 95%; margin: 0 auto;">
-              <option value="normal">普通</option>
-              <option value="silver">シルバー</option>
-              <option value="gold">ゴルド</option>
-              <option value="premium">プレミアム</option>
-            </select>
-            <div v-else>
-              <span v-if="group.status=='normal'">普通</span>
-              <span v-else-if="group.status=='silver'">シルバー</span>
-              <span v-else-if="group.status=='gold'">ゴルド</span>
-              <span v-else-if="group.status=='premium'">プレミアム</span>
-              <span v-else>未登録</span>
-            </div>
-          </td>
-          <td class="group_value">{{ channelNum[index] }}</td>
-          <td class="group_value">
-            <input v-if="selectedGroup==index&&mode=='update'" type="number" v-model="groupChannelLimit" @change="checkLimit" placeholder="可能チャンネル数設定" style="height: 2em;margin-bottom: 0px;width: 50%;text-align: center;"/>
-            <span v-else>{{ group.channels_limit }}</span>
-          </td>
-          <td class="group_value">
-            <input v-if="selectedGroup==index&&mode=='update'" type="number" v-model="groupMemberLimit" @change="checkLimit" placeholder="可能チャンネル数設定" style="height: 2em;margin-bottom: 0px;width: 50%;text-align: center;"/>
-            <span v-else>{{ group.member_limit }}</span>
-          </td>
-          <td class="group_value">
-            <button v-if="selectedGroup==index&&mode=='update'" class="button" @click="updateGroup" style="background: #00b900;">
-              修正
-            </button>
-            <button v-else class="button" @click="selectToChange(index)">選択</button>
-          </td>
-        </tr>
+            </td>
+            <td class="group_value">
+              <select v-model="groupAdmit" style="display: flex; width: 90%; margin: 0 auto;">
+                <option value=true>承認完了</option>
+                <option value=false>未承認</option>
+              </select>
+            </td>
+            <td class="group_value">
+              <select v-model="groupStatus" @change="changeStatus" style="display: flex; width: 95%; margin: 0 auto;">
+                <option value="normal">普通</option>
+                <option value="silver">シルバー</option>
+                <option value="gold">ゴルド</option>
+                <option value="premium">プレミアム</option>
+              </select>
+            </td>
+            <td class="group_value">
+            </td>
+            <td class="group_value">
+              <input type="number" v-model="groupChannelLimit" @change="checkLimit" placeholder="可能チャネル数設定" style="height: 2em;margin-bottom: 0px;width: 50%;text-align: center;"/>
+            </td>
+            <td class="group_value">
+              <input type="number" v-model="groupMemberLimit" @change="checkLimit" placeholder="可能チャネル数設定" style="height: 2em;margin-bottom: 0px;width: 50%;text-align: center;"/>
+            </td>
+            <td>
+              <button class="button" @click="createGroup">セーブ</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <paginate
+      :page-count="getPageCount"
+      :page-range="3"
+      :margin-pages="2"
+      :click-handler="clickCallback"
+      :prev-text="'戻る'"
+      :next-text="'次へ'"
+      :container-class="'pagination'"
+      :page-class="'page-item'"
+      >
+    </paginate>
 
-        <!-- make a new group -->
-        <tr v-if="mode=='create'">
-          <td class="group_value">{{groups.length+1}}</td>
-          <td class="group_value">
-            <input type="text" v-model="groupName" placeholder="チャンネル名前入力" style="height: 2em;margin-bottom: 0px;text-align: center;"/>
-          </td>
-          <td class="group_value">
-            <span v-if="groupKey" v-model="groupKey">
-              {{ groupKey }}
-            </span>
-            <button class="button" v-else-if="!groupKey" @click="makeGroupKey(index)" style="float: none; margin: 0 auto;">
-              新規発行
-            </button>
-          </td>
-          <td class="group_value">
-            <select v-model="groupAdmit" style="display: flex; width: 90%; margin: 0 auto;">
-              <option value=true>承認完了</option>
-              <option value=false>未承認</option>
-            </select>
-          </td>
-          <td class="group_value">
-            <select v-model="groupStatus" @change="changeStatus" style="display: flex; width: 95%; margin: 0 auto;">
-              <option value="normal">普通</option>
-              <option value="silver">シルバー</option>
-              <option value="gold">ゴルド</option>
-              <option value="premium">プレミアム</option>
-            </select>
-          </td>
-          <td class="group_value">
-          </td>
-          <td class="group_value">
-            <input type="number" v-model="groupChannelLimit" @change="checkLimit" placeholder="可能チャンネル数設定" style="height: 2em;margin-bottom: 0px;width: 50%;text-align: center;"/>
-          </td>
-          <td class="group_value">
-            <input type="number" v-model="groupMemberLimit" @change="checkLimit" placeholder="可能チャンネル数設定" style="height: 2em;margin-bottom: 0px;width: 50%;text-align: center;"/>
-          </td>
-          <td>
-            <button class="button" @click="createGroup">セーブ</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
     <!-- member list -->
     <transition name="fadeInOut">
       <div class="window" v-if="memberShow">
@@ -174,6 +212,7 @@
       </div>
     </transition>
   </div>
+</div>
 </template>
 <script>
   import axios from 'axios'
@@ -201,15 +240,32 @@
         statusList: [],
         admitList: [],
         saveShow: false,
+        loading: true,
+        adminBool: false,
+        adminPassword: null,
+        adminGroupKey: null,
       }
     },
     mounted: function(){
-      this.fetchGroups();
+      this.accessCheck();
     },
     methods: {
+      accessCheck(){
+        this.loading = true
+        axios.post('/api/show_current').then((res)=>{
+          var status = res.data.user.status
+          if(status=='client'||status=='master'){
+            alert("このページの接続権限がありません。")
+            location.href = '/';
+          } else {
+            this.fetchGroups();
+          }
+        },(error)=>{
+          console.log(error)
+        })
+      },
       fetchGroups(){
-        axios.post('api/fetch_groups').then((res)=>{
-          //console.log(res.data)
+        axios.post('/api/fetch_groups').then((res)=>{
           this.groups = res.data
           for(var group of this.groups){
             if(group.channels!=null){
@@ -219,14 +275,14 @@
               this.channelNum.push(0)
             }
           }
+          this.loading = false
         },(error)=>{
-          console.log(errror)
+          console.log(error)
         })
       },
       makeGroupKey(index){
         this.selectedGroup = index
-        axios.post('api/make_group_key').then((res)=>{
-          //console.log(res.data)
+        axios.post('/api/make_group_key').then((res)=>{
           this.groupKeyShow = true
           this.groupKey = res.data
         },(error)=>{
@@ -257,7 +313,7 @@
       updateGroup(){
         var i = this.selectedGroup
         var id = this.groups[i].id
-        axios.put('api/groups/'+id, {
+        axios.put('/api/groups/'+id, {
           group: this.groupName,
           group_key: this.groupKey,
           admit: this.groupAdmit,
@@ -265,21 +321,20 @@
           channels_limit: this.groupChannelLimit,
           member_limit: this.groupMemberLimit,
         }).then((res)=>{
-          //console.log(res.data)
           alert("アップデート完了！");
           this.mode = 'read';
           this.clearGroupValues();
           this.fetchGroups();
         },(error)=>{
-          console.log(res.data)
+          console.log(error)
         })
       },
       createGroup(){
         if(this.groupName.length==0){
-          alert("グループ名前を入力してください。");
+          alert("グループ名を入力してください。");
           return
         } else if(this.groupKey.length==0){
-          alert("グループ名前を入力してください。");
+          alert("グループ名を入力してください。");
           return
         }
         for(var group of this.groups){
@@ -289,7 +344,7 @@
             break;
           }
         }
-        axios.post('api/groups', {
+        axios.post('/api/groups', {
           group: this.groupName,
           group_key: this.groupKey,
           admit: this.groupAdmit,
@@ -297,13 +352,12 @@
           channels_limit: this.groupChannelLimit,
           member_limit: this.groupMemberLimit,
         }).then((res)=>{
-          //console.log(res.data)
           alert("新規グループ登録完了！");
           this.mode='read'
           this.clearGroupValues();
           this.fetchGroups();
         },(error)=>{
-          console.log(res.data)
+          console.log(error)
         })
       },
       clearGroupValues(){
@@ -318,21 +372,21 @@
         var i = this.groupChannelLimit
         var j = this.groupMemberLimit
         if(i<1){
-          alert("デフォルトのチャンネル可能数は１です。")
+          alert("デフォルトのチャネル可能数は１です。")
           this.groupChannelLimit = 1;
         } else if(this.groupStatus=='silver'){
           if(i<10){
-            alert("シルバーのチャンネル可能数は１０以上です。")
+            alert("シルバーのチャネル可能数は１０以上です。")
             this.groupChannelLimit = 10;
           }
         } else if(this.groupStatus=='gold'){
           if(i<20){
-            alert("ゴルドのチャンネル可能数は５０以上です。")
+            alert("ゴルドのチャネル可能数は５０以上です。")
             this.groupChannelLimit = 50;
           }
         } else if(this.groupStatus=='premium'){
           if(i<100){
-            alert("プレミアムのチャンネル可能数は１００です。")
+            alert("プレミアムのチャネル可能数は１００です。")
             this.groupChannelLimit = 100;
           }
         }
@@ -384,10 +438,9 @@
         this.statusList = []
         this.admitList = []
         var group = this.groups[index].group
-        axios.post('api/fetch_members',{
+        axios.post('/api/fetch_members',{
           group: group
         }).then((res)=>{
-          //console.log(res.data.users)
           this.members = res.data.users
           for(var member of this.members){
             this.statusList.push(member.status)
@@ -415,13 +468,27 @@
             users.push(user)
           }
         }
-        // console.log(users)
-        axios.post('api/users_update',{
+        axios.post('/api/users_update',{
           users: users
         }).then((res)=>{
-          //console.log(res.data)
           alert("アップデート完了！");
           this.closeMemberDetail();
+        },(error)=>{
+          console.log(error)
+        })
+      },
+      adminCheck(){
+        if(this.adminGroupKey.length==0){
+          alert("グループキーを入力してください。")
+        }
+        if(this.adminPassword.length==0){
+          alert("パスワードを入力してください。")
+        }
+        axios.post('/api/adminCheck',{
+          group_key: this.adminGroupKey,
+          password: this.adminPassword
+        }).then((res)=>{
+          this.adminBool = res.data
         },(error)=>{
           console.log(error)
         })

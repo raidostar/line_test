@@ -41,7 +41,6 @@ gem 'bootsnap', '>= 1.1.0', require: false
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
-  gem 'dotenv-rails'
 end
 
 group :development do
@@ -65,13 +64,13 @@ end
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 # my_gem
+gem 'dotenv-rails'
 gem 'devise', '~> 4.7', '>= 4.7.1'
 gem 'bootstrap'
 gem 'jquery-rails'
 gem 'font-awesome-sass', '~>5.0.9'
 gem 'cancancan'
 gem 'rolify'
-gem 'foreman'
 gem 'faker'
 gem 'materialize-sass'
 gem 'material_icons'
@@ -81,6 +80,16 @@ gem 'line-bot-api'
 gem 'omniauth'
 gem 'devise_token_auth'
 gem 'rack-cors'
-gem 'whenever', require: false
+gem 'whenever'
+gem 'foreman'
+# gem 'carrierwave-google-storage'
+gem 'mini_magick'
 gem 'fog-aws', '~> 3.5', '>= 3.5.2'
-gem 'carrierwave', '~> 2.0', '>= 2.0.1'
+# gem 'fog-google'
+gem 'carrierwave'
+gem 'mime-types'
+# gem 'fog-google'
+# gem 'rmagick'
+# gem 'google-api-client'
+# gem 'carrierwave-i18n'
+# gem 'devise-i18n', '~> 1.9'

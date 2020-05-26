@@ -8,20 +8,20 @@
           <div class="col-lg-6">
             <div class="p-5">
               <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
-                <div class="field">
-                  <%= f.label :email %><br />
-                  <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
-                </div>
-                <div class="field">
-                  <%= f.label :password %><br />
-                  <%= f.password_field :password, autocomplete: "current-password" %>
-                </div>
-                <div class="actions">
-                  <button class="button" type="submit" name="commit" data-disable-with="Log in">ログイン</button>
-                </div>
+              <div class="field">
+                <%= f.label :email %><br />
+                <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
+              </div>
+              <div class="field">
+                <%= f.label :password %><br />
+                <%= f.password_field :password, autocomplete: "current-password" %>
+              </div>
+              <div class="actions">
+                <button class="button" type="submit" name="commit" data-disable-with="Log in">ログイン</button>
+              </div>
               <% end %>
               <div class="text-center">
-                <a class="small" href="/users/password/new">パスワードを忘れました</a>
+                <a class="small" href="/users/password/new">パスワード忘れた場合はこちら</a>
               </div>
               <div class="text-center">
                 <a class="small" href="/users/sign_up">会員登録</a>
@@ -33,6 +33,22 @@
     </div>
   </div>
 </div>
+<script scoped>
+  $(function(){
+    var agent = navigator.userAgent.toLowerCase();
+    if ( (navigator.appName == 'Netscape' && navigator.userAgent.search('Trident') != -1) || (agent.indexOf("msie") != -1) ) {
+      alert("すみませんが、このサイトはインターネット·エクスプローラーをサポートしていません。");
+      return false;
+    } else {
+      if (agent.indexOf("chrome") == -1) {
+        alert("このサイトはChromeブラウザに最適化されています。");
+      }
+    }$(document).on('contextmenu', function(){
+      alert("右クリックは禁止されています。")
+      return false;
+    })
+  })
+</script>
 <style scoped>
   .justify-content-center {
     width: 50%;

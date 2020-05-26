@@ -33,7 +33,6 @@
             </div>
           </div>
         </div>
-        <!-- </transition> -->
       </div>
       <div>
         <div class="right-panel" >
@@ -46,8 +45,8 @@
               <i class="material-icons stamp">sentiment_satisfied_alt</i>
             </button>
             <label class="stampBtn" title="イメージ追加">
-              <i class="material-icons stamp">gif</i>
-              <input type="file" @change="onFileChange" class="imageBtn" ref="fileInput" accept="img/*">
+              <i class="material-icons stamp">collections</i>
+              <input type="file" @change="onFileChange" @click="onFileChange" class="imageBtn" ref="fileInput" accept="img/*">
             </label>
             <button class="stampBtn" @click="toggleCarousel" title="キャルセル追加">
               <i class="material-icons stamp">border_color</i>
@@ -88,9 +87,10 @@
           </div>
 
           <div class="resultArea">
-            <img src="" class="profile_img">
             <div class="oneLine" v-for="reaction in reactions">
-              <div v-if="reaction.reaction_type=='text'" style="margin-bottom: 1em;">
+              <img v-if="channelImage" :src="channelImage" class="profile_img">
+              <i v-else class="material-icons profile_none">account_circle</i>
+              <div v-if="reaction.reaction_type=='text'" style="margin-bottom: 1em;width: 100%;height: 3em;">
                 <div class="balloon-left">
                   <span v-html="reaction.contents">{{reaction.contents}}</span>
                 </div>
@@ -108,7 +108,7 @@
                           </div>
                           <div class="result-blocks hero-block">
                             <div class="carousel-img-area" v-show="bubble.image.url" style="bottom: -1%; display: grid; align-items: center;justify-content: center;">
-                              <img class="carousel-img" :src="bubble.image.url">
+                              <img class="carousel-img" :src="bubble.image.url" style="width: 100%;">
                             </div>
                           </div>
                           <div class="result-blocks body-block">
@@ -247,6 +247,7 @@
                 <select class="css-option" v-model="footer_type" @change="syncFooterType">
                   <option value="text">テキスト</option>
                   <option value="button">ボタン</option>
+                  <option value="postback">ポストバック</option>
                 </select>
               </div>
               <div class="bubble-setting setting-footerType" v-if="selectedComponent=='footer'&&footer_type=='button'">
@@ -260,9 +261,13 @@
                 <p style="margin-bottom: 0">リンクURL</p>
                 <input class="uri-text" type="text" v-model="footer_uri" @keyup="syncFooterUri">
               </div>
-              <div class="bubble-setting color setting-message" v-if="selectedComponent=='footer'&&footer_type=='button'&&footer_button=='message'">
+              <div class="bubble-setting color setting-message" v-if="selectedComponent=='footer'&&footer_type=='button'&&(footer_button=='message'||footer_button=='postback')">
                 <p style="margin-bottom: 0">配信メッセージ</p>
                 <input class="uri-text" type="text" v-model="footer_message" @keyup="syncFooterMessage">
+              </div>
+              <div class="bubble-setting color setting-message" v-if="selectedComponent=='footer'&&footer_type=='button'&&footer_button=='postback'">
+                <p style="margin-bottom: 0">配信データ</p>
+                <input class="uri-text" type="text" v-model="footer_data" @keyup="syncFooterData">
               </div>
               <div class="design-buttons">
                 <button class="copyChu copy" @click="copyCSS">デザインコピー</button>
@@ -270,7 +275,7 @@
               </div>
               <label class="image-change" title="イメージ変更" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null">
                 イメージ変更
-                <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
+                <input type="file" @change="onImageChange" @click="onImageChange" class="imageBtn" ref="hero" accept="img/*">
               </label>
               <button class="image-remove" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null" @click="removeImage">
                 イメージ削除
@@ -281,106 +286,84 @@
               <div class="bubble-box" ref="carousel" v-model="bubble_array">
                 <div class="bubble" v-for="(bubble,index) in bubble_array" :key="bubble.id">
                   <!-- header -->
-                  <div class="blocks header-block" v-if="selectedComponent=='header'&&selectedBubble==index" style="border: 5px solid red" :style="headerBackground[index]">
+                  <div class="blocks header-block" :style="headerBackground[index]" ref="headerArea" @click="selectComponent('header',index)" tabindex="0" @keydown.shift="keyNumberCheck">
                     <div class="component header-text" ref="header" contenteditable="true" v-html="header[index]" @input="syncHeader(index)" :style="headerCSS[index]">
                     </div>
                   </div>
-                  <div class="blocks header-block" @click="selectComponent('header', index)" v-else
-                  :style="headerBackground[index]">
-                  <div class="component header-text" ref="header" contenteditable="true" v-html="header[index]" @input="syncHeader(index)" :style="headerCSS[index]">
-                  </div>
-                </div>
-                <input type="text" v-model="bubble.header" style="display: none;">
+                  <input type="text" v-model="bubble.header" style="display: none;">
 
-                <!-- hero(image) -->
-                <div class="blocks hero-block" v-if="selectedComponent=='hero'&&selectedBubble==index" style="border: 5px solid red">
-                  <label class="add-label" title="イメージ追加">
-                    <i class="material-icons add-bubble-image" v-if="!heros[index]">add</i>
-                    <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
-                  </label>
-                  <div class="carousel-img-area" v-show="bubble.hero" :style="heroCSS[index]">
-                    <img class="carousel-img" :src="bubble.hero" :style="imageCSS[index]">
+                  <!-- hero(image) -->
+                  <div class="blocks hero-block" :style="heroBackground[index]" ref="heroArea" @click="selectComponent('hero',index)" tabindex="0" @keydown.shift="keyNumberCheck">
+                    <label class="add-label" title="イメージ追加">
+                      <i class="material-icons add-bubble-image" v-if="!heros[index]">add</i>
+                      <input type="file" @change="onImageChange" @click="onImageChange" class="imageBtn" ref="hero" accept="img/*">
+                    </label>
+                    <div class="carousel-img-area" v-show="bubble.hero" :style="heroCSS[index]">
+                      <img class="carousel-img" :src="bubble.hero" :style="imageCSS[index]">
+                    </div>
                   </div>
-                </div>
-                <div class="blocks hero-block" @click="selectComponent('hero', index)" v-else>
-                  <label class="add-label" title="イメージ追加">
-                    <i class="material-icons add-bubble-image" v-if="!heros[index]">add</i>
-                    <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
-                  </label>
-                  <div class="carousel-img-area" v-show="bubble.hero" :style="heroCSS[index]">
-                    <img class="carousel-img" :src="bubble.hero" :style="imageCSS[index]">
-                  </div>
-                </div>
 
-                <!-- body -->
-                <div class="blocks body-block" v-if="selectedComponent=='body'&&selectedBubble==index" style="border: 5px solid red" :style="bodyBackground[index]">
-                  <div class="component body-text" ref="body" contenteditable="true" v-html="body[index]" @input="syncBody(index)" :style="bodyCSS[index]">
+                  <!-- body -->
+                  <div class="blocks body-block" :style="bodyBackground[index]" ref="bodyArea" @click="selectComponent('body',index)" tabindex="0" @keydown.shift="keyNumberCheck">
+                    <div class="component body-text" ref="body" contenteditable="true" v-html="body[index]" @input="syncBody(index)" :style="bodyCSS[index]">
+                    </div>
                   </div>
-                </div>
-                <div class="blocks body-block" @click="selectComponent('body', index)" v-else :style="bodyBackground[index]">
-                  <div class="component body-text" ref="body" contenteditable="true" v-html="body[index]" @input="syncBody(index)" :style="bodyCSS[index]">
-                  </div>
-                </div>
-                <input type="text" v-model="bubble.body" style="display: none;">
+                  <input type="text" v-model="bubble.body" style="display: none;">
 
-                <!-- footer -->
-                <div class="blocks footer-block" v-if="selectedComponent=='footer'&&selectedBubble==index" style="border: 5px solid red" :style="footerBackground[index]">
-                  <div class="component footer-text" ref="footer" contenteditable="true" v-html="footer[index]" @input="syncFooter(index)" :style="footerCSS[index]">
+                  <!-- footer -->
+                  <div class="blocks footer-block" :style="footerBackground[index]" ref="footerArea" @click="selectComponent('footer',index)" tabindex="0" @keydown.shift="keyNumberCheck">
+                    <div class="component footer-text" ref="footer" contenteditable="true" v-html="footer[index]" @input="syncFooter(index)" :style="footerCSS[index]">
+                    </div>
+                  </div>
+                  <input type="text" v-model="bubble.footer" style="display: none;">
+                  <div>
+                    <button v-if="index==0" class="copy-bubble" @click="copyBubble(index)" style="width: 100%;">
+                      複　製
+                    </button>
+                    <button v-if="index>0" class="copy-bubble" @click="copyBubble(index)">
+                      複　製
+                    </button>
+                    <button v-if="index>0" class="remove-bubble" @click="removeBubble(index)">
+                      削　除
+                    </button>
                   </div>
                 </div>
-                <div class="blocks footer-block" @click="selectComponent('footer', index)" v-else :style="footerBackground[index]">
-                  <div class="component footer-text" ref="footer" contenteditable="true" v-html="footer[index]" @input="syncFooter(index)" :style="footerCSS[index]">
-                  </div>
-                </div>
-                <input type="text" v-model="bubble.footer" style="display: none;">
-                <div>
-                  <button v-if="index==0" class="copy-bubble" @click="copyBubble(index)" style="width: 100%;">
-                    複　製
-                  </button>
-                  <button v-if="index>0" class="copy-bubble" @click="copyBubble(index)">
-                    複　製
-                  </button>
-                  <button v-if="index>0" class="remove-bubble" @click="removeBubble(index)">
-                    削　除
-                  </button>
-                </div>
-              </div>
-              <div class="bubble">
-                <div class="empty-bubble">
-                  <div class="add-button" @click="addBubble">
-                    <i class="material-icons add-circle">
-                      add_circle_outline
-                    </i>
+                <div class="bubble">
+                  <div class="empty-bubble">
+                    <div class="add-button" @click="addBubble">
+                      <i class="material-icons add-circle">
+                        add_circle_outline
+                      </i>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+            <div class="add-button">
+              <i class="material-icons open-circle" @click="stretchCarouselToggle" v-if="!carouselOpen">
+                keyboard_arrow_right
+              </i>
+              <i class="material-icons open-circle" @click="stretchCarouselToggle" v-if="carouselOpen">
+                keyboard_arrow_left
+              </i>
+            </div>
           </div>
-          <div class="add-button">
-            <i class="material-icons open-circle" @click="stretchCarouselToggle" v-if="!carouselOpen">
-              keyboard_arrow_right
-            </i>
-            <i class="material-icons open-circle" @click="stretchCarouselToggle" v-if="carouselOpen">
-              keyboard_arrow_left
-            </i>
+        </transition>
+        <!--GoogleMap-->
+        <div class="googleMap" v-show="mapShow">
+          <div class="placeSearch">
+            <GmapAutocomplete @place_changed="setPlace"/>
           </div>
+          <button style="width: 100%; height: 5%;" id="location" @click="getAddress">
+            住所取得
+          </button>
+          <GmapMap :center="default_center" :zoom="12" map-type-id="terrain" style="width: 100%; height: 95%;" @center_changed="onCenterChanged">
+            <GmapMarker :position="marker_center" :clickable="true" :draggable="false"/>
+          </GmapMap>
         </div>
-      </transition>
-      <!--GoogleMap-->
-      <div class="googleMap" v-show="mapShow">
-        <div class="placeSearch">
-          <GmapAutocomplete @place_changed="setPlace"/>
-        </div>
-        <button style="width: 100%; height: 5%;" id="location" @click="getAddress">
-          住所取得
-        </button>
-        <GmapMap :center="default_center" :zoom="12" map-type-id="terrain" style="width: 100%; height: 95%;" @center_changed="onCenterChanged">
-          <GmapMarker :position="marker_center" :clickable="true" :draggable="false"/>
-        </GmapMap>
       </div>
     </div>
   </div>
-</div>
 </template>
 <script>
   import axios from 'axios'
@@ -437,7 +420,7 @@
           ,body_gravity: 'top', body_align: 'start', body_size: 'md', body_bold: 'regular', body_color: '#111111',
           body_background: '#ffffff', footer_gravity: 'top', footer_align: 'center', footer_size: 'md', footer_bold: 'regular'
           ,footer_color: '#111111', footer_background: '#ffffff', footer_type: 'text', footer_button: 'uri',footer_uri: '',
-          footer_message: ''
+          footer_message: '', footer_data: ''
         }
         ],
         header: ['header'],
@@ -456,6 +439,7 @@
         footer_button: 'uri',
         footer_uri: '',
         footer_message: '',
+        footer_data: '',
         selectedBubble: null,
         selectedComponent: null,
         carouselOpen: false,
@@ -470,9 +454,10 @@
         imageSize: ['100%'],
         bodyCSS: [{'margin-left':'0', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}],
         footerCSS: [{'margin-left':'auto', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}],
-        headerBackground: [{'background-color':'#ffffff'}],
-        bodyBackground: [{'background-color':'#ffffff'}],
-        footerBackground: [{'background-color':'#ffffff'}],
+        headerBackground: [{'background-color':'#ffffff', 'border': '3px dotted #111'}],
+        heroBackground: [{'background-color':'#ffffff', 'border': '3px dotted #111'}],
+        bodyBackground: [{'background-color':'#ffffff', 'border': '3px dotted #111'}],
+        footerBackground: [{'background-color':'#ffffff', 'border': '3px dotted #111'}],
         resultHeaderCSS: [],
         resultHeroCSS: [],
         resultBodyCSS: [],
@@ -481,32 +466,58 @@
         copiedType: '',
         imageSize: '',
         loading: true,
+        channelImage: '',
       }
     },
     mounted: function(){
-      this.fetchChannels();
+      this.accessCheck();
     },
     methods: {
-      fetchChannels(){
-        axios.post('api/fetch_channels').then((res)=>{
-          if(res.data==null){
-            alert("まず、チャンネルを登録してご利用ください。");
-            location.href = "/#/channelManage"
+      accessCheck(){
+        this.loading = true
+        axios.post('/api/show_current').then((res)=>{
+          var status = res.data.user.status
+          var admit = res.data.user.admit
+          if((status=='client'||status=='master')&&!admit){
+            alert("このページの接続権限がありません。")
+            location.href = '/';
           } else {
-            this.fetchEmojis();
-            this.fetchStamps();
-            this.fetchReactions();
-            this.fetchOption();
+            this.fetchChannels();
           }
         },(error)=>{
           console.log(error)
         })
       },
+      fetchChannels(){
+        axios.post('/api/fetch_channels').then((res)=>{
+          if(res.data==null){
+            alert("まず、チャンネルを登録してご利用ください。");
+            location.href = "/channelManage"
+          } else {
+            this.fetchEmojis();
+            this.fetchStamps();
+            this.fetchReactions();
+            this.fetchOption();
+            this.fetchCurrentChannel();
+          }
+        },(error)=>{
+          console.log(error)
+        })
+      },
+      fetchCurrentChannel(){
+        axios.post('/api/fetch_current_channel')
+        .then((res)=>{
+          var channel = res.data.channel
+          if(channel.image!=null){
+           this.channelImage = channel.image.url
+         }
+       },(error)=>{
+        console.log(error)
+      })
+      },
       fetchOption(){
         this.loading = true
-        axios.get('api/options?option_type=welcomeReply').then((res)=>{
-          console.log(res.data.options[0].bool)
-          console.log(res.data.options[0].remind_after)
+        axios.get('/api/options?option_type=welcomeReply').then((res)=>{
           var option = res.data.options[0]
           if(option != null){
             this.welcome_bool = option.bool
@@ -519,8 +530,7 @@
       },
       fetchReactions(){
         this.loading = true
-        axios.post('api/fetch_welcome_reactions').then((res)=>{
-          //console.log(res.data)
+        axios.post('/api/fetch_welcome_reactions').then((res)=>{
           this.bubbles = [];
           this.resultHeaderCSS = []
           this.resultBodyCSS = []
@@ -531,8 +541,8 @@
             }
             reaction.created_at = reaction.created_at.substr(0,16).replace('T',' ');
           }
-          //console.log(res.data)
           this.reactions = res.data
+          this.loading = false
         },(error)=>{
           console.log(error)
         })
@@ -540,29 +550,24 @@
       detailToggle(){
         this.detailShow = !this.detailShow
       },
+
       toggleStamp(){
-        this.mapShow = false
-        this.clearCarousel();
-        this.carouselAreaShow = false
-        this.emojiShow = false
+        this.closeAll('stamp')
         this.stampShow = !this.stampShow
       },
       toggleEmoji(){
-        this.stampShow = false
-        this.stampAreaShow = false
-        this.mapShow = false
-        this.clearCarousel();
-        this.carouselAreaShow = false
+        this.closeAll('emoji')
         this.emojiShow = !this.emojiShow
       },
       onFileChange(e){
-        this.stampShow = false;
-        this.stampAreaShow = false;
-        this.carouselAreaShow = false;
-        this.mapShow = false;
+        this.closeAll('all')
         let files = e.target.files || e.dataTransfer.files;
-        if(!files[0].type.match(/image.*/)){
-          alert("イメージファイルをアップロードしてください。")
+        if(files.length>0){
+          if(!files[0].type.match(/image.*/)){
+            alert("イメージファイルをアップロードしてください。")
+            return;
+          }
+        }else {
           return;
         }
         this.imageFile = files[0]
@@ -578,19 +583,19 @@
         reader.readAsDataURL(file);
       },
       onImageChange(e){
-        this.uploadedImage = ""
-        this.stampShow = false;
-        this.stampAreaShow = false;
-        this.mapShow = false;
-        this.contents = ""
-        this.innerContent = ""
+        this.closeAll('carousel')
 
         let files = e.target.files || e.dataTransfer.files;
         var index = this.selectedBubble
-        if(!files[0].type.match(/image.*/)){
-          alert("イメージファイルをアップロードしてください。")
+        if(files.length>0){
+          if(!files[0].type.match(/image.*/)){
+            alert("イメージファイルをアップロードしてください。")
+            return;
+          }
+        }else{
           return;
         }
+
         this.heros[index] = files[0]
         this.createCarouselImage(index,files[0]);
       },
@@ -603,21 +608,22 @@
         reader.readAsDataURL(file);
       },
       closeImage(){
+        this.imageFile = null
         this.uploadedImage = ''
         this.flexablePadding = {"padding-right": "30px"}
       },
       toggleCarousel(){
-        this.reactionClear();
+        this.emptyAll();
         this.clearCarousel();
         this.carouselAreaShow = !this.carouselAreaShow
+        if(this.carouselAreaShow){
+          this.$nextTick(function(){
+            this.selectComponent('header',0)
+          })
+        }
       },
       toggleMap(){
-        this.uploadedImage = ""
-        this.stampShow = false
-        this.stampAreaShow = false
-        this.clearCarousel();
-        this.carouselAreaShow = false
-        this.emojiShow = false
+        this.closeAll('map')
         this.mapShow = !this.mapShow
         if (this.mapShow==true){
           this.flexablePadding = {"padding-right": "330px"}
@@ -644,9 +650,7 @@
       },
       fetchEmojis(){
         this.loading = true
-        axios.get('api/emojis').then((res)=>{
-          // console.log("emojis")
-          // console.log(res.data.emojis)
+        axios.get('/api/emojis').then((res)=>{
           this.emojis = res.data.emojis
           this.loading = false
         },(error)=>{
@@ -662,15 +666,42 @@
         //this.$refs.chatting.innerHTML
         this.$refs.chatting.focus();
       },
+      closeAll(except){
+        if(except != 'stamp'){
+          this.closeStamp();
+        }
+        if(except != 'emoji'){
+          this.closeEmoji();
+        }
+        if(except != 'image'){
+          this.closeImage();
+        }
+        if(except != 'carousel'){
+          this.closeCarousel();
+        }
+        if(except != 'map'){
+          this.closeMap();
+        }
+      },
       closeStamp(){
+        this.stampShow = false;
         this.stampAreaShow = false;
         this.flexablePadding = {"padding-right": "30px"}
       },
       closeCarousel(){
         this.carouselAreaShow = false;
+        this.clearCarousel();
+      },
+      closeEmoji(){
+        this.emojiShow = false;
+        this.flexablePadding = {"padding-right": "30px"}
+      },
+      closeMap(){
+        this.mapShow = false;
+        this.flexablePadding = {"padding-right": "30px"}
       },
       createOption(){
-        axios.post('api/options',{
+        axios.post('/api/options',{
           name: 'friend_add_welcome_message',
           tag: 'ALL,',
           target_day: '0,1,2,3,4,5,6',
@@ -681,7 +712,7 @@
           this.selectedId = res.data.option.id
           this.createReaction();
         },(error)=>{
-          console.log(res.data)
+          console.log(error)
         })
       },
       createReaction(){
@@ -698,6 +729,7 @@
             alert("最大メッセージは５つです。");
             return;
           }
+          this.loading = true
           axios.post('/api/reactions', {
             name: "text_welcome_message",
             reaction_type: 'text',
@@ -707,8 +739,9 @@
           })
           .then((res)=>{
             alert("メッセージセーブ完了")
-            this.reactionClear();
+            this.emptyAll();
             this.fetchReactions();
+            this.loading = false
           }, (error) =>{
             console.log(error)
           })
@@ -719,17 +752,19 @@
           }
           let arr = this.selectStampUrl.split('-')
           let target = arr[0]
+          this.loading = true
           axios.post('/api/reactions',{
             name: "text_welcome_message",
             reaction_type: 'stamp',
-            contents: target.substr(26,10),
+            contents: target.substr(40,target.length),
             match_option: this.selectedId,
             tag: 'ALL',
           })
           .then((res)=>{
             alert("メッセージセーブ完了")
-            this.reactionClear();
+            this.emptyAll();
             this.fetchReactions();
+            this.loading = false
           },(error)=>{
             console.log(error)
           })
@@ -738,6 +773,7 @@
             alert("最大メッセージは５つです。");
             return;
           }
+          this.loading = true
           axios.post('/api/reactions',{
             name: "text_welcome_message",
             reaction_type: 'text',
@@ -750,13 +786,14 @@
             axios.post('/api/reactions',{
               name: "text_welcome_message",
               reaction_type: 'stamp',
-              contents: target.substr(26,10),
+              contents: target.substr(40,target.length),
               match_option: this.selectedId,
               tag: 'ALL',
             }).then((res)=>{
               alert("メッセージセーブ完了")
-              this.reactionClear();
+              this.emptyAll();
               this.fetchReactions();
+              this.loading = false
             },(error)=>{
               console.log(error)
             })
@@ -769,19 +806,21 @@
             return;
           }
           var data = new FormData();
-          //var file = this.$refs.fileInput.files[0];
+          var file = this.$refs.fileInput.files[0];
 
           data.append('name', 'text_welcome_message');
           data.append('reaction_type','image');
           data.append('contents','[ NO TEXT ]');
-          data.append('image',this.imageFile);
+          data.append('image',file);
           data.append('tag','ALL');
           data.append('match_option', this.selectedId)
+          this.loading = true
           axios.post('/api/reactions',data)
           .then((res)=>{
             alert("メッセージセーブ完了")
-            this.reactionClear();
+            this.emptyAll();
             this.fetchReactions();
+            this.loading = false
           },(error)=>{
             console.log(error)
           })
@@ -790,6 +829,7 @@
             alert("最大メッセージは５つです。");
             return;
           }
+          this.loading = true
           axios.post('/api/reactions',{
             name: "text_welcome_message",
             reaction_type: 'text',
@@ -808,8 +848,9 @@
             axios.post('/api/reactions',data)
             .then((res)=>{
               alert("メッセージセーブ完了")
-              this.reactionClear();
+              this.emptyAll();
               this.fetchReactions();
+              this.loading = false
             },(error)=>{
               console.log(error)
             })
@@ -856,6 +897,9 @@
               } else if(bubble.footer_button=='message'&&bubble.footer_message.length==0){
                 alert("ボタンのメッセージを入力してください。");
                 return;
+              } else if(bubble.footer_button=='postback'&&bubble.footer_data.length==0){
+                alert("ボタンのデータを入力してください。");
+                return;
               }
             }
           }
@@ -884,7 +928,6 @@
             data.append('body_bold[]', this.bubble_array[i].body_bold)
             data.append('body_color[]', this.bubble_array[i].body_color)
             data.append('body_background[]', this.bubble_array[i].body_background)
-
             data.append('footer_gravity[]', this.bubble_array[i].footer_gravity)
             data.append('footer_align[]', this.bubble_array[i].footer_align)
             data.append('footer_size[]', this.bubble_array[i].footer_size)
@@ -895,11 +938,12 @@
             data.append('footer_button[]', this.bubble_array[i].footer_button)
             data.append('footer_uri[]', this.bubble_array[i].footer_uri)
             data.append('footer_message[]', this.bubble_array[i].footer_message)
+            data.append('footer_data[]', this.bubble_array[i].footer_data)
           }
           data.append('bubble_num',this.bubble_array.length)
-          axios.post('api/bubbles',data)
+          this.loading = true
+          axios.post('/api/bubbles',data)
           .then((res)=>{
-            console.log(res.data)
             const data = res.data.toString()
             axios.post('/api/reactions',{
               name: "text_welcome_message",
@@ -908,10 +952,10 @@
               match_option: this.selectedId,
               tag: 'ALL',
             }).then((res)=>{
-              //console.log(res.data)
               alert("メッセージセーブ完了")
               this.fetchReactions();
               this.toggleCarousel();
+              this.loading = false
             },(error)=>{
               console.log(error)
             })
@@ -928,8 +972,8 @@
           const latlng = this.marker_center
           geocoder.geocode({'location':this.marker_center,'language': 'ja'},(results,status)=>{
             if(status == 'OK'){
-              //console.log(results)
               let data = '['+results[5].formatted_address+']+[@map('+latlng.lat+','+latlng.lng+')]'
+              this.loading = true
               axios.post('/api/reactions',{
                 name: "text_welcome_message",
                 reaction_type: 'map',
@@ -938,8 +982,9 @@
                 tag: 'ALL',
               }).then((res)=>{
                 alert("メッセージセーブ完了")
-                this.reactionClear();
+                this.emptyAll();
                 this.fetchReactions();
+                this.loading = false
               },(error)=>{
                 console.log(error)
               })
@@ -950,6 +995,7 @@
             alert("最大メッセージは５つです。");
             return;
           }
+          this.loading = true
           axios.post('/api/reactions',{
             name: "text_welcome_message",
             reaction_type: 'text',
@@ -961,7 +1007,6 @@
             const latlng = this.marker_center
             geocoder.geocode({'location':this.marker_center,'language': 'ja'},(results,status)=>{
               if(status == 'OK'){
-                //console.log(results)
                 let data = '['+results[5].formatted_address+']+[@map('+latlng.lat+','+latlng.lng+')]'
                 axios.post('/api/reactions',{
                   name: "text_welcome_message",
@@ -971,8 +1016,9 @@
                   tag: 'ALL',
                 }).then((res)=>{
                   alert("メッセージセーブ完了")
-                  this.reactionClear();
+                  this.emptyAll();
                   this.fetchReactions();
+                  this.loading = false
                 },(error)=>{
                   console.log(error)
                 })
@@ -983,7 +1029,7 @@
           })
         }
       },
-      reactionClear(){
+      emptyAll(){
         this.stampShow= false;
         this.stampAreaShow= false;
         this.emojiShow= false;
@@ -1004,7 +1050,8 @@
         this.$refs.chatting.innerHTML = "";
       },
       getImgUrl(para) {
-        var images = require.context('../images/', false, /\.png$/)
+        //var images = require.context('../images/', false, /\.png$/)
+        var images = 'https://cdn.lineml.jp/api/media/sticker/'+para
         return images('./' + para + ".png")
       },
       mapConvert(contents){
@@ -1016,24 +1063,18 @@
         return {lat: tempArr[0], lng: tempArr[1]}
       },
       fetchStamps(){
-        this.loading = true
-        for(let i=1; i<47;i++){
-          let add = '1_'+i
+        for(let i=34; i<74;i++){
+          let add = '11537_520027'+i
           this.stampNums.push(add)
         }
-        for(let i=100; i<180;i++){
-          let add = '1_'+i
+        for(let i=494; i<534;i++){
+          let add = '11538_51626'+i
           this.stampNums.push(add)
         }
-        for(let i=401; i<431;i++){
-          let add = '1_'+i
+        for(let i=10; i<50;i++){
+          let add = '11539_521141'+i
           this.stampNums.push(add)
         }
-        for(let i=501; i<528;i++){
-          let add = '1_'+i
-          this.stampNums.push(add)
-        }
-        this.loading = false
       },
       clearCarousel(){
         this.bubble_array = [{
@@ -1043,7 +1084,7 @@
           ,body_gravity: 'top', body_align: 'start', body_size: 'md', body_bold: 'regular', body_color: '#111111',
           body_background: '#ffffff', footer_gravity: 'top', footer_align: 'center', footer_size: 'md', footer_bold: 'regular'
           ,footer_color: '#111111', footer_background: '#ffffff', footer_type: 'text', footer_button: 'uri',footer_uri: '',
-          footer_message: ''
+          footer_message: '', footer_data: ''
         }]
         this.header = ['header']
         this.body = ['body']
@@ -1056,9 +1097,10 @@
         this.imageSize = ['100%']
         this.bodyCSS = [{'margin-left':'0', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}]
         this.footerCSS = [{'margin-left':'auto', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}]
-        this.headerBackground = [{'background-color':'#ffffff'}]
-        this.bodyBackground = [{'background-color':'#ffffff'}]
-        this.footerBackground = [{'background-color':'#ffffff'}]
+        this.headerBackground = [{'background-color':'#ffffff', 'border': '3px dotted #111'}]
+        this.heroBackground = [{'background-color':'#ffffff', 'border': '3px dotted #111'}]
+        this.bodyBackground = [{'background-color':'#ffffff', 'border': '3px dotted #111'}]
+        this.footerBackground = [{'background-color':'#ffffff', 'border': '3px dotted #111'}]
 
         this.gravity = 'top'
         this.align = 'start'
@@ -1072,6 +1114,7 @@
         this.footer_button = 'uri'
         this.footer_uri = ''
         this.footer_message = ''
+        this.footer_data = ''
         this.selectedBubble = null
         this.selectedComponent = null
         this.carouselOpen = false
@@ -1079,16 +1122,16 @@
       selectStamp(num){
         this.uploadedImage = "";
         this.stampAreaShow = true
-        let images = require.context('../images/', false, /\.png$/)
-        this.selectStampUrl = images('./' + num + ".png")
+        //let images = require.context('../images/', false, /\.png$/)
+        var images = 'https://cdn.lineml.jp/api/media/sticker/'+num
+        this.selectStampUrl = images
         this.flexablePadding = {"padding-right": "300px"}
       },
       loadProfile(fr_account){
-        axios.post('api/by_fr_account',{
+        axios.post('/api/by_fr_account',{
           fr_account: fr_account
         }).then((res)=>{
           this.selectedFriend = res.data
-          console.log(this.selectedFriend)
         },(error)=>{
           console.log(error)
         })
@@ -1106,8 +1149,9 @@
         }
       },
       getImgUrl(para) {
-        var images = require.context('../images/', false, /\.png$/)
-        return images('./' + para + ".png")
+        //var images = require.context('../images/', false, /\.png$/)
+        var images = 'https://cdn.lineml.jp/api/media/sticker/'+para
+        return images
       },
       detailImage(url){
         let imageHTML = '<img class="fullSizeImage" src='+url+' style="width: 21em;height: 26em;">'
@@ -1116,7 +1160,7 @@
       },
       welcomeToggle(){
         this.welcome_bool = !this.welcome_bool
-        axios.post('api/update_option_bool',{
+        axios.post('/api/update_option_bool',{
           bool: this.welcome_bool
         }).then((res)=>{
           if(res.data.option.bool){
@@ -1130,10 +1174,10 @@
       },
       remindToggle(){
         this.remind_bool = !this.remind_bool
-        axios.post('api/update_option_remind',{
-          remind_after: this.remind_bool
+        axios.post('/api/update_option_remind',{
+          remind_bool: this.remind_bool
         }).then((res)=>{
-          if(res.data.option.remind_after=='1'){
+          if(res.data.option.remind_bool){
             alert("友達再登録時、メッセージが配信されます。")
           } else {
             alert("友達再登録時、メッセージが配信されません。")
@@ -1150,7 +1194,7 @@
           ,body_gravity: 'top', body_align: 'start', body_size: 'md', body_bold: 'regular', body_color: '#111111',
           body_background: '#ffffff', footer_gravity: 'top', footer_align: 'center', footer_size: 'md', footer_bold: 'regular'
           ,footer_color: '#111111', footer_background: '#ffffff', footer_type: 'text', footer_button: 'uri',footer_uri: '',
-          footer_message: ''
+          footer_message: '', footer_data: ''
         }
         var headerStyle = {
           'margin-left':'0', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px',
@@ -1166,6 +1210,9 @@
         }
 
         this.bubble_array.push(bubble)
+        this.header.push('header')
+        this.body.push('body')
+        this.footer.push('footer')
 
         this.headerCSS.push(headerStyle)
         this.heroCSS.push({'text-align':'center','background-color':'#ffffff'})
@@ -1175,6 +1222,7 @@
         this.footerCSS.push(footerStyle)
 
         this.headerBackground.push({'background-color':'#ffffff'})
+        this.heroBackground.push({'background-color':'#ffffff'})
         this.bodyBackground.push({'background-color':'#ffffff'})
         this.footerBackground.push({'background-color':'#ffffff'})
       },
@@ -1497,6 +1545,7 @@
           break
           case 'hero':
           this.bubble_array[i].hero_background = this.background
+          this.heroBackground[i]['background-color'] = this.background
           this.heroCSS[i]['background-color'] = this.background
           break
           case 'body':
@@ -1555,6 +1604,10 @@
         var i = this.selectedBubble
         this.bubble_array[i].footer_message = this.footer_message
       },
+      syncFooterData(){
+        var i = this.selectedBubble
+        this.bubble_array[i].footer_data = this.footer_data
+      },
       syncHeroRatio(){
         var i = this.selectedBubble
         this.bubble_array[i].hero_ratio = this.heroWidth + ':' + this.heroHeight
@@ -1562,6 +1615,10 @@
       selectComponent(type,index){
         this.selectedComponent = type
         this.selectedBubble = index
+        this.clearHeaderCSS();
+        this.clearHeroCSS();
+        this.clearBodyCSS();
+        this.clearFooterCSS();
         switch(type){
           case 'header':
           this.gravity = this.bubble_array[index].header_gravity
@@ -1570,6 +1627,7 @@
           this.color = this.bubble_array[index].header_color
           this.background = this.bubble_array[index].header_background
           this.bold = this.bubble_array[index].header_bold
+          this.headerBackground[index].border = '5px solid red'
           break
           case 'hero':
           var ratio = this.bubble_array[index].hero_ratio.split(":")
@@ -1578,6 +1636,7 @@
           this.align = this.bubble_array[index].hero_align
           this.size = this.bubble_array[index].hero_size
           this.background = this.bubble_array[index].hero_background
+          this.heroBackground[index].border = '5px solid red'
           break
           case 'body':
           this.gravity = this.bubble_array[index].body_gravity
@@ -1586,6 +1645,7 @@
           this.color = this.bubble_array[index].body_color
           this.background = this.bubble_array[index].body_background
           this.bold = this.bubble_array[index].body_bold
+          this.bodyBackground[index].border = '5px solid red'
           break
           case 'footer':
           this.gravity = this.bubble_array[index].footer_gravity
@@ -1598,12 +1658,34 @@
           this.footer_button = this.bubble_array[index].footer_button
           this.footer_uri = this.bubble_array[index].footer_uri
           this.footer_message = this.bubble_array[index].footer_message
+          this.footer_data = this.bubble_array[index].footer_data
+          this.footerBackground[index].border = '5px solid red'
           break
           default:
           console.log("error")
         }
         this.fontColor = {'background-color': this.color}
         this.backgroundColor = {'background-color': this.background}
+      },
+      clearHeaderCSS(){
+        for(var i in this.headerBackground){
+          this.headerBackground[i].border = '3px dotted #111'
+        }
+      },
+      clearHeroCSS(){
+        for(var i in this.heroBackground){
+          this.heroBackground[i].border = '3px dotted #111'
+        }
+      },
+      clearBodyCSS(){
+        for(var i in this.bodyBackground){
+          this.bodyBackground[i].border = '3px dotted #111'
+        }
+      },
+      clearFooterCSS(){
+        for(var i in this.footerBackground){
+          this.footerBackground[i].border = '3px dotted #111'
+        }
       },
       stretchCarouselToggle(){
         this.carouselOpen = !this.carouselOpen
@@ -1616,126 +1698,106 @@
         }
       },
       fetchBubbles(ids){
-        axios.post('api/fetch_bubbles',{
+        axios.post('/api/fetch_bubbles',{
           ids: ids
         }).then((res)=>{
-          for(var bubble of res.data){
-            this.bubbles.push(bubble)
-            var headerResult = {'display':'grid', 'height': '7vh'}
-            var bodyResult = {'display':'grid'}
-            var footerResult = {'display':'grid'}
+          this.carouselAreaShow = true;
+          this.bubble_array = []
+          for(var i in res.data){
+            var bubble = res.data[i]
+            this.bubble_array[i] = bubble
+            this.bubble_array[i]['hero'] = bubble.image.url
+            this.header[i] = bubble.header
+            this.heros[i] = bubble.image
+            this.body[i] = bubble.body
+            this.footer[i] = bubble.footer
 
-            headerResult = this.gravityResultConverter(bubble.header_gravity,headerResult)
-            headerResult = this.alignResultConverter(bubble.header_align,headerResult)
-            headerResult = this.boldResultConverter(bubble.header_bold,headerResult)
-            headerResult = this.sizeResultConverter(bubble.header_size,headerResult)
-            headerResult = this.colorResultConverter(bubble.header_color,headerResult)
-            headerResult = this.backgroundResultConverter(bubble.header_background,headerResult)
+            var headerStyle = {
+              'margin-left':'0', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px',
+              'color':'#111111','background':'#ffffff'
+            }
+            var bodyStyle = {
+              'margin-left':'0', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px',
+              'color':'#111111', 'background':'#ffffff'
+            }
+            var footerStyle = {
+              'margin-left':'auto', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px',
+              'color':'#111111', 'background':'#ffffff'
+            }
 
-            bodyResult = this.gravityResultConverter(bubble.body_gravity,bodyResult)
-            bodyResult = this.alignResultConverter(bubble.body_align,bodyResult)
-            bodyResult = this.boldResultConverter(bubble.body_bold,bodyResult)
-            bodyResult = this.sizeResultConverter(bubble.body_size,bodyResult)
-            bodyResult = this.colorResultConverter(bubble.body_color,bodyResult)
-            bodyResult = this.backgroundResultConverter(bubble.body_background,bodyResult)
+            this.headerCSS[i] = headerStyle
+            this.heroCSS[i] = {'text-align':'center','background-color':'#ffffff'}
+            this.imageCSS[i] = {'width':'100%', 'height': 'auto'}
+            this.imageSize[i] = '100%'
+            this.bodyCSS[i] = bodyStyle
+            this.footerCSS[i] = footerStyle
 
-            footerResult = this.gravityResultConverter(bubble.footer_gravity,footerResult)
-            footerResult = this.alignResultConverter(bubble.footer_align,footerResult)
-            footerResult = this.boldResultConverter(bubble.footer_bold,footerResult)
-            footerResult = this.sizeResultConverter(bubble.footer_size,footerResult)
-            footerResult = this.colorResultConverter(bubble.footer_color,footerResult)
-            footerResult = this.backgroundResultConverter(bubble.footer_background,footerResult)
+            this.headerBackground[i] = {'background-color':'#ffffff', 'border': '3px dotted #111'}
+            this.heroBackground[i] = {'background-color':'#ffffff', 'border': '3px dotted #111'}
+            this.bodyBackground[i] = {'background-color':'#ffffff', 'border': '3px dotted #111'}
+            this.footerBackground[i] = {'background-color':'#ffffff', 'border': '3px dotted #111'}
 
-            this.resultHeaderCSS.push(headerResult)
-            this.resultBodyCSS.push(bodyResult)
-            this.resultFooterCSS.push(footerResult)
+            this.moveToSync(i,bubble,'header')
+            this.moveToSync(i,bubble,'body')
+            this.moveToSync(i,bubble,'footer')
           }
-          // console.log(this.resultHeaderCSS)
-          // console.log(this.resultHeaderCSS)
-          // console.log(this.resultHeaderCSS)
-          // console.log(this.bubbles)
+          this.selectComponent('header',0)
           this.loading = false;
         },(error)=>{
           console.log(error)
         })
       },
-      gravityResultConverter(gravity,result){
-        switch(gravity){
-          case 'top':
-          result['align-items'] = 'flex-start'
+      moveToSync(index,bubble,component){
+        this.selectedBubble = index
+        this.selectedComponent = component
+        switch(component){
+          case "header":
+          this.gravity = bubble['header_gravity']
+          this.align = bubble['header_align']
+          this.size = bubble['header_size']
+          this.bold = bubble['header_bold']
+          this.color = bubble['header_color']
+          this.background = bubble['header_background']
           break
-          case 'center':
-          result['align-items'] = 'center'
+          case "body":
+          this.gravity = bubble['body_gravity']
+          this.align = bubble['body_align']
+          this.size = bubble['body_size']
+          this.bold = bubble['body_bold']
+          this.color = bubble['body_color']
+          this.background = bubble['body_background']
           break
-          case 'bottom':
-          result['align-items'] = 'flex-end'
-          break
-          default:
-          console.log('gravityResultConverter error!')
-        }
-        return result
-      },
-      alignResultConverter(align,result){
-        if(align=='center'){
-          result['justify-content'] = 'center'
-          result['text-align'] = 'center'
-        }else {
-          result['justify-content'] = 'flex-' + align
-          result['text-align'] = align
-        }
-        return result
-      },
-      boldResultConverter(bold,result){
-        if(bold=='bold'){
-          result['font-weight'] = 'bold'
-        }else {
-          result['font-weight'] = 'normal'
-        }
-        return result
-      },
-      sizeResultConverter(size,result){
-        switch(size){
-          case 'xxs':
-          result['font-size'] = '10px'
-          break
-          case 'xs':
-          result['font-size'] = '12px'
-          break
-          case 'sm':
-          result['font-size'] = '14px'
-          break
-          case 'md':
-          result['font-size'] = '16px'
-          break
-          case 'lg':
-          result['font-size'] = '19px'
-          break
-          case 'xl':
-          result['font-size'] = '22px'
-          break
-          case 'xxl':
-          result['font-size'] = '25px'
-          break
-          case '3xl':
-          result['font-size'] = '29px'
-          break
-          case '4xl':
-          result['font-size'] = '33px'
-          break
-          case '5xl':
-          result['font-size'] = '37px'
+          case "footer":
+          this.gravity = bubble['footer_gravity']
+          this.align = bubble['footer_align']
+          this.size = bubble['footer_size']
+          this.bold = bubble['footer_bold']
+          this.color = bubble['footer_color']
+          this.background = bubble['footer_background']
+          this.footer_type = bubble['footer_type']
+          this.footer_button = bubble['footer_button']
+          this.footer_uri = bubble['footer_uri']
+          this.footer_message = bubble['footer_message']
+          this.footer_message = bubble['footer_data']
           break
           default:
+          console.log("moveToSync error!")
         }
-        return result
-      },
-      colorResultConverter(color,result){
-        result['color'] = color
-        return result
-      },
-      backgroundResultConverter(background,result){
-        result['background-color'] = background
-        return result
+        // this.heroWidth = bubble['heroWidth']
+        // this.heroHeight = bubble['heroHeight']
+
+        this.syncGravity();
+        this.syncAlign();
+        this.syncSize();
+        this.syncBold();
+        this.syncColor();
+        this.syncBackground();
+        if(component=='footer'){
+          this.syncFooterType();
+          this.syncFooterButton();
+          this.syncFooterUri();
+          this.syncFooterMessage();
+        }
       },
       exchangeColor(){
         var temp = this.color
@@ -1760,6 +1822,7 @@
         this.copied['footer_button']= this.footer_button
         this.copied['footer_uri']= this.footer_uri
         this.copied['footer_message']= this.footer_message
+        this.copied['footer_data']= this.footer_data
       },
       pasteCSS(){
         // var design = this.copiedCSS
@@ -1812,11 +1875,13 @@
             this.footer_button = this.copied['footer_button']
             this.footer_uri = this.copied['footer_uri']
             this.footer_message = this.copied['footer_message']
+            this.footer_data = this.copied['footer_data']
 
             this.syncFooterType();
             this.syncFooterButton();
             this.syncFooterUri();
             this.syncFooterMessage();
+            this.syncFooterData();
           }
         }
       },
@@ -1863,6 +1928,190 @@
         var i = this.selectedBubble
         this.heros[i] = null
         this.bubble_array[i].hero = null
+      },
+      keyNumberCheck(e){
+        switch(e.keyCode){
+          case 13:
+          this.stretchCarouselToggle();
+          break;
+
+          case 37:
+          this.previousBubble();
+          break;
+          case 38:
+          this.previousComponent();
+          break;
+          case 39:
+          this.nextBubble();
+          break;
+          case 40:
+          this.nextComponent();
+          break;
+
+          case 48:
+          this.size = "5xl"
+          this.syncSize();
+          break;
+          case 49:
+          this.size = "xxs"
+          this.syncSize();
+          break;
+          case 50:
+          this.size = "xs"
+          this.syncSize();
+          break;
+          case 51:
+          this.size = "sm"
+          this.syncSize();
+          break;
+          case 52:
+          this.size = "md"
+          this.syncSize();
+          break;
+          case 53:
+          this.size = "lg"
+          this.syncSize();
+          break;
+          case 54:
+          this.size = "xl"
+          this.syncSize();
+          break;
+          case 55:
+          this.size = "xxl"
+          this.syncSize();
+          break;
+          case 56:
+          this.size = "3xl"
+          this.syncSize();
+          break;
+          case 57:
+          this.size = "4xl"
+          this.syncSize();
+          break;
+
+          case 66:
+          this.switchBold();
+          break;
+          case 67:
+          this.copyCSS();
+          break;
+          case 86:
+          this.pasteCSS();
+          break;
+
+          case 73:
+          this.gravityUp();
+          break;
+          case 74:
+          this.alignLeft();
+          break;
+          case 75:
+          this.gravityDown();
+          break;
+          case 76:
+          this.alignRight();
+          break;
+
+          case 78:
+          this.addBubble();
+          break;
+        }
+      },
+      alignRight(){
+        if(this.align=='start'){
+          this.align = 'center'
+        } else if(this.align=='center'){
+          this.align = 'end'
+        }
+        this.syncAlign();
+      },
+      alignLeft(){
+        if(this.align=='center'){
+          this.align = 'start'
+        } else if(this.align=='end'){
+          this.align = 'center'
+        }
+        this.syncAlign();
+      },
+      gravityUp(){
+        if(this.gravity=='center'){
+          this.gravity = 'top'
+        } else if(this.gravity=='bottom'){
+          this.gravity = 'center'
+        }
+        this.syncGravity();
+      },
+      gravityDown(){
+        if(this.gravity=='top'){
+          this.gravity = 'center'
+        } else if(this.gravity=='center'){
+          this.gravity = 'bottom'
+        }
+        this.syncGravity();
+      },
+      switchBold(){
+        if(this.bold == 'bold'){
+          this.bold = 'regular'
+        } else {
+          this.bold = 'bold'
+        }
+        this.syncBold();
+      },
+      nextComponent(){
+        var index = this.selectedBubble
+        switch(this.selectedComponent){
+          case 'header':
+          this.selectComponent('hero',index)
+          this.$nextTick(function(){
+            var i = this.selectedBubble
+            if(this.heros[i] == null){
+              this.$refs.hero[i].click();
+            }
+          })
+          break;
+          case 'hero':
+          this.selectComponent('body',index)
+          break;
+          case 'body':
+          this.selectComponent('footer',index)
+          break;
+        }
+      },
+      previousComponent(){
+        var index = this.selectedBubble
+        switch(this.selectedComponent){
+          case 'hero':
+          this.selectComponent('header',index)
+          break;
+          case 'body':
+          this.selectComponent('hero',index)
+          this.$nextTick(function(){
+            var i = this.selectedBubble
+            if(this.heros[i] == null){
+              this.$refs.hero[i].click();
+            }
+          })
+          break;
+          case 'footer':
+          this.selectComponent('body',index)
+          break;
+        }
+      },
+      nextBubble(){
+        var comp = this.selectedComponent
+        var index = 0
+        if(this.selectedBubble < this.bubble_array.length-1){
+          index = this.selectedBubble + 1
+        }
+        this.selectComponent(comp, index)
+      },
+      previousBubble(){
+        var comp = this.selectedComponent
+        var index = 0
+        if(this.selectedBubble >0){
+          index = this.selectedBubble - 1
+        }
+        this.selectComponent(comp, index)
       },
     }
   }

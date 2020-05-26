@@ -66,9 +66,24 @@
       }
     },
     mounted: function(){
-      this.fetchMembers();
+      this.accessCheck();
     },
     methods: {
+      accessCheck(){
+        this.loading = true
+        axios.post('/api/show_current').then((res)=>{
+          var status = res.data.user.status
+          var admit = res.data.user.admit
+          if(status!='master'||!admit){
+            alert("このページの接続権限がありません。")
+            location.href = '/';
+          } else {
+            this.fetchMembers();
+          }
+        },(error)=>{
+          console.log(error)
+        })
+      },
       fetchMembers(index){
         axios.post('api/fetch_members').then((res)=>{
           //console.log(res.data.users)

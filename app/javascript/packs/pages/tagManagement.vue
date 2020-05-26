@@ -7,7 +7,7 @@
         <div class="bounce3"></div>
       </div>
     </div>
-    <!-- 친구 태그 -->
+    <!-- friends tags -->
     <div class="friend-tag col">
       <div class="label">
         <i class="material-icons folder">folder_open</i>
@@ -15,7 +15,7 @@
         <i class="material-icons add-tag" v-if="addTo!='friend'" @click="addMode('friend')">add_to_photos</i>
         <i class="material-icons close-tag" v-if="addTo=='friend'" @click="addMode('')">cancel_presentation</i>
       </div>
-      <div>
+      <div class="folders">
         <div v-for="(tag,index) in friendTags" class="added-folder">
           <span v-if="tag.id==selectedFriend">
             <div class="added-folderBtn" id="added-folderBtn" :style="selectedCSS">
@@ -55,7 +55,7 @@
       </div>
     </div>
 
-    <!-- 옵션 태그 -->
+    <!-- option tags -->
     <div class="option-tag col">
       <div class="label">
         <i class="material-icons folder">folder_open</i>
@@ -63,7 +63,7 @@
         <i class="material-icons add-tag" v-if="addTo!='option'" @click="addMode('option')">add_to_photos</i>
         <i class="material-icons close-tag" v-if="addTo=='option'" @click="addMode('')">cancel_presentation</i>
       </div>
-      <div>
+      <div class="folders">
         <div v-for="(tag,index) in optionTags" class="added-folder">
           <span v-if="tag.id==selectedOption">
             <div class="added-folderBtn" id="added-folderBtn" :style="selectedCSS">
@@ -104,7 +104,7 @@
       </div>
     </div>
 
-    <!-- 리액션 태그 -->
+    <!-- reaction tags -->
     <div class="reaction-tag col">
       <div class="label">
         <i class="material-icons folder">folder_open</i>
@@ -112,7 +112,7 @@
         <i class="material-icons add-tag" v-if="addTo!='reaction'" @click="addMode('reaction')">add_to_photos</i>
         <i class="material-icons close-tag" v-if="addTo=='reaction'" @click="addMode('')">cancel_presentation</i>
       </div>
-      <div>
+      <div class="folders">
         <div v-for="(tag,index) in reactionTags" class="added-folder">
           <span v-if="tag.id==selectedReaction">
             <div class="added-folderBtn" id="added-folderBtn" @click="clickTag(index,'reaction',tag.id)" :style="selectedCSS">
@@ -182,14 +182,29 @@
       }
     },
     mounted: function(){
-      this.fetchChannels();
+      this.accessCheck();
     },
     methods: {
+      accessCheck(){
+        this.loading = true
+        axios.post('/api/show_current').then((res)=>{
+          var status = res.data.user.status
+          var admit = res.data.user.admit
+          if((status=='client'||status=='master')&&!admit){
+            alert("このページの接続権限がありません。")
+            location.href = '/';
+          } else {
+            this.fetchChannels();
+          }
+        },(error)=>{
+          console.log(error)
+        })
+      },
       fetchChannels(){
-        axios.post('api/fetch_channels').then((res)=>{
+        axios.post('/api/fetch_channels').then((res)=>{
           if(res.data==null){
             alert("まず、チャンネルを登録してご利用ください。");
-            location.href = "/#/channelManage"
+            location.href = "/channelManage"
           } else {
             this.fetchFriendTags();
             this.fetchOptionTags();
@@ -220,7 +235,7 @@
       fetchFriendTags(){
         this.loading = true
         axios.get('/api/tags?tag_group=friend').then((res)=>{
-          this.friendTags = res.data.tags
+          this.friendTags = res.data
           this.loading = false
         },(error)=>{
           console.log(error)
@@ -229,7 +244,7 @@
       fetchOptionTags(){
         this.loading = true
         axios.get('/api/tags?tag_group=option').then((res)=>{
-          this.optionTags = res.data.tags
+          this.optionTags = res.data
           this.loading = false
         },(error)=>{
           console.log(error)
@@ -238,7 +253,7 @@
       fetchReactionTags(){
         this.loading = true
         axios.get('/api/tags?tag_group=reaction').then((res)=>{
-          this.reactionTags = res.data.tags
+          this.reactionTags = res.data
           this.loading = false
         },(error)=>{
           console.log(error)
@@ -284,11 +299,10 @@
           return;
         }
 
-        axios.post('api/tags',{
+        axios.post('/api/tags',{
           name: name,
           tag_group: tag_group
         }).then((res)=>{
-          console.log(res.data)
           const tag = res.data.tag
           switch(tag.tag_group){
             case 'friend':
@@ -335,7 +349,7 @@
           return;
         }
         if (confirm("このタグを削除しますか。")==true){
-          axios.delete('api/tags/'+id).then((res)=>{
+          axios.delete('/api/tags/'+id).then((res)=>{
             this.fetchFriendTags();
             this.fetchOptionTags();
             this.fetchReactionTags();
@@ -370,12 +384,9 @@
         this.editTo = ''
       },
       updateTag(id,name){
-        // console.log(id)
-        // console.log(name)
-        axios.put('api/tags/'+id,{
+        axios.put('/api/tags/'+id,{
           name: name
         }).then((res)=>{
-          console.log(res.data.tag)
           this.editTo = ''
           this.addTo = ''
           var tag = res.data.tag

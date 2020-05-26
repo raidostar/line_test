@@ -9,7 +9,8 @@
     </div>
     <div class="box">
       <h2 class="profile">
-        <img :src="friend.profile_pic" class="profile_img">
+        <img v-if="friend.profile_pic" :src="friend.profile_pic" class="profile_img" ref="profile_image">
+        <i v-else class="material-icons profile-image">account_circle</i>
         <span>{{friend.fr_name}}</span>
         <div style="float: right;" class="settings">
           <i class="material-icons setting" @click="detailToggle">settings</i>
@@ -24,12 +25,16 @@
             <span class="detailInfo">{{friend.created_at}}</span>
           </div>
           <div class="detailLine">
-            <span class="detailTitle">最後のメッセージ時間</span>
+            <span class="detailTitle">最後のリプライ時間</span>
             <span class="detailInfo">{{friend.last_message_time}}</span>
           </div>
           <div class="detailLine">
-            <span class="detailTitle">メッセージ値</span>
-            <span class="detailInfo">{{messages.length}}件</span>
+            <span class="detailTitle">リプライ数</span>
+            <span class="detailInfo">{{ replyNumber }}件</span>
+          </div>
+          <div class="detailLine">
+            <span class="detailTitle">メッセージ数</span>
+            <span class="detailInfo">{{ messageNumber }}件</span>
           </div>
         </div>
         <div class="detail panel-right">
@@ -47,18 +52,25 @@
             </span>
           </div>
           <div style="margin-top: 10px; float: right;">
-            <button @click="updateTag">設定</button>
-            <button>キャンセル</button>
+            <button class="profile_menu" @click="updateTag">設定</button>
+            <button class="profile_menu">キャンセル</button>
           </div>
         </div>
       </div>
     </transition>
     <div class="left-panel">
       <div>
-        <button class="profile_menu" to="/friendslist" @click="baseNum=0">タイムライン</button>
-        <button class="profile_menu" to="/friendslist" @click="baseNum=1">メッセージタイム別</button>
-        <button class="profile_menu" to="/friendslist" @click="baseNum=2">メッセージタイプ別</button>
-        <button class="profile_menu" to="/friendslist" @click="baseNum=3">返事タイプ別</button>
+        <button class="profile_menu_selected" to="/friendslist" v-if="baseNum==0">タイムライン</button>
+        <button class="profile_menu" to="/friendslist" v-else @click="baseNum=0">タイムライン</button>
+
+        <button class="profile_menu_selected" to="/friendslist" v-if="baseNum==1">時間別リプライ</button>
+        <button class="profile_menu" to="/friendslist" v-else @click="baseNum=1">時間別リプライ</button>
+
+        <button class="profile_menu_selected" to="/friendslist" v-if="baseNum==2">タイプ別リプライ</button>
+        <button class="profile_menu" to="/friendslist" v-else @click="baseNum=2">タイプ別リプライ</button>
+
+        <button class="profile_menu_selected" to="/friendslist" v-if="baseNum==3">タイプ別メッセージ</button>
+        <button class="profile_menu" to="/friendslist" v-else @click="baseNum=3">タイプ別メッセージ</button>
       </div>
     </div>
     <div class="bottom-panel" ref="result">
@@ -109,9 +121,6 @@
         timeRank: [],
         timeFreqRank: [],
         time : [],
-        zero: 0, one: 0, two: 0, three: 0, four: 0, five: 0, six: 0, seven: 0, eight: 0, nine: 0, ten: 0,
-        eleven: 0,twelve: 0, thirteen: 0, fourteen: 0, fifteen: 0, sixteen: 0, seventeen: 0, eighteen: 0,
-        nineteen: 0, twenty: 0, t_one: 0, t_two: 0, t_three: 0,
         detailShow: false,
         tag: '',
         tags: [],
@@ -122,17 +131,33 @@
         loading: true,
         timeOption: 'hourly',
         selectedFriend: {},
+        replyNumber: 0,
+        messageNumber: 0,
       }
     },
     mounted: function(){
-      this.fetchFriend();
+      this.accessCheck();
     },
     methods: {
+      accessCheck(){
+        this.loading = true
+        axios.post('/api/show_current').then((res)=>{
+          var status = res.data.user.status
+          var admit = res.data.user.admit
+          if((status=='client'||status=='master')&&!admit){
+            alert("このページの接続権限がありません。")
+            location.href = '/';
+          } else {
+            this.fetchFriend();
+          }
+        },(error)=>{
+          console.log(error)
+        })
+      },
       fetchFriend(){
         const url = '/api/friends/'+this.id
         axios.get(url).then((res)=>{
           this.friend = res.data.friend
-          //console.log(this.friend)
           let fr_account = this.friend.fr_account
           this.friend.created_at = this.friend.created_at.substr(0,16).replace('T',' ');
           if(this.friend.last_message_time != null){
@@ -144,6 +169,8 @@
             }
           }
           this.fetchMessages(fr_account)
+          this.getMessageNumber(fr_account)
+          this.getReplyNumber(fr_account)
         },(error)=>{
           console.log(error)
         })
@@ -166,6 +193,24 @@
           this.messages = res.data.messages
           this.loading = false
         }, (error)=>{
+          console.log(error)
+        })
+      },
+      getMessageNumber(fr_account){
+        axios.post('/api/get_message_number',{
+          fr_account: fr_account
+        }).then((res)=>{
+          this.messageNumber = res.data
+        },(error)=>{
+          console.log(error)
+        })
+      },
+      getReplyNumber(fr_account){
+        axios.post('/api/get_reply_number',{
+          fr_account: fr_account
+        }).then((res)=>{
+          this.replyNumber = res.data
+        },(error)=>{
           console.log(error)
         })
       },
@@ -198,7 +243,7 @@
         this.tags.pop();
       },
       updateTag(){
-        axios.put('api/friends/'+this.friend.id,{
+        axios.put('/api/friends/'+this.friend.id,{
           tags: this.tags.toString()
         }).then((res)=>{
           alert("タグ修正完了")
@@ -210,12 +255,9 @@
       },
       fetchBubbles(ids){
         this.loading = true
-        axios.post('api/fetch_bubbles_archives',{
+        axios.post('/api/fetch_bubbles_archives',{
           ids: ids
         }).then((res)=>{
-          // console.log("bubble수집")
-          // console.log(res.data)
-          //console.log(this.bubbles)
           for(var bubble of res.data){
             this.bubbles.push(bubble)
             var headerResult = {'display':'grid', 'height': '7vh'}
@@ -247,10 +289,6 @@
             this.resultBodyCSS.push(bodyResult)
             this.resultFooterCSS.push(footerResult)
           }
-          // console.log(this.bubbles)
-          // console.log(this.resultHeaderCSS)
-          // console.log(this.resultBodyCSS)
-          // console.log(this.resultFooterCSS)
           let height = this.$refs.result.clientHeight
           let scrollTop = this.$refs.result.scrollTop
           let scrollHeight = this.$refs.result.scrollHeight
@@ -343,6 +381,16 @@
         var images = 'https://cdn.lineml.jp/api/media/sticker/'+para
         return images
       },
+    },
+    updated(){
+      this.$nextTick(function(){
+        var profile = this.$refs.profile_image
+        if(profile != null){
+          if(profile.src != null && profile.complete && profile.naturalWidth == 0){
+            this.friend.profile_pic = null
+          }
+        }
+      })
     }
   }
 </script>

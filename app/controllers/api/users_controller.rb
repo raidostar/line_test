@@ -5,9 +5,7 @@ class Api::UsersController < ApplicationController
     status = current_user.status
     if status == 'admin'
       group = params[:group]
-      puts group
       @users = User.where(group: group).where.not(status: 'admin')
-      puts @users
       render :index, status: :ok
     elsif status == 'master'
       group = current_user.group
@@ -55,6 +53,23 @@ class Api::UsersController < ApplicationController
     end
     @users = User.where(id: ids)
     render :index, status: :ok
+  end
+
+  def admin_check
+    password = params[:password]
+    group_key = params[:group_key]
+
+    group = current_user.group
+    @group = Group.find_by(group: group)
+    admin_bool = @group.authenticate(group_key)
+    if admin_bool != false
+      email = current_user.email
+      user = User.find_for_authentication(email: email)
+      admin = user.valid_password?(password)
+      render json: admin, status: :ok
+    else
+      render json: false, status: :ok
+    end
   end
 
   def save_target_channel

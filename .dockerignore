@@ -10,7 +10,7 @@ vendor/bundle
 
 ## log
 log/*
-tmp/*
+## tmp/*
 
 ## OSX
 .DS_Store

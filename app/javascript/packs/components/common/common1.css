@@ -264,7 +264,6 @@ input[type=text] {
   border-radius: 5px;
   resize: none;
   float: right;
-  overflow: scroll;
 }
 .chattingContents:focus {
   outline: none;
@@ -279,7 +278,6 @@ input[type=text] {
   box-shadow: 0 0 2px #666;
   border-radius: 8px;
   float: right;
-  overflow: scroll;
 }
 .stamp {
   font-size: 30px;
@@ -312,7 +310,6 @@ input[type=text] {
   background-color: white;
   border-radius: 8px;
   opacity: 0.9;
-  overflow: scroll;
 }
 .stamp-panel-left {
   float: left;
@@ -418,8 +415,6 @@ select {
   background-color: white;
   height:25em;
   border-radius: 8px;
-  overflow: scroll;
-
 }
 .detail:focus {
   outline: none;
@@ -454,7 +449,6 @@ label.stampBtn:focus {
   width: 18em;
   border-radius: 8px;
   position: relative;
-  right: 55%;
 }
 .attachedImgPanel {
   width: 20%;
@@ -550,7 +544,6 @@ label.stampBtn:focus {
 }
 .options-panel {
   height: 75vh;
-  overflow: scroll;
 }
 .setting {
   font-size: 16px;
@@ -620,7 +613,6 @@ input.countSet {
   height: 71vh;
   z-index: 300;
   background-color: white;
-  overflow: scroll;
 }
 .right-panel-small {
   margin: 16px 10px;

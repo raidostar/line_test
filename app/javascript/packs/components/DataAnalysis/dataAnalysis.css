@@ -38,13 +38,28 @@ table th {
 }
 .friend_analysis:focus {
   outline: none;
-  background-color: #2C3250;
-  color: white;
+  /*background-color: #2C3250;
+  color: white;*/
 }
 .friend_analysis:hover {
   text-decoration: none;
   background-color: #2C3250;
   color: white;
+}
+.friend_analysis_selected{
+  font-weight: 600;
+  background-color: #2C3250;
+  color: white;
+  padding: 5px 5px;
+  border-radius: 10px;
+  border: 1px solid #C0C0C0;
+  box-shadow: 0 0 2px #666;
+  width: 19.5%;
+  height: 2.7em;
+  font-size: 13px;
+}
+.friend_analysis_selected:focus{
+  outline: none;
 }
 .bottom-panel {
   margin: 0px 10px;

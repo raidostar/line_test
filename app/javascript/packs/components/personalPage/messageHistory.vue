@@ -8,7 +8,7 @@
       </div>
     </div>
     <div class="message" v-for="msg in this.messages">
-      <div class="chatting-line" v-if="msg.check_status!='answered'">
+      <div class="chatting-line" v-if="msg.check_status!='answered'&&msg.check_status!='notified'&&msg.check_status!='reminded'&&msg.check_status!='welcome'">
         <div class="balloon-left" v-if="msg.message_type=='text'">
           <span v-html="msg.contents">{{msg.contents}}</span>
         </div>
@@ -20,9 +20,14 @@
         </div>
         <span class="left-time">{{msg.created_at}}</span>
       </div>
-      <div v-else-if="(msg.check_status=='answered')">
+      <div v-else>
         <div class="balloon-right" v-if="msg.message_type=='text'">
-          <span v-html="msg.contents">{{msg.contents}}</span>
+          <span v-if="msg.check_status=='answered'" v-html="msg.contents">
+            {{msg.contents}}
+          </span>
+          <span v-else v-html="msg.contents" style="color: #ffc107;">
+            {{msg.contents}}
+          </span>
         </div>
         <div class="balloon-image" v-else-if="msg.message_type=='stamp'">
           <img :src="getImgUrl(msg.contents)" style="width: 10em;"/>
@@ -118,11 +123,7 @@
         let height = this.$refs.result.clientHeight
         let scrollTop = this.$refs.result.scrollTop
         let scrollHeight = this.$refs.result.scrollHeight
-        // console.log(height)
-        // console.log(scrollTop)
-        // console.log(scrollHeight)
         scrollTop = scrollHeight - height
-        //console.log(scrollTop)
         this.$refs.result.scrollTop = scrollTop
         this.$nextTick(function(){
           this.loading = false

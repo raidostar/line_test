@@ -10,8 +10,8 @@
     <div class="statistics">
       <select v-model="timeLineOption" @change="fetchMessagesData">
         <option value="oneDay">今日</option>
-        <option value="oneWeek">最近一週間</option>
-        <option value="oneMonth">最近一ヶ月間</option>
+        <option value="oneWeek">直近一週間</option>
+        <option value="oneMonth">直近一ヶ月間</option>
         <option value="oneYear">今年</option>
       </select>
       <line-chart class="chart" :data="timeLineMessages" :colors="['#dc3545']"/>
@@ -30,7 +30,7 @@
 <script>
   import axios from 'axios'
   export default {
-    name: 'replyTimeData',
+    name: 'messageTimeData',
     props: [],
     data: function(){
       return {
@@ -46,11 +46,12 @@
     },
     methods: {
       fetchMessagesData(){
-        axios.post('api/fetch_messages_data',{
-          reply_boolean: true,
+        axios.post('/api/fetch_messages_data',{
+          reply_boolean: false,
           timeOption: this.timeLineOption
         }).then((res)=>{
-          //console.log(res.data)
+          console.log("위")
+          console.log(res.data)
           this.timeLineMessages = res.data
           this.fetchMessagesTimeData();
         },(error)=>{
@@ -58,13 +59,14 @@
         })
       },
       fetchMessagesTimeData(){
-        axios.post('api/fetch_messages_time_data',{
-          reply_boolean: true,
+        axios.post('/api/fetch_messages_time_data',{
+          reply_boolean: false,
           timeOption: this.timeOption
         }).then((res)=>{
-          //console.log(res.data)
+          console.log("아래")
+          console.log(res.data)
           this.timelyMessages = res.data
-          this.loading = false
+          this.loading =false
         },(error)=>{
           console.log(error)
         })

@@ -1,6 +1,33 @@
 class Api::TagsController < ApplicationController
   def index
-    @tags = Tag.where(tag_group: params[:tag_group], channel_id: current_user.target_channel)
+    channel_id = current_user.target_channel
+    @channel = Channel.find_by(channel_id: channel_id)
+    channel_destination = @channel.channel_destination
+    result_tags = []
+    tag_group = params[:tag_group]
+    @tags = Tag.where(tag_group: tag_group, channel_id: channel_id)
+    @tags.each do |tag|
+      tag = tag.attributes
+      if tag_group == 'friend'
+        if tag["name"] != 'ALL'
+          friends = Friend.where(channel_destination: channel_destination)
+          friends = friends.to_a
+          friends.each do |friend|
+            if friend.tags.present?
+              temp_array = friend.tags.split(",")
+              if !temp_array.include? tag
+                friends.delete(friend)
+              end
+            end
+          end
+        else
+          friends = Friend.where(channel_destination: channel_destination)
+        end
+        tag['target_number'] = friends.size
+      end
+      result_tags.push(tag)
+    end
+    render json: result_tags, status: :ok
   end
 
   def show

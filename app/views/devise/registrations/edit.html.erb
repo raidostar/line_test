@@ -13,16 +13,16 @@
 <% end %>
 
 <div class="field input-field">
-  <%= f.label :パスワード %> <i></i>
+  <%= f.label :新規のパスワード %> <i></i>
   <%= f.password_field :password, autocomplete: "new-password" %>
   <% if @minimum_password_length %>
   <br />
-  <em>最小<%= @minimum_password_length %>文字 (変更したくない場合は空白で残らせてください。)</em>
+  <em>最小<%= @minimum_password_length %>文字</em>
   <% end %>
 </div>
 
 <div class="field input-field">
-  <%= f.label :パスワード確認 %>
+  <%= f.label :パスワード再入力 %>
   <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
 </div>
 
@@ -34,7 +34,7 @@
 </div>
 
 <div class="field input-field">
-  <%= f.label :代表番号 %>
+  <%= f.label :電話番号 %>
   <input type="text" name="user[group_phone_number]" id="user_group_phone">
 </div>
 

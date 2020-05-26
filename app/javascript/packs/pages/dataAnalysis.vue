@@ -4,11 +4,20 @@
       <div class="panel">
         <div class="top-panel">
           <div>
-            <button class="friend_analysis" to="/friendslist" @click="loadPage(0)">友だち時間データ</button>
-            <button class="friend_analysis" to="/friendslist" @click="loadPage(1)">メッセージ時間データ</button>
-            <button class="friend_analysis" to="/friendslist" @click="loadPage(2)">メッセージタイプデータ</button>
-            <button class="friend_analysis" to="/friendslist" @click="loadPage(3)">返事時間データ</button>
-            <button class="friend_analysis" to="/friendslist" @click="loadPage(4)">返事タイプデータ</button>
+            <button class="friend_analysis_selected" to="/friendslist" v-if="baseNum==0">日時別友だち数</button>
+            <button class="friend_analysis" to="/friendslist" v-else @click="loadPage(0)">日時別友だち数</button>
+
+            <button class="friend_analysis_selected" to="/friendslist" v-if="baseNum==1">日時別メッセージ</button>
+            <button class="friend_analysis" to="/friendslist" v-else @click="loadPage(1)">日時別メッセージ</button>
+
+            <button class="friend_analysis_selected" to="/friendslist" v-if="baseNum==2">タイプ別メッセージ</button>
+            <button class="friend_analysis" to="/friendslist" v-else @click="loadPage(2)">タイプ別メッセージ</button>
+
+            <button class="friend_analysis_selected" to="/friendslist" v-if="baseNum==3">日時別リプライ</button>
+            <button class="friend_analysis" to="/friendslist" v-else @click="loadPage(3)">日時別リプライ</button>
+
+            <button class="friend_analysis_selected" to="/friendslist" v-if="baseNum==4">タイプ別リプライ</button>
+            <button class="friend_analysis" to="/friendslist" v-else @click="loadPage(4)">タイプ別リプライ</button>
           </div>
         </div>
         <div class="bottom-panel">
@@ -32,6 +41,9 @@
   import replyTypeData from '../components/DataAnalysis/replyTypeData.vue'
   export default {
     name: 'analysis',
+    props: {
+      dataType: String
+    },
     components: {
       friendsData,
       messageTimeData,
@@ -46,18 +58,57 @@
       }
     },
     mounted: function(){
-      this.fetchChannels();
+      this.accessCheck();
     },
     methods: {
-      fetchChannels(){
-        axios.post('api/fetch_channels').then((res)=>{
-          if(res.data==null){
-            alert("まず、チャンネルを登録してご利用ください。");
-            location.href = "/#/channelManage"
+      accessCheck(){
+        this.loading = true
+        axios.post('/api/show_current').then((res)=>{
+          var status = res.data.user.status
+          var admit = res.data.user.admit
+          if((status=='client'||status=='master')&&!admit){
+            alert("このページの接続権限がありません。\nCSD事業部に問い合わせてください。")
+            axios.delete('users/sign_out').then((res)=>{
+              location.href = '/';
+            },(error)=>{
+              console.log(error)
+            })
+          } else {
+            this.fetchChannels();
           }
         },(error)=>{
           console.log(error)
         })
+      },
+      fetchChannels(){
+        axios.post('/api/fetch_channels').then((res)=>{
+          if(res.data==null){
+            alert("まず、チャンネルを登録してご利用ください。");
+            location.href = "/channelManage"
+          } else {
+            this.fetchData();
+          }
+        },(error)=>{
+          console.log(error)
+        })
+      },
+      fetchData(){
+        if(this.dataType.length==0){
+          alert("come????")
+          this.loadPage(0)
+        } else {
+          switch(this.dataType){
+            case 'friendsData':
+              this.loadPage(0)
+            break
+            case 'messageTimeData':
+              this.loadPage(1)
+            break
+            case 'replyTimeData':
+              this.loadPage(3)
+            break
+          }
+        }
       },
       formToggle(){
         this.formShow = !this.formShow

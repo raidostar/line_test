@@ -1,23 +1,7 @@
 import Vue from 'vue/dist/vue.esm'
 import VueRouter from 'vue-router'
 import App from './app.vue'
-
 import Home from './pages/home.vue'
-import FriendsList from './pages/friendsList.vue'
-import AllMessages from './pages/allMessages.vue'
-import PersonalMessages from './pages/personalMessages.vue'
-import DataAnalysis from './pages/dataAnalysis.vue'
-import SendAll from './pages/sendAll.vue'
-import AutoReply from './pages/autoReply.vue'
-import ActionTemplate from './pages/actionTemplate.vue'
-import TagManagement from './pages/tagManagement.vue'
-import RemindReply from './pages/remindReply.vue'
-import WelcomeMessage from './pages/welcomeMessage.vue'
-import RichMenu from './pages/richMenu.vue'
-import AdminPage from './pages/adminPage.vue'
-import MembersManage from './pages/membersManage.vue'
-import PersonalPage from './pages/personalPage.vue'
-import ChannelManage from './pages/channelManage.vue'
 
 import axios from 'axios'
 import BootstrapVue from 'bootstrap-vue'
@@ -46,32 +30,101 @@ Vue.use(animate)
 Vue.component('paginate', Paginate)
 Vue.use(VueGoogleMaps, {
   load: {
-    key: 'AIzaSyDveRX7Bi5rvU26eCLTyB2bGVbsq5Cg4pQ',
+    key: process.env.VUE_APP_GOOGLEMAP_API_KEY,
     libraries: 'places',
     language: 'ja'
   }
 })
 
 const routes = [
-  { path: '/', component: Home },
-  { path: '/friendsList', component: FriendsList },
-  { path: '/allMessages/:searchKeyword', component: AllMessages, props: true},
-  { path: '/personalMessages', component: PersonalMessages },
-  { path: '/dataAnalysis', component: DataAnalysis },
-  { path: '/sendAll', component: SendAll },
-  { path: '/autoReply', component: AutoReply },
-  { path: '/actionTemplate', component: ActionTemplate },
-  { path: '/tagManagement', component: TagManagement },
-  { path: '/remindReply', component: RemindReply },
-  { path: '/welcomeMessage', component: WelcomeMessage },
-  { path: '/richMenu', component: RichMenu },
-  { path: '/adminPage', component: AdminPage },
-  { path: '/membersManage', component: MembersManage},
-  { path: '/personalPage/:id', component: PersonalPage, props: true},
-  { path: '/channelManage', component: ChannelManage},
+  {
+    path: '/',
+    component: Home
+  },
+  {
+    path: '/friendsList',
+    name: "FriendsList",
+    component: () => import("./pages/friendsList.vue")
+  },
+  {
+    path: '/allMessages/:searchKeyword',
+    name: "AllMessages",
+    component: () => import("./pages/allMessages.vue"),
+    props: true
+  },
+  {
+    path: '/personalMessages',
+    name: "PersonalMessages",
+    component: () => import("./pages/personalMessages.vue")
+  },
+  {
+    path: '/dataAnalysis/:dataType',
+    name: "DataAnalysis",
+    component: () => import("./pages/dataAnalysis.vue"),
+    props: true
+  },
+  {
+    path: '/sendAll',
+    name: "SendAll",
+    component: () => import("./pages/sendAll.vue")
+  },
+  {
+    path: '/autoReply',
+    name: "AutoReply",
+    component: () => import("./pages/autoReply.vue")
+  },
+  {
+    path: '/actionTemplate',
+    name: "ActionTemplate",
+    component: () => import("./pages/actionTemplate.vue")
+  },
+  {
+    path: '/tagManagement',
+    name: "TagManagement",
+    component: () => import("./pages/tagManagement.vue")
+  },
+  {
+    path: '/remindReply',
+    name: "RemindReply",
+    component: () => import("./pages/remindReply.vue")
+  },
+  {
+    path: '/welcomeMessage',
+    name: "WelcomeMessage",
+    component: () => import("./pages/welcomeMessage.vue")
+  },
+  {
+    path: '/richMenu',
+    name: "RichMenu",
+    component: () => import("./pages/richMenu.vue")
+  },
+  {
+    path: '/adminPage',
+    name: "AdminPage",
+    component: () => import("./pages/adminPage.vue")
+  },
+  {
+    path: '/membersManage',
+    name: "MembersManage",
+    component: () => import("./pages/membersManage.vue")
+  },
+  {
+    path: '/personalPage/:id',
+    name: "PersonalPage",
+    component: () => import("./pages/personalPage.vue"),
+    props: true
+  },
+  {
+    path: '/channelManage',
+    name: "ChannelManage",
+    component: () => import("./pages/channelManage.vue")
+  },
 ];
 
-const router = new VueRouter({ routes });
+const router = new VueRouter({
+  mode: 'history',
+  routes
+});
 
 new Vue({
   el: '#app',
