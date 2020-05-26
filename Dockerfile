@@ -25,7 +25,9 @@ ENV APP_HOME /line_manager
 RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME
 COPY . /line_manager
-RUN yarn upgrade
+RUN yarn upgrade && \
+    gem install foreman && \
+    gem install whenever
 
 # command to build docker image ▼
 #   docker-compose up --build

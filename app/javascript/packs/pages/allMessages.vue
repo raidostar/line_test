@@ -7,13 +7,30 @@
         <div class="bounce3"></div>
       </div>
     </div>
+    <div class="tips" v-show="tipsPage!=tips.length">
+      <div class="cover top_cover" :style="topCover"></div>
+      <div class="cover left_cover" :style="leftCover"></div>
+      <div class="cover bottom_cover" :style="bottomCover"></div>
+      <div class="cover right_cover" :style="rightCover"></div>
+      <div class="focus_line" :style="focusLineCSS"></div>
+      <div class="explanation" :style="explanationCSS">
+        <div class="tips_detail">
+          <i class="material-icons info_mark">wb_incandescent</i>
+          <div class="tips_letter" v-html="tips[tipsPage]"></div>
+        </div>
+        <div class="page_move">
+          <span class="left_move mover" v-if="tipsPage>0" @click="prevTip">戻る</span>
+          <span class="right_move mover" @click="nextTip" v-model="nextWord">{{ nextWord }}</span>
+        </div>
+      </div>
+    </div>
     <transition name="fadeInOut">
       <div v-show="!replyShow">
         <div>
           <div>
             <i @click="fetchMessage" class="material-icons loop">loop</i><br/>
             <div class="search-keyword">
-              <input class="searchBar" @keydown.enter="searchByKeyword" placeholder="検索" v-model="searchKey"/>
+              <input class="searchBar" @keydown.enter="searchByKeyword" placeholder="検索" v-model="searchKey" style="width: 75%;" />
               <button class="searchBtn" @click="searchByKeyword"><i class="material-icons" style="color: grey;">search</i></button>
             </div>
             <div class="setting">
@@ -28,11 +45,11 @@
             </div>
             <div class="setting">
               <select v-model="parPage" @change="resetPage">
-                <option value=5>5ライン別表示</option>
-                <option value=10>10ライン別表示</option>
-                <option value=50>50ライン別表示</option>
-                <option value=100>100ライン別表示</option>
-                <option value=500>500ライン別表示</option>
+                <option value=5>5個表示</option>
+                <option value=10>10個表示</option>
+                <option value=50>50個表示</option>
+                <option value=100>100個表示</option>
+                <option value=500>500個表示</option>
                 <option :value="messageList.length">全体表示</option>
               </select>
             </div>
@@ -41,11 +58,11 @@
         <table class="msgList">
           <tr>
             <th>送信日時</th>
-            <th>名前</th>
-            <th>メッセージ</th>
+            <th>ユーザー名</th>
+            <th>メッセージ内容</th>
             <th>メッセージタイプ</th>
             <th>状態</th>
-            <th>返事する</th>
+            <th>返事</th>
           </tr>
           <transition-group name="flipInOut" tag="tbody">
             <tr v-for="msg in getMessage" v-bind:key="msg.id" v-model="messageList">
@@ -72,19 +89,26 @@
                   <span v-else v-html="msg.contents.substr(0,20)"></span>
                 </a>
               </td>
-              <td>{{ msg.message_type }}</td>
+
+              <td>
+                <span v-if="msg.message_type=='text'">テキスト</span>
+                <span v-else-if="msg.message_type=='carousel'">カルーセル</span>
+                <span v-else-if="msg.message_type=='stamp'">スタンプ</span>
+                <span v-else-if="msg.message_type=='image'">イメージ</span>
+                <span v-else-if="msg.message_type=='map'">マップ</span>
+              </td>
+
               <td v-if="msg.check_status=='autoReplied'">自動返事</td>
               <td v-else-if="msg.check_status=='replied'">直接返事</td>
               <td v-else-if="msg.check_status=='urgent'" style="color: red;">要対応</td>
               <td v-else-if="msg.check_status=='checked'">確認完了</td>
               <td v-else-if="msg.check_status=='unreplied'" style="color: blue;">未返事</td>
               <td v-else style="color: grey;">未確認</td>
-              <td v-if="msg.check_status=='autoReplied'||msg.check_status=='replied'||msg.check_status=='checked'" >
+              <td>
                 <button class="replyBtn" @click="replyMessage(msg)" style="color: green;">
-                  処理完了
+                  返事
                 </button>
               </td>
-              <td v-else><button class="replyBtn" @click="replyMessage(msg)">返事</button></td>
             </tr>
           </transition-group>
         </table>
@@ -93,8 +117,8 @@
         :page-range="3"
         :margin-pages="2"
         :click-handler="clickCallback"
-        :prev-text="'Prev'"
-        :next-text="'Next'"
+        :prev-text="'戻る'"
+        :next-text="'次へ'"
         :container-class="'pagination'"
         :page-class="'page-item'"
         >
@@ -107,7 +131,7 @@
         <button v-show="replyShow" @click="checkMessage" class="allSend-button" style="background-color: #2C3250; color: white;">
           確認処理
         </button>
-        <button v-show="replyShow" @click="messageToggle" class="allSend-button">戻り</button>
+        <button v-show="replyShow" @click="messageToggle" class="allSend-button">戻る</button>
       </div>
       <div class="right-panel" >
         <!-- side buttons -->
@@ -119,10 +143,10 @@
             <i class="material-icons stamp">sentiment_satisfied_alt</i>
           </button>
           <label class="stampBtn" title="イメージ追加">
-            <i class="material-icons stamp">gif</i>
-            <input type="file" @change="onFileChange" class="imageBtn" ref="fileInput" accept="img/*">
+            <i class="material-icons stamp">collections</i>
+            <input type="file" @change="onFileChange" @click="onFileChange" class="imageBtn" ref="fileInput" accept="img/*">
           </label>
-          <button class="stampBtn" @click="toggleCarousel" title="キャルセル追加">
+          <button class="stampBtn" @click="toggleCarousel" title="カルーセル追加">
             <i class="material-icons stamp">border_color</i>
           </button>
           <button class="stampBtn" @click="toggleMap" title="マップ追加">
@@ -162,7 +186,8 @@
         <div class="resultArea" id="resultArea" ref="result">
           <div class="oneLine" v-for="msg in reverseMessageList">
             <div v-if="msg.check_status!='answered'">
-              <img :src="selectedFriend.profile_pic" class="profile_img">
+              <img v-if="selectedFriend.profile_pic" :src="selectedFriend.profile_pic" class="profile_img" ref="profile_image">
+              <i class="material-icons profile" v-else>account_circle</i>
               <div class="balloon-left" v-if="msg.message_type=='text'">
                 <span v-html="msg.contents">{{msg.contents}}</span>
               </div>
@@ -341,7 +366,7 @@
             </div>
             <label class="image-change" title="イメージ変更" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null">
               イメージ変更
-              <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
+              <input type="file" @change="onImageChange" @click="onImageChange" class="imageBtn" ref="hero" accept="img/*">
             </label>
             <button class="image-remove" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null" @click="removeImage">
               イメージ削除
@@ -363,7 +388,7 @@
                 <div class="blocks hero-block" :style="heroBackground[index]" ref="heroArea" @click="selectComponent('hero',index)" tabindex="0" @keydown.shift="keyNumberCheck">
                   <label class="add-label" title="イメージ追加">
                     <i class="material-icons add-bubble-image" v-if="!heros[index]">add</i>
-                    <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
+                    <input type="file" @change="onImageChange" @click="onImageChange" class="imageBtn" ref="hero" accept="img/*">
                   </label>
                   <div class="carousel-img-area" v-show="bubble.hero" :style="heroCSS[index]">
                     <img class="carousel-img" :src="bubble.hero" :style="imageCSS[index]">
@@ -575,20 +600,68 @@
         baseTop: 0,
         loading: true,
         searchStatus: 'all',
+        topCover: {'height':'18.5%'},
+        bottomCover: {'height':'76%'},
+        leftCover: {'width':'19.5%'},
+        rightCover: {'width':'66.8%'},
+        focusLineCSS: {'width':'13.6%','height':'5.5%','left':'19.5%','top':'18.5%'},
+        explanationCSS: {'right':'54%','top':'26%','width': '30%','height': '18%'},
+        tips: [
+        '<p>友だちから送信された各メッセージが</p><p>届いた時間が表示されます。</p>',//0
+        '<p>メッセージを送信したユーザー名が</p><p>表示されます。</p>',//1
+        '<p>メッセージの内容が表示されます。</p>',//2
+        '<p>メッセージの内容をクリックすると</p><p>全文を確認することができます。</p>',//3
+        '<p>各友だちから送信された最後のメッセージの内容が表示されます。</p>',//4
+        '<p>メッセージの現在の状態が表示されます。</p>',//5
+        '<p>メッセージの状態は未確認・未返事・</p><p>確認完了・自動返事・直接返事で分類されます。</p>',//6
+        '<p>ここにあるボタンを押すと返事することができるページに移動します。</p>',//7
+        '<p>このボタンを押すと</p>',//8
+        '<p>スタンプのリストが見えます。</p><p>ここでスタンプを追加することができます。</p>',//9
+        '<p>このボタンを押すと</p>',//10
+        '<p>絵文字のリストが見えます。</p><p>ここで絵文字を追加することができます。</p>',//11
+        '<p>このボタンを押すと</p><p>イメージを添付して送信することができます。</p>',//12
+        '<p>このボタンを押すと</p><p>カルーセルを配信することができます。</p>',//13
+        '<p>カルーセルのヘッダーをクリックしてから</p>',//14
+        '<p>ここでカルーセルのデザインを編集することができます。</p>',//15
+        '<p>ここをクリックすると</p><p>新しいカルーセルが追加されます。</p>',//16
+        '<p>複製ボタンを押すと</p><p>同じカルーセルが追加されます。</p>',//17
+        '<p>このボタンを押すと</p><p>マップを添付して送信することができます。</p>',//18
+        '<p>ここで地域名を検索することができます。</p>',//19
+        '<p>ここにメッセージのヒストリーが</p><p>表示されます。</p>',//20
+        '<p>返事が不必要なメッセージは単純に確認処理ができます。</p>',//21
+        ],
+        tipsPage: 0,
+        nextWord: '次へ',
       }
     },
     mounted: function(){
-      this.fetchChannels();
-      setInterval(
-        this.fetchMessage
-      ,30000)
+      this.accessCheck();
     },
     methods: {
+      accessCheck(){
+        this.loading = true
+        axios.post('/api/show_current').then((res)=>{
+          var status = res.data.user.status
+          var admit = res.data.user.admit
+          if((status=='client'||status=='master')&&!admit){
+            alert("このページの接続権限がありません。\nCSD事業部に問い合わせてください。")
+            axios.delete('users/sign_out').then((res)=>{
+              location.href = '/';
+            },(error)=>{
+              console.log(error)
+            })
+          } else {
+            this.fetchChannels();
+          }
+        },(error)=>{
+          console.log(error)
+        })
+      },
       fetchChannels(){
-        axios.post('api/fetch_channels').then((res)=>{
+        axios.post('/api/fetch_channels').then((res)=>{
           if(res.data==null){
             alert("まず、チャンネルを登録してご利用ください。");
-            location.href = "/#/channelManage"
+            location.href = "/channelManage"
           } else {
             this.fetchMessage();
             this.fetchEmojis();
@@ -668,19 +741,33 @@
         this.reactionListShow = false;
         this.flexablePadding = {"padding-right": "30px"}
       },
+      closeAll(except){
+        if(except != 'stamp'){
+          this.closeStamp();
+        }
+        if(except != 'emoji'){
+          this.closeEmoji();
+        }
+        if(except != 'image'){
+          this.closeImage();
+        }
+        if(except != 'carousel'){
+          this.closeCarousel();
+        }
+        if(except != 'map'){
+          this.closeMap();
+        }
+      },
       toggleStamp(){
-        this.emojiShow = false;
-        this.mapShow = false;
+        this.closeAll('stamp');
         this.stampShow = !this.stampShow
       },
       toggleEmoji(){
-        this.stampShow = false;
+        this.closeAll('emoji');
         this.emojiShow = !this.emojiShow
       },
       onFileChange(e){
-        this.stampShow = false;
-        this.stampAreaShow = false;
-        this.mapShow = false;
+        this.closeAll('all')
         let files = e.target.files || e.dataTransfer.files;
         if(!files[0].type.match(/image.*/)){
           alert("イメージファイルをアップロードしてください。")
@@ -699,13 +786,7 @@
         reader.readAsDataURL(file);
       },
       onImageChange(e){
-        this.uploadedImage = ""
-        this.stampShow = false;
-        this.stampAreaShow = false;
-        this.mapShow = false;
-        this.contents = ""
-        this.innerContent = ""
-
+        this.closeAll("carousel")
         let files = e.target.files || e.dataTransfer.files;
         var index = this.selectedBubble
         if(!files[0].type.match(/image.*/)){
@@ -724,6 +805,7 @@
         reader.readAsDataURL(file);
       },
       closeImage(){
+        this.imageFile =null
         this.uploadedImage = ''
         this.flexablePadding = {"padding-right": "30px"}
       },
@@ -782,9 +864,7 @@
       },
       toggleMap(){
         this.uploadedImage = ""
-        this.stampShow = false
-        this.stampAreaShow = false
-        this.emojiShow = false
+        this.closeAll('map')
         this.mapShow = !this.mapShow
         if (this.mapShow==true){
           this.flexablePadding = {"padding-right": "330px"}
@@ -810,7 +890,7 @@
         this.marker_center = place.geometry.location
       },
       fetchEmojis(){
-        axios.get('api/emojis').then((res)=>{
+        axios.get('/api/emojis').then((res)=>{
           this.emojis = res.data.emojis
         },(error)=>{
           console.log(error)
@@ -825,11 +905,21 @@
         this.$refs.chatting.focus();
       },
       closeStamp(){
+        this.stampShow = false;
         this.stampAreaShow = false;
         this.flexablePadding = {"padding-right": "30px"}
       },
       closeCarousel(){
         this.carouselAreaShow = false;
+        this.clearCarousel();
+      },
+      closeEmoji(){
+        this.emojiShow = false;
+        this.flexablePadding = {"padding-right": "30px"}
+      },
+      closeMap(){
+        this.mapShow = false;
+        this.flexablePadding = {"padding-right": "30px"}
       },
       createReply(){
         if (this.reactions.length>=5){
@@ -841,7 +931,7 @@
           return;
         }
         else if(this.contents&&!this.uploadedImage&&!this.stampAreaShow&&!this.mapShow&&!this.carouselAreaShow){//text only
-          axios.post('api/direct_reply', {
+          axios.post('/api/direct_reply', {
             message_id: this.selectedMessage.id,
             message_type: 'text',
             contents: this.contents,
@@ -856,10 +946,10 @@
         } else if(this.stampAreaShow&&!this.contents){//stamp only
           let arr = this.selectStampUrl.split('-')
           let target = arr[0]
-          axios.post('api/direct_reply',{
+          axios.post('/api/direct_reply',{
             message_id: this.selectedMessage.id,
             message_type: 'stamp',
-            contents: target.substr(26,10),
+            contents: target.substr(40,target.length),
           })
           .then((res)=>{
             var reply_token = res.data.reply_token
@@ -873,7 +963,7 @@
             alert("最大アクション値は５つです。");
             return;
           }
-          axios.post('api/direct_reply',{
+          axios.post('/api/direct_reply',{
             message_id: this.selectedMessage.id,
             message_type: 'text',
             contents: this.contents,
@@ -883,7 +973,7 @@
             axios.post('/api/reactions',{
               message_id: this.selectedMessage.id,
               message_type: 'stamp',
-              contents: target.substr(26,10),
+              contents: target.substr(40,target.length),
             }).then((res)=>{
               var reply_token = res.data.reply_token
               this.fetchReply(reply_token)
@@ -901,11 +991,13 @@
           data.append('message_type','image')
           data.append('contents','[NO_TEXT]')
           data.append('image',file)
-          axios.post('api/direct_reply',data)
+          this.loading = true
+          axios.post('/api/direct_reply',data)
           .then((res)=>{
             var reply_token = res.data.reply_token
             this.fetchReply(reply_token)
             this.emptyAll();
+            this.loading = false
           },(error)=>{
             console.log(error)
           })
@@ -914,7 +1006,8 @@
             alert("最大アクションは五つです。");
             return;
           }
-          axios.post('api/direct_reply',{
+          this.loading = true
+          axios.post('/api/direct_reply',{
             message_id: this.selectedMessage.id,
             reaction_type: 'text',
             contents: this.contents,
@@ -925,11 +1018,12 @@
             data.append('message_type','image');
             data.append('contents','[ IMAGE ]');
             data.append('image',file);
-            axios.post('api/direct_reply',data)
+            axios.post('/api/direct_reply',data)
             .then((res)=>{
               var reply_token = res.data.reply_token
               this.fetchReply(reply_token)
               this.emptyAll();
+              this.loading = false
             },(error)=>{
               console.log(error)
             })
@@ -940,7 +1034,7 @@
           for(var bubble of this.bubble_array){
             let bubbleLength = bubble.header.length+bubble.body.length+bubble.footer.length
             if(bubbleLength==0){
-              alert("作成されないキャルセルがあります。");
+              alert("作成されないカルーセルがあります。");
               return;
             }
             if(bubble.header_color.substr(0,1)!='#'&&bubble.header_color.length!=7){
@@ -1017,7 +1111,7 @@
             data.append('footer_data[]', this.bubble_array[i].footer_data)
           }
           data.append('bubble_num',this.bubble_array.length)
-          axios.post('api/bubbles_archives',data)
+          axios.post('/api/bubbles_archives',data)
           .then((res)=>{
             const data = res.data.toString()
             axios.post('/api/direct_reply',{
@@ -1040,7 +1134,7 @@
           geocoder.geocode({'location':this.marker_center,'language': 'ja'},(results,status)=>{
             if(status == 'OK'){
               let data = '['+results[5].formatted_address+']+[@map('+latlng.lat+','+latlng.lng+')]'
-              axios.post('api/direct_reply',{
+              axios.post('/api/direct_reply',{
                 message_id: this.selectedMessage.id,
                 message_type: 'map',
                 contents: data,
@@ -1058,7 +1152,7 @@
             alert("最大アクションは五つです。");
             return;
           }
-          axios.post('api/direct_reply',{
+          axios.post('/api/direct_reply',{
             message_id: this.selectedMessage.id,
             message_type: 'text',
             contents: this.contents,
@@ -1068,7 +1162,7 @@
             geocoder.geocode({'location':this.marker_center,'language': 'ja'},(results,status)=>{
               if(status == 'OK'){
                 let data = '['+results[5].formatted_address+']+[@map('+latlng.lat+','+latlng.lng+')]'
-                axios.post('api/direct_reply',{
+                axios.post('/api/direct_reply',{
                   message_id: this.selectedMessage.id,
                   message_type: 'map',
                   contents: data,
@@ -1102,7 +1196,7 @@
         return images
       },
       detailImage(url){
-        let imageHTML = '<img src='+url+' style="width: 21em;height: 26em;">'
+        let imageHTML = '<img src='+url+' style="width: 21em;">'
         this.fullContents = imageHTML;
         this.showDetail = true;
       },
@@ -1136,7 +1230,7 @@
         this.resultHeaderCSS = []
         this.resultBodyCSS = []
         this.resultFooterCSS = []
-        axios.post('api/read_message',{
+        axios.post('/api/read_message',{
           id: msg.id
         }).then((res)=>{
           var data = res.data
@@ -1146,7 +1240,7 @@
         })
       },
       fetchReply(data){
-        axios.post('api/fetch_reply',{
+        axios.post('/api/fetch_reply',{
           reply_token: data
         }).then((res)=>{
           this.reverseMessageList = res.data.messages
@@ -1163,32 +1257,28 @@
         })
       },
       fetchStamps(){
-        for(let i=1; i<47;i++){
-          let add = '1_'+i
+        for(let i=34; i<74;i++){
+          let add = '11537_520027'+i
           this.stampNums.push(add)
         }
-        for(let i=100; i<180;i++){
-          let add = '1_'+i
+        for(let i=494; i<534;i++){
+          let add = '11538_51626'+i
           this.stampNums.push(add)
         }
-        for(let i=401; i<431;i++){
-          let add = '1_'+i
-          this.stampNums.push(add)
-        }
-        for(let i=501; i<528;i++){
-          let add = '1_'+i
+        for(let i=10; i<50;i++){
+          let add = '11539_521141'+i
           this.stampNums.push(add)
         }
       },
       selectStamp(num){
         this.uploadedImage = "";
         this.stampAreaShow = true
-        let images = require.context('../images/', false, /\.png$/)
-        this.selectStampUrl = images('./' + num + ".png")
+        //let images = require.context('../images/', false, /\.png$/)
+        this.selectStampUrl = 'https://cdn.lineml.jp/api/media/sticker/' + num
         this.flexablePadding = {"padding-right": "300px"}
       },
       loadProfile(fr_account){
-        axios.post('api/by_fr_account',{
+        axios.post('/api/by_fr_account',{
           fr_account: fr_account
         }).then((res)=>{
           this.selectedFriend = res.data
@@ -1210,7 +1300,7 @@
         }
       },
       checkMessage(){
-        axios.post('api/check_message',{
+        axios.post('/api/check_message',{
           id: this.selectedMessage.id
         }).then((res)=>{
           this.messageToggle();
@@ -1722,7 +1812,7 @@
         }
       },
       fetchBubbles(ids){
-        axios.post('api/fetch_bubbles_archives',{
+        axios.post('/api/fetch_bubbles_archives',{
           ids: ids
         }).then((res)=>{
           for(var bubble of res.data){
@@ -2185,6 +2275,229 @@
         }
         this.selectComponent(comp, index)
       },
+      nextTip(){
+        this.tipsPage = this.tipsPage + 1
+        this.tipsChecker(this.tipsPage)
+      },
+      prevTip(){
+        this.tipsPage = this.tipsPage - 1
+        this.tipsChecker(this.tipsPage)
+      },
+      tipsChecker(page){
+        switch(page){
+          case 0:
+          this.topCover = {'height':'18.5%'}
+          this.bottomCover = {'height':'76%'}
+          this.leftCover = {'width':'19.5%'}
+          this.rightCover = {'width':'66.8%'}
+          this.focusLineCSS = {'width':'13.6%','height':'5.5%','left':'19.5%','top':'18.5%'}
+          this.explanationCSS = {'right':'54%','top':'26%','width': '30%','height': '18%'}
+          break;
+          case 1:
+          this.topCover = {'height':'18.5%'}
+          this.bottomCover = {'height':'76%'}
+          this.leftCover = {'width':'36%'}
+          this.rightCover = {'width':'50.3%'}
+          this.focusLineCSS = {'width':'13.6%','height':'5.5%','left':'36%','top':'18.5%'}
+          this.explanationCSS = {'right':'38%','top':'26%','width': '30%','height': '18%'}
+          break;
+          case 2:
+          this.topCover = {'height':'18.5%'}
+          this.bottomCover = {'height':'76%'}
+          this.leftCover = {'width':'50.5%'}
+          this.rightCover = {'width':'36%'}
+          this.focusLineCSS = {'width':'13.6%','height':'5.5%','left':'50.5%','top':'18.5%'}
+          this.explanationCSS = {'right':'24%','top':'26%','width': '30%','height': '18%'}
+          break;
+          case 3:
+          this.topCover = {'height':'18.5%'}
+          this.bottomCover = {'height':'76%'}
+          this.leftCover = {'width':'50.5%'}
+          this.rightCover = {'width':'36%'}
+          this.focusLineCSS = {'width':'13.6%','height':'5.5%','left':'50.5%','top':'18.5%'}
+          this.explanationCSS = {'right':'24%','top':'26%','width': '30%','height': '18%'}
+          break;
+          case 4:
+          this.topCover = {'height':'18.5%'}
+          this.bottomCover = {'height':'76%'}
+          this.leftCover = {'width':'67%'}
+          this.rightCover = {'width':'19.3%'}
+          this.focusLineCSS = {'width':'13.6%','height':'5.5%','left':'67%','top':'18.5%'}
+          this.explanationCSS = {'right':'9%','top':'26%','width': '30%','height': '18%'}
+          break;
+          case 5:
+          this.topCover = {'height':'18.5%'}
+          this.bottomCover = {'height':'76%'}
+          this.leftCover = {'width':'83.5%'}
+          this.rightCover = {'width':'8.5%'}
+          this.focusLineCSS = {'width':'8%','height':'5.5%','left':'83.5%','top':'18.5%'}
+          this.explanationCSS = {'right':'1%','top':'26%','width': '30%','height': '18%'}
+          break;
+          case 6:
+          this.topCover = {'height':'18.5%'}
+          this.bottomCover = {'height':'76%'}
+          this.leftCover = {'width':'83.5%'}
+          this.rightCover = {'width':'8.5%'}
+          this.focusLineCSS = {'width':'8%','height':'5.5%','left':'83.5%','top':'18.5%'}
+          this.explanationCSS = {'right':'1%','top':'26%','width': '30%','height': '18%'}
+          break;
+          case 7:
+          this.topCover = {'height':'18.5%', 'opacity':'80%'}
+          this.bottomCover = {'height':'76%'}
+          this.leftCover = {'width':'93%'}
+          this.rightCover = {'width':'2.5%'}
+          this.focusLineCSS = {'width':'4.5%','height':'5.5%','left':'93.1%','top':'18.5%'}
+          this.explanationCSS = {'right':'1%','top':'26%','width': '30%','height': '18%'}
+          break;
+          case 8:
+          this.topCover = {'height':'14.5%'}
+          this.bottomCover = {'height':'79%'}
+          this.leftCover = {'width':'16%'}
+          this.rightCover = {'width':'80.6%'}
+          this.focusLineCSS = {'width':'3.3%','height':'6.3%','left':'16%','top':'14.5%'}
+          this.explanationCSS = {'right':'54%','top':'26%','width': '30%','height': '18%'}
+          break;
+          case 9:
+          this.topCover = {'height':'55.5%'}
+          this.bottomCover = {'height':'20%'}
+          this.leftCover = {'width':'19.5%'}
+          this.rightCover = {'width':'40%'}
+          this.focusLineCSS = {'width':'40.2%','height':'24.5%','left':'19.5%','top':'55.5%'}
+          this.explanationCSS = {'right':'9%','top':'58%','width': '30%','height': '18%'}
+          break;
+          case 10:
+          this.topCover = {'height':'20.5%'}
+          this.bottomCover = {'height':'72.4%'}
+          this.leftCover = {'width':'16%'}
+          this.rightCover = {'width':'80.6%'}
+          this.focusLineCSS = {'width':'3.3%','height':'6.8%','left':'16%','top':'20.6%'}
+          this.explanationCSS = {'right':'54%','top':'29%','width': '30%','height': '18%'}
+          break;
+          case 11:
+          this.topCover = {'height':'55.5%'}
+          this.bottomCover = {'height':'20%'}
+          this.leftCover = {'width':'19.5%'}
+          this.rightCover = {'width':'40%'}
+          this.focusLineCSS = {'width':'40.2%','height':'24.5%','left':'19.5%','top':'55.5%'}
+          this.explanationCSS = {'right':'9%','top':'58%','width': '30%','height': '18%'}
+          break;
+          case 12:
+          this.topCover = {'height':'27%'}
+          this.bottomCover = {'height':'66.4%'}
+          this.leftCover = {'width':'16%'}
+          this.rightCover = {'width':'80.6%'}
+          this.focusLineCSS = {'width':'3.3%','height':'6.8%','left':'16%','top':'27%'}
+          this.explanationCSS = {'right':'54%','top':'36%','width': '30%','height': '18%'}
+          break;
+          case 13:
+          this.topCover = {'height':'33.7%'}
+          this.bottomCover = {'height':'59.4%'}
+          this.leftCover = {'width':'16%'}
+          this.rightCover = {'width':'80.6%'}
+          this.focusLineCSS = {'width':'3.3%','height':'6.8%','left':'16%','top':'33.7%'}
+          this.explanationCSS = {'right':'54%','top':'42%','width': '30%','height': '18%'}
+          break;
+          case 14:
+          this.topCover = {'height':'15%'}
+          this.bottomCover = {'height':'21.4%'}
+          this.leftCover = {'width':'30.5%'}
+          this.rightCover = {'width':'49%'}
+          this.focusLineCSS = {'width':'20.3%','height':'11%','left':'30.5%','top':'14.7%'}
+          this.explanationCSS = {'right':'41%','top':'27%','width': '30%','height': '18%'}
+          break;
+          case 15:
+          this.topCover = {'height':'15%'}
+          this.bottomCover = {'height':'20%'}
+          this.leftCover = {'width':'18.6%'}
+          this.rightCover = {'width':'69%'}
+          this.focusLineCSS = {'width':'12.3%','height':'65.8%','left':'18.7%','top':'14%'}
+          this.explanationCSS = {'right':'38%','top':'27%','width': '30%','height': '18%'}
+          break;
+          case 16:
+          this.topCover = {'height':'74.7%'}
+          this.bottomCover = {'height':'25.2%'}
+          this.leftCover = {'width':'51%'}
+          this.rightCover = {'width':'29%'}
+          this.focusLineCSS = {'width':'20%','height':'61.2%','left':'51%','top':'14.7%'}
+          this.explanationCSS = {'right':'50%','top':'15%','width': '30%','height': '18%'}
+          break;
+          case 17:
+          this.topCover = {'height':'74.7%'}
+          this.bottomCover = {'height':'20.4%'}
+          this.leftCover = {'width':'30.5%'}
+          this.rightCover = {'width':'49%'}
+          this.focusLineCSS = {'width':'20.3%','height':'4.8%','left':'30.5%','top':'74.7%'}
+          this.explanationCSS = {'right':'18%','top':'72%','width': '30%','height': '18%'}
+          break;
+          case 18:
+          this.topCover = {'height':'39.7%'}
+          this.bottomCover = {'height':'53.4%'}
+          this.leftCover = {'width':'16%'}
+          this.rightCover = {'width':'80.5%'}
+          this.focusLineCSS = {'width':'3.3%','height':'6.8%','left':'16%','top':'40%'}
+          this.explanationCSS = {'right':'50%','top':'39%','width': '30%','height': '18%'}
+          break;
+          case 19:
+          this.topCover = {'height':'8.7%'}
+          this.bottomCover = {'height':'22.4%'}
+          this.leftCover = {'width':'38.5%'}
+          this.rightCover = {'width':'40%'}
+          this.focusLineCSS = {'width':'14.3%','height':'7.5%','left':'41.5%','top':'9%'}
+          this.explanationCSS = {'right':'13%','top':'8%','width': '30%','height': '18%'}
+          break;
+          case 20:
+          this.topCover = {'height':'13.7%'}
+          this.bottomCover = {'height':'13.4%'}
+          this.leftCover = {'width':'59%'}
+          this.rightCover = {'width':'0%'}
+          this.focusLineCSS = {'width':'40.5%','height':'72.5%','left':'59.2%','top':'13.6%'}
+          this.explanationCSS = {'right':'41.5%','top':'15%','width': '30%','height': '18%'}
+          break;
+          case 21:
+          this.topCover = {'height':'7.5%'}
+          this.bottomCover = {'height':'86.4%'}
+          this.leftCover = {'width':'92.6%'}
+          this.rightCover = {'width':'0%'}
+          this.focusLineCSS = {'width':'6.5%','height':'6%','left':'92.7%','top':'7.6%'}
+          this.explanationCSS = {'right':'1%','top':'15%','width': '30%','height': '18%'}
+          break;
+        }
+        if(page==this.tips.length-1){
+          this.nextWord = '完了'
+        } else if(page==this.tips.length){
+          this.closeAll();
+        }else {
+          this.nextWord = '次へ'
+        }
+        if(page>7&&page<this.tips.length){
+          this.replyShow = true;
+        } else {
+          this.replyShow = false;
+        }
+        if(page==9){
+          this.stampShow = true
+        } else {
+          this.stampShow = false
+        }
+        if(page==11){
+          this.emojiShow = true
+        } else {
+          this.emojiShow = false
+        }
+        if(page==14){
+          this.stretchCarouselToggle();
+        }
+        if(page>13&&page<18){
+          this.carouselAreaShow = true
+        } else {
+          this.carouselAreaShow = false
+        }
+        if(page==19){
+          this.mapShow = true
+        } else{
+          this.mapShow = false
+        }
+      },
     },
     computed: {
       getMessage(){
@@ -2195,6 +2508,16 @@
       getPageCount(){
         return Math.ceil(this.messageList.length / this.parPage)
       },
+    },
+    updated(){
+      this.$nextTick(function(){
+        var profile = this.$refs.profile_image
+        if(profile != null){
+          if( profile.src != '' && profile.complete == true && profile.naturalWidth == 0 ){
+            this.selectedFriend.profile_pic = null
+          }
+        }
+      })
     }
   }
 </script>

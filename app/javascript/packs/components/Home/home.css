@@ -155,6 +155,89 @@ b {
   margin-right: 15px;
   line-height: 50px;
 }
+.tips {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.cover {
+  position: absolute;
+  background-color: #FFFFFF;
+  opacity: 50%;
+}
+.top_cover {
+  top: 0;
+  width: 100%;
+  z-index: 2;
+}
+.bottom_cover {
+  bottom: 0;
+  width: 100%;
+  z-index: 2;
+}
+.left_cover {
+  left: 0;
+  height: 100%;
+  z-index: 2;
+}
+.right_cover {
+  right: 0;
+  height: 100%;
+  z-index: 2;
+}
+.focus_line {
+  position: absolute;
+  border: 3px dashed #dc3545;
+  z-index: 2;
+}
+.explanation {
+  position: absolute;
+  background-color: #000000;
+  opacity: .85;
+  border-radius: 8px;
+  z-index: 3;
+}
+.info_mark {
+  color: #ffc107;
+  font-size: 25px;
+  -ms-transform: rotate(180deg);
+  -webkit-transform: rotate(180deg);
+  transform: rotate(180deg);
+}
+.page_move {
+  position: absolute;
+  bottom: 18%;
+  width: 98%;
+  height: 12px;
+  margin: 0 auto;
+  color: #007bff;
+}
+.right_move {
+  position: relative;
+  left: 130px;
+}
+.left_move {
+  position: relative;
+  right: 115px;
+}
+.mover {
+  font-size: 22px;
+}
+.mover:hover {
+  cursor: pointer;
+}
+.tips_detail {
+  margin: 13px;
+}
+.tips_letter {
+  font-size: 18px;
+  color: #ffffff;
+  text-align: center;
+}
+
+
 .waiting-screen {
   position: absolute;
   top: 0;
@@ -162,6 +245,7 @@ b {
   background-color: #ffffff;
   height: 100%;
   width: 100%;
+  z-index: 5;
 }
 .spinner {
   margin: 350px auto 0;
@@ -210,4 +294,11 @@ b {
 }
 .follow-data {
   width: 15em;
+}
+.goal {
+  font-size: 30px;
+  width: 50%;
+}
+.message-number {
+  width: 33.3%;
 }

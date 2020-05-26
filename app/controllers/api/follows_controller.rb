@@ -10,11 +10,11 @@ class Api::FollowsController < ApplicationController
 
   def fetch_follows_data
     infos = []
-    datetime = DateTime.now
+    datetime = DateTime.current
     datetime = datetime.beginning_of_day
     channel_id = current_user.target_channel
     follower_info = {
-      name: "友だち登録数",
+      name: "全友だち数",
       data: {}
     }
     unblock_info = {
@@ -65,7 +65,7 @@ class Api::FollowsController < ApplicationController
       follows = Follow.where("extract(day from date) = ?",1).where(channel_id: channel_id).order("date")
       follows.each do |follow|
         date = follow.date
-        title = (date.month - 1).to_s+"月"
+        title = date.month.to_s+"月"
         follower_info[:data][title] = follow.follower
         unblock_info[:data][title] = follow.targetedReaches
         block_info[:data][title] = follow.blocks
@@ -90,7 +90,7 @@ class Api::FollowsController < ApplicationController
     infos = []
     channel_id = current_user.target_channel
     follower_info = {
-      name: "友だち登録数",
+      name: "全友だち数",
       data: {}
     }
     unblock_info = {

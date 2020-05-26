@@ -3,22 +3,30 @@ class Api::ChannelsController < ApplicationController
   end
 
   def create
-    @channel = Channel.new(channels_params)
     group = current_user.group
     @group = Group.find_by(group: group)
+    @channel = Channel.new(channels_params)
     channels_limit = @group.channels_limit
     @channels = []
+    channel_unlinked = nil
     if @group.channels.present?
       @channels = @group.channels.split(",")
+      channel_unlinked = Channel.where(channel_id: @channels, channel_destination: nil)
     end
-
     if channels_limit <= @channels.length
       puts 'rejected!'
+    elsif channel_unlinked.present?
+      render json: "unlinked", status: :ok
     else
       if @channel.save
         channel = Channel.last
         @channels.push(channel.id)
         @group.update(channels: @channels.join(","))
+        tag_groups = ['friend','option','reaction']
+        tag_groups.each do |tag_group|
+          @tag = Tag.new({name: 'ALL', tag_group: tag_group, channel_id: channel.channel_id})
+          @tag.save
+        end
         render :show, status: :ok
       else
         render json: @channel.errors, status: :unprocessable_entity

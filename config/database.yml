@@ -5,9 +5,9 @@ default: &default
   host: <%= ENV['MYSQL_HOST'] %>
   port: <%= ENV['MYSQL_PORT'] || 3306 %>
   username: <%= ENV['MYSQL_USERNAME'] %>
-  password: <%= ENV['MYSQL_PASSWORD'] %>
   database: <%= ENV['MYSQL_DATABASE'] %>
-  rootpassword: <%= ENV['MYSQL_ROOT_PASSWORD'] %>
+  password: <%= ENV['MYSQL_PASSWORD'] %>
+  #rootpassword: <%= ENV['MYSQL_ROOT_PASSWORD'] %>
   reconnect: true
 
 development:

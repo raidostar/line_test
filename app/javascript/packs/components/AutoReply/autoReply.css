@@ -1,8 +1,13 @@
 .page {
   height: 88vh;
   width: 100%;
-  overflow: scroll;
+  overflow-x: scroll;
   scroll-behavior: smooth;
+  -ms-overflow-style: none;
+  -o-overflow-style: none;
+}
+.page::-webkit-scrollbar {
+  display:none;
 }
 .label{
   border-bottom: 2px solid grey;
@@ -286,7 +291,6 @@ input[type=text] {
   box-shadow: 0 0 2px #666;
   border-radius: 8px;
   float: right;
-  overflow: scroll;
   margin-bottom: 0px;
 }
 .stamp {
@@ -326,7 +330,12 @@ input[type=text] {
   background-color: white;
   border-radius: 8px;
   opacity: 0.9;
-  overflow: scroll;
+  overflow-y: scroll;
+  -ms-overflow-style: none;
+  -o-overflow-style: none;
+}
+.sticker-panel::-webkit-scrollbar {
+  display:none;
 }
 .stamp-panel-left {
   float: left;
@@ -431,8 +440,6 @@ select {
   background-color: white;
   height:25em;
   border-radius: 8px;
-  overflow: scroll;
-
 }
 .detail:focus {
   outline: none;
@@ -561,7 +568,6 @@ label.stampBtn:focus {
 }
 .options-panel {
   height: 75vh;
-  overflow: scroll;
 }
 .setting {
   font-size: 16px;
@@ -633,7 +639,6 @@ input.countSet {
   height: 90%;
   z-index: 300;
   background-color: white;
-  overflow: scroll;
   border: 1.5px solid #ccc;
 }
 .right-panel-small {
@@ -734,7 +739,6 @@ div.tags-bottom {
 .carousel-box {
   height: 100%;
   float: left;
-  overflow-x: scroll;
   overflow-y: hidden;
 }
 .bubble {
@@ -837,8 +841,8 @@ div.tags-bottom {
   width: 11em;
   z-index: 10;
   color: white;
-  overflow: scroll;
   text-align: center;
+  overflow: auto;
 }
 .css-option {
   height: 2em;
@@ -905,7 +909,6 @@ input[type=text]:not(.browser-default) {
   min-width: 4em;
   max-width: 100%;
   max-height: 100%;
-  overflow: scroll;
   border: 1px dotted grey;
   border-radius: 8px;
   text-align: center;
@@ -1068,7 +1071,6 @@ input.uri-text {
   height: 30em;
   position: absolute;
   top: 10em;
-  overflow-x: scroll;
 }
 .showInOut-enter-active {
   animation: fadeIn .5s;
@@ -1076,6 +1078,11 @@ input.uri-text {
 .showInOut-leave-active {
   animation: fadeIn .5s reverse;
 }
+.delete{
+  float: right;
+  margin-right: 25px;
+}
+
 .waiting-screen {
   position: absolute;
   top: 0;

@@ -15,13 +15,15 @@
             リッチメニュー
             <button class="load-rich" @click="loadRichmenu">アップデート</button>
           </div>
-          <div class="richmenu-list" v-model="richmenuList" v-for="(richmenu,index) in richmenuList">
-            <div class="richmenu-one" ref="richmenulist" tabindex="0" @keyup.down="nextMenu(index)" @keyup.up="previousMenu(index)" @click="selectRichmenu(index)" @keyup.right="goRight" @keyup.left="goLeft" @keyup.enter="openRichDetail(index)" @keyup.esc="closeDetail" @keyup.delete="deleteRichmenu" :style="richmenuCSS[index]">
-              <span class="richmenu-name">{{richmenu.name}}</span>
-              <!-- <span class="richmenu-id">{{richmenu.richmenu_id}}</span> -->
-              <i class="material-icons open-detail" tabindex="0" @click="openRichDetail(index)" @keyup.esc="closeDetail" @keyup.down="nextMenu(index)" @keyup.up="previousMenu(index)" @keyup.right="goRight" @keyup.left="goLeft">
-                info
-              </i>
+          <div class="richmenus-list">
+            <div class="richmenu-list" v-model="richmenuList" v-for="(richmenu,index) in richmenuList">
+              <div class="richmenu-one" ref="richmenulist" tabindex="0" @keyup.down="nextMenu(index)" @keyup.up="previousMenu(index)" @click="selectRichmenu(index)" @keyup.right="goRight" @keyup.left="goLeft" @keyup.enter="openRichDetail(index)" @keyup.esc="closeDetail" @keyup.delete="deleteRichmenu" :style="richmenuCSS[index]">
+                <span class="richmenu-name">{{richmenu.name}}</span>
+                <!-- <span class="richmenu-id">{{richmenu.richmenu_id}}</span> -->
+                <i class="material-icons open-detail" tabindex="0" @click="openRichDetail(index)" @keyup.esc="closeDetail" @keyup.down="nextMenu(index)" @keyup.up="previousMenu(index)" @keyup.right="goRight" @keyup.left="goLeft">
+                  info
+                </i>
+              </div>
             </div>
           </div>
         </div>
@@ -303,14 +305,29 @@
       }
     },
     mounted: function(){
-      this.fetchChannels();
+      this.accessCheck();
     },
     methods: {
+      accessCheck(){
+        this.loading = true
+        axios.post('/api/show_current').then((res)=>{
+          var status = res.data.user.status
+          var admit = res.data.user.admit
+          if((status=='client'||status=='master')&&!admit){
+            alert("このページの接続権限がありません。")
+            location.href = '/';
+          } else {
+            this.fetchChannels();
+          }
+        },(error)=>{
+          console.log(error)
+        })
+      },
       fetchChannels(){
-        axios.post('api/fetch_channels').then((res)=>{
+        axios.post('/api/fetch_channels').then((res)=>{
           if(res.data==null){
             alert("まず、チャンネルを登録してご利用ください。");
-            location.href = "/#/channelManage"
+            location.href = "/channelManage"
           } else {
             this.fetchRichmenu();
           }
@@ -320,7 +337,7 @@
       },
       fetchRichmenu(){
         this.loading = true
-        axios.get('api/richmenus').then((res)=>{
+        axios.get('/api/richmenus').then((res)=>{
           this.richmenuList = res.data.richmenus
           for(var i in this.richmenuList){
             var richCSS = {"background-color": "#ffffff", "color": "#000000"}
@@ -346,7 +363,7 @@
       },
       mouseTrack(e){
         let xRound = ((e.clientX - 716)/72)*250
-        let yRound = ((e.clientY - 53)/486)*1686
+        let yRound = ((e.clientY - 60)/486)*1686
         this.richX = Math.round(xRound)
         this.richY = Math.round(yRound)
 
@@ -361,8 +378,8 @@
           e.clientX = 1436
           this.mouseUp(e);
         }
-        if(e.clientY<53){
-          e.clientY = 53
+        if(e.clientY<60){
+          e.clientY = 60
           this.mouseUp(e);
         }
         if(e.clientY>539){
@@ -404,8 +421,8 @@
         if(e.clientX>=1436){
           e.clientX = 1436
         }
-        if(e.clientY<=53){
-          e.clientY = 53
+        if(e.clientY<=60){
+          e.clientY = 60
         }
         if(e.clientY>=539){
           e.clientY = 539
@@ -414,9 +431,9 @@
         this.dragEnd = true
         this.$refs.richmenu.style.cursor = "default"
         var xBefore = ((this.xSpot - 716)/72)*250
-        var yBefore = ((this.ySpot - 53)/486)*1686
+        var yBefore = ((this.ySpot - 60)/486)*1686
         var xAfter = ((e.clientX - 716)/72)*250
-        var yAfter = ((e.clientY - 53)/486)*1686
+        var yAfter = ((e.clientY - 60)/486)*1686
 
         var areaWidth = xAfter - xBefore
         var areaHeight = yAfter - yBefore
@@ -440,8 +457,9 @@
           this.areaHeight = areaHeight*(-1)
           actualHeight = actualHeight*(-1)
         }
+        console.log(this.ySpot)
         let xRound = ((this.xSpot - 716)/72)*250
-        let yRound = ((this.ySpot - 53)/486)*1686
+        let yRound = ((this.ySpot - 60)/486)*1686
 
         var width = this.areaWidth
         var height = this.areaHeight
@@ -597,7 +615,7 @@
       },
       createRichmenu(){
         this.loading = true
-        axios.post('api/richactions',{
+        axios.post('/api/richactions',{
           richactions: this.richActions
         }).then((res)=>{
           var ids = res.data
@@ -611,7 +629,7 @@
           data.append('selected',this.selected);
           data.append('chat_bar_text',this.richBarText);
 
-          axios.post('api/set_richmenu', data).then((res)=>{
+          axios.post('/api/set_richmenu', data).then((res)=>{
             alert("リッチメニューが登録されました。");
             this.richClear('ALL');
             this.fetchRichmenu();
@@ -809,7 +827,7 @@
           var i = this.selectedRichmenu
           var richmenu = this.richmenuList[i]
           this.loading = true
-          axios.post('api/set_default_richmenu',{
+          axios.post('/api/set_default_richmenu',{
             richmenu_id: richmenu.richmenu_id
           }).then((res)=>{
             var i = this.selectedRichmenu
@@ -831,7 +849,7 @@
           var i = this.selectedRichmenu
           var richmenu = this.richmenuList[i]
           this.loading = true
-          axios.post('api/delete_richmenu',{
+          axios.post('/api/delete_richmenu',{
             richmenu_id: richmenu.richmenu_id
           }).then((res)=>{
             var i = this.selectedRichmenu
@@ -849,7 +867,7 @@
           var i = this.selectedRichmenu
           var richmenu = this.richmenuList[i]
           this.loading = true
-          axios.post('api/unset_default_richmenu',{
+          axios.post('/api/unset_default_richmenu',{
             richmenu_id: richmenu.richmenu_id
           }).then((res)=>{
             var i = this.selectedRichmenu
@@ -863,7 +881,7 @@
       },
       loadRichmenu(){
         this.loading = true
-        axios.post('api/load_all_richmenus').then((res)=>{
+        axios.post('/api/load_all_richmenus').then((res)=>{
           this.loading = false
           alert("リッチメニュが最新のリストです。")
           this.fetchRichmenu();

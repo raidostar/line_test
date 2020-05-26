@@ -1,13 +1,12 @@
 <div class="col left">side</div>
 <div class="col center">
-  <h2 class="title">パスワードを忘れましたか。</h2>
+  <h2 class="title">メールをお送りします。</h2>
 
   <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
 
   <div class="field">
     <%= f.label :email %><br/>
-    <input class="email" autofocus="autofocus" autocomplete="email" type="email" value="" name="user[email]" id="user_email">
+    <input class="email" id="email" autofocus="autofocus" autocomplete="email" type="email" value="" name="user[email]" id="user_email">
   </div>
 
   <div class="actions">
@@ -27,7 +26,18 @@
     <a href="/users/sign_in">ログイン画面に戻る</a>
   </div>
 </div>
-
+<script type="text/javascript">
+  $(function(){
+    $('.submit').on('click', mailCheck)
+    function mailCheck(){
+      var email = $('#email').val();
+      if(!/^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/.test(email)){
+        alert("もう1度メールアドレスを入力してください。");
+        return false;
+      }
+    }
+  })
+</script>
 <style scoped>
   html {
     background-color: white;

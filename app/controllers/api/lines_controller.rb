@@ -80,9 +80,9 @@ class Api::LinesController < ApplicationController
         option = Option.find_by(channel_id: @channel_id, option_type: 'welcomeReply')
         if option.present?
           if option.bool&&!friend.block_at.present?
-            send_welcome_message(option,event)
+            send_welcome_message(option,event,friend)
           elsif option.remind_bool&&friend.block_at.present?
-            send_welcome_message(option,event)
+            send_welcome_message(option,event,friend)
           end
         end
 
@@ -134,17 +134,30 @@ class Api::LinesController < ApplicationController
   end
 
   def link_channel(user_id,destination)
-    channel = Channel.find_by(channel_user_id: user_id)
-    if channel.present?
-      channel.update(channel_destination: destination)
+    @channel = Channel.find_by(channel_user_id: user_id, channel_destination: nil)
+    if @channel.present?
+      if @channel.update(channel_destination: destination)
+        puts "channel updated!"
+      else
+        render json: @channel.errors, status: :unprocessable_entity
+      end
     end
   end
 
-  def send_welcome_message(option,event)
+  def send_welcome_message(option,event,friend)
     reaction_ids = option.match_reaction.split(",")
+    fr_name = friend.fr_name
+    fr_account = friend.fr_account
+    channel_id = option.channel_id
+    channel = Channel.find_by(channel_id: channel_id)
+    channel_name = channel.channel_name
+    channel_destination = channel.channel_destination
     contents_array = []
     reaction_ids.each do |id|
       reaction = Reaction.find(id.to_i)
+
+      welcome_message = Message.new({sender: channel_name, receiver: fr_name, contents: reaction.contents, fr_account: fr_account, message_type: reaction.reaction_type, channel_destination: channel_destination, check_status: 'welcome'})
+
       case reaction.reaction_type
       when "text"
         contents = contents_converter(reaction.contents)
@@ -154,14 +167,19 @@ class Api::LinesController < ApplicationController
         }
         contents_array.push(contents)
       when "stamp"
+        id_split = reaction.contents.split('_')
+        welcome_message.package_id = id_split[0]
+        welcome_message.sticker_id = id_split[1]
         contents = {
           type: 'sticker',
-          packageId: 1,
-          stickerId: reaction.contents[2..reaction.contents.length].to_i
+          packageId: id_split[0],
+          stickerId: id_split[1]
         }
         contents_array.push(contents)
       when "image"
         address = reaction.image.url.to_s
+        welcome_message.contents = address
+        welcome_message.image = reaction.image
         contents = {
           type: "image",
           originalContentUrl: address,
@@ -169,11 +187,12 @@ class Api::LinesController < ApplicationController
         }
         contents_array.push(contents)
       when "map"
+        title = reaction.attributes["name"]
         map_array = map_converter(reaction.contents)
         latlng_array = map_array[1].split(',')
         contents = {
           type: "location",
-          title: "位置情報",
+          title: title,
           address: map_array[0],
           latitude: latlng_array[0],
           longitude: latlng_array[1]
@@ -196,6 +215,7 @@ class Api::LinesController < ApplicationController
         }
         contents_array.push(contents)
       end
+      welcome_message.save
     end
     reply_content(event,contents_array)
   end
@@ -375,7 +395,6 @@ class Api::LinesController < ApplicationController
         backgroundColor: background
       }
     end
-
     return converted_footer
   end
 
@@ -469,9 +488,9 @@ class Api::LinesController < ApplicationController
     @message = Message.new({sender: profile['displayName'], receiver: @channel, contents: "#{package_id}_#{sticker_id}", message_type: 'stamp', message_id: event.message['id'], sticker_id: sticker_id, package_id: package_id, fr_account: profile['userId'], channel_destination: channel_destination, reply_token: reply_token, check_status: 'unchecked'})
     save_message(@message)
 
-    contents = '<img src="https://cdn.lineml.jp/api/media/sticker/' + @message.contents + '" style="width: 30px;">'
+    contents = '<img src="https://cdn.lineml.jp/api/media/sticker/' + @message.contents + '" style="max-width: 6em;">'
     update_friend_info(profile['userId'],profile['displayName'],profile['pictureUrl'],profile['statusMessage'],channel_destination,contents)
-    reply_content(event, messages)
+    #reply_content(event, messages)
   end
 
   def handle_location(event)
@@ -513,7 +532,7 @@ class Api::LinesController < ApplicationController
 
   def block(fr_account)
     friend = Friend.where(fr_account: fr_account)
-    now = Time.new
+    now = Time.current
     if friend.update(block: 1, block_at: now)
       render html: '/api/friends', status: :ok
     else
@@ -523,7 +542,7 @@ class Api::LinesController < ApplicationController
 
   def unblock(fr_account)
     @friend = Friend.where(fr_account: fr_account)
-    now = Time.new
+    now = Time.current
     if @friend.update(block: 0, follow_at: now)
       return @friend
     else
@@ -535,7 +554,7 @@ class Api::LinesController < ApplicationController
     channel = Channel.find_by(channel_destination: channel_destination)
     @channel = channel.channel_name
     @friend = Friend.find_by(fr_account: fr_account)
-    time = Time.new
+    time = Time.current
     if @friend.update(fr_name: fr_name, profile_pic: profile_pic, profile_msg: profile_msg,channel_destination: channel_destination,last_message_time: time,last_message: contents)
       update_message_profile(fr_account,fr_name,@channel)
     else
@@ -562,30 +581,48 @@ class Api::LinesController < ApplicationController
     notify_type = params[:notify_type]
     image = params[:image]
     target_tag = params[:target_tag]
+    hit_count = params[:hit_count]
     channel_id = current_user.target_channel
     @channel = Channel.find_by(channel_id: channel_id)
     channel_destination = @channel.attributes["channel_destination"]
     sender = @channel.channel_name
-    puts target_tag
     receiver = target_tag
-    @notify = Notify.new({sender: sender, receiver: receiver, contents: contents, notify_type: notify_type, channel_destination: channel_destination, image: image})
+    @notify = Notify.new({sender: sender, receiver: receiver, contents: contents, notify_type: notify_type, channel_destination: channel_destination, image: image, hit_count: hit_count})
+    @message = Message.new({sender: sender, receiver: target_tag, contents: contents, message_type: notify_type, fr_account: channel_destination, channel_destination: channel_destination, check_status: 'notified'})
 
-    # if @notify.notify_type == "text"
-    #   broadcast_text(channel_destination,contents)
-    # elsif @notify.notify_type == "stamp"
-    #   broadcast_stamp(channel_destination,contents)
-    # elsif @notify.notify_type == "image"
-    #   broadcast_image(channel_destination,@notify.image)
-    # elsif @notify.notify_type == "text+image"
-    #   broadcast_text(channel_destination,contents)
-    #   broadcast_image(channel_destination,@notify.image)
-    # elsif @notify.notify_type == "map"
-    #   address_array = map_converter(contents)
-    #   broadcast_map(channel_destination,address_array)
-    #   @notify.contents = address_array[0]
-    # elsif @notify.notify_type == "carousel"
-    #   broadcast_carousel(channel_destination,contents)
-    # end
+    if target_tag == 'ALL'
+      if @notify.notify_type.include? "text"
+        broadcast_text(channel_destination,contents)
+      elsif @notify.notify_type == "stamp"
+        broadcast_stamp(channel_destination,contents)
+        ids = content.split("_")
+        @message.sticker_id = ids[0]
+        @message.package_id = ids[1]
+      elsif @notify.notify_type == "map"
+        address_array = map_converter(contents)
+        broadcast_map(channel_destination,address_array)
+      elsif @notify.notify_type == "carousel"
+        broadcast_carousel(channel_destination,contents)
+      end
+      if @notify.notify_type.include? "image"
+        broadcast_image(channel_destination,@notify.image)
+      end
+    else
+      if @notify.notify_type.include? "text"
+        broadcast_text_by_tag(channel_destination,contents,target_tag)
+      elsif @notify.notify_type == "stamp"
+        broadcast_stamp_by_tag(channel_destination,contents,target_tag)
+      elsif @notify.notify_type == "map"
+        address_array = map_converter(contents)
+        broadcast_map_by_tag(channel_destination,address_array,target_tag)
+      elsif @notify.notify_type == "carousel"
+        broadcast_carousel_by_tag(channel_destination,contents,target_tag)
+      end
+      if @notify.notify_type.include? "image"
+        broadcast_image_by_tag(channel_destination,@notify.image,target_tag)
+      end
+    end
+    @message.save
     if @notify.save
       render json: @notify, status: :ok
     else
@@ -600,11 +637,105 @@ class Api::LinesController < ApplicationController
     return address_array
   end
 
+  def broadcast_text_by_tag(channel_destination,contents,target_tag)
+    contents = contents_converter(contents)
+    message = {
+      "type": "text",
+      "text": "[お知らせ]\n"+contents
+    }
+    client = client_selecter(channel_destination)
+    @friends = Friend.where(channel_destination: channel_destination).where("tags like?","%#{target_tag}%")
+    @friends.each do |friend|
+      tags = friend.tags.split(",")
+      if tags.include?(target_tag)
+        client.push_message(friend.fr_account, message)
+      end
+    end
+  end
+
+  def broadcast_stamp_by_tag(channel_destination,contents,target_tag)
+    id_split = contents.split('_')
+    message = {
+      type: 'sticker',
+      packageId: id_split[0],
+      stickerId: id_split[1]
+    }
+    client = client_selecter(channel_destination)
+    @friends = Friend.where(channel_destination: channel_destination).where("tags like?","%#{target_tag}%")
+    @friends.each do |friend|
+      tags = friend.tags.split(",")
+      if tags.include?(target_tag)
+        client.push_message(friend.fr_account, message)
+      end
+    end
+  end
+
+  def broadcast_image_by_tag(channel_destination,image,target_tag)
+    address = image.url.to_s
+    message = {
+      type: "image",
+      originalContentUrl: address,
+      previewImageUrl: address
+    }
+    client = client_selecter(channel_destination)
+    @friends = Friend.where(channel_destination: channel_destination).where("tags like?","%#{target_tag}%")
+    @friends.each do |friend|
+      tags = friend.tags.split(",")
+      if tags.include?(target_tag)
+        client.push_message(friend.fr_account, message)
+      end
+    end
+  end
+
+  def broadcast_map_by_tag(channel_destination,arr,target_tag)
+    mapArray = arr[1].split(',')
+    message = {
+      "type": "location",
+      "title": "位置情報の全配信",
+      "address": arr[0],
+      "latitude": mapArray[0],
+      "longitude": mapArray[1]
+    };
+    client = client_selecter(channel_destination)
+    @friends = Friend.where(channel_destination: channel_destination).where("tags like?","%#{target_tag}%")
+    @friends.each do |friend|
+      tags = friend.tags.split(",")
+      if tags.include?(target_tag)
+        client.push_message(friend.fr_account, message)
+      end
+    end
+  end
+
+  def broadcast_carousel_by_tag(channel_destination,contents,target_tag)
+    bubble_list = []
+    bubble_ids = contents.split(",")
+    bubble_ids.each do |id|
+      bubble = BubblesArchive.find(id)
+      bubble_list.push(bubble_converter(bubble))
+    end
+    message = {
+      type: "flex",
+      altText: "this is a flex carousel",
+      contents: {
+        type: "carousel",
+        contents: bubble_list
+      }
+    }
+    client = client_selecter(channel_destination)
+    @friends = Friend.where(channel_destination: channel_destination).where("tags like?","%#{target_tag}%")
+    @friends.each do |friend|
+      tags = friend.tags.split(",")
+      if tags.include?(target_tag)
+        client.push_message(friend.fr_account, message)
+      end
+    end
+  end
+
   def broadcast_text(channel_destination,contents)
     contents = contents_converter(contents)
     message = {
       "type": "text",
-      "text": "["+current_user.group+"]\n"+contents
+      "text": "[お知らせ]\n"+contents
     }
     client = client_selecter(channel_destination)
     client.broadcast(message)
@@ -620,17 +751,18 @@ class Api::LinesController < ApplicationController
   end
 
   def broadcast_stamp(channel_destination,contents)
+    id_split = contents.split('_')
     message = {
       type: 'sticker',
-      packageId: 1,
-      stickerId: contents[2..contents.length].to_i
+      packageId: id_split[0],
+      stickerId: id_split[1]
     }
     client = client_selecter(channel_destination)
     client.broadcast(message)
   end
 
-  def broadcast_image(channel_destination,url)
-    address = url.to_s
+  def broadcast_image(channel_destination,image)
+    address = image.url.to_s
     message = {
       type: "image",
       originalContentUrl: address,
@@ -644,7 +776,7 @@ class Api::LinesController < ApplicationController
     mapArray = arr[1].split(',')
     message = {
       "type": "location",
-      "title": "位置情報",
+      "title": "位置情報の全配信",
       "address": arr[0],
       "latitude": mapArray[0],
       "longitude": mapArray[1]
@@ -1031,7 +1163,6 @@ class Api::LinesController < ApplicationController
     return result
   end
 
-
   def option_checker(event,message)
     event_type = event['type']
     if event_type == 'message'
@@ -1042,11 +1173,11 @@ class Api::LinesController < ApplicationController
     channel = Channel.find_by(channel_destination: @channel_destination)
     channel_id = channel.attributes["channel_id"]
 
-    options = Option.where(channel_id: channel_id)
+    options = Option.where(channel_id: channel_id, option_type: 'autoReply')
     if options.present?
       options.each do |option|
         if check_target(option,message)
-          now = Time.new
+          now = Time.current
           temp_array = option.target_day.split(",")
           if temp_array.include? now.wday.to_s
             tempArray = option.target_time.split(",")
@@ -1117,12 +1248,13 @@ class Api::LinesController < ApplicationController
         contents = stamp_id
         auto_message.contents = contents
         auto_message.message_type = 'stamp'
-        auto_message.package_id = 1
-        auto_message.sticker_id = stamp_id[2..stamp_id.length].to_i
+        id_split = stamp_id.split('_')
+        auto_message.package_id = id_split[0].to_i
+        auto_message.sticker_id = id_split[1].to_i
         auto_message.save
         contents = {
           type: 'sticker',
-          packageId: 1,
+          packageId: auto_message.package_id,
           stickerId: auto_message.sticker_id
         }
         reply_contents.push(contents)
@@ -1139,6 +1271,7 @@ class Api::LinesController < ApplicationController
         }
         reply_contents.push(contents)
       when "map"
+        title = reaction.attributes["name"]
         contents = reaction.attributes["contents"]
         auto_message.contents = contents
         auto_message.message_type = 'map'
@@ -1147,7 +1280,7 @@ class Api::LinesController < ApplicationController
         latlng_array = map_array[1].split(',')
         contents = {
           type: "location",
-          title: "位置情報",
+          title: title,
           address: map_array[0],
           latitude: latlng_array[0],
           longitude: latlng_array[1]
@@ -1266,7 +1399,6 @@ class Api::LinesController < ApplicationController
     contents_array = []
     receiver = message.sender
     sender = message.receiver
-
     if image.present?
       message = Message.new({sender: sender, receiver: receiver, message_id: message.message_id+'a', fr_account: message.fr_account, channel_destination: message.channel_destination, reply_token: message.reply_token, check_status: 'answered', image: image})
     else
@@ -1286,14 +1418,15 @@ class Api::LinesController < ApplicationController
     when "stamp"
       message.contents = contents
       message.message_type = 'stamp'
-      message.package_id = 1
-      message.sticker_id = contents[2..contents.length].to_i
+      id_split = contents.split('_')
+      message.package_id = id_split[0]
+      message.sticker_id = id_split[1]
       message.save
 
       contents = {
         type: 'sticker',
-        packageId: 1,
-        stickerId: contents[2..contents.length].to_i
+        packageId: message.package_id,
+        stickerId: message.sticker_id
       }
       contents_array.push(contents)
     when "image"
@@ -1365,26 +1498,32 @@ class Api::LinesController < ApplicationController
   def notify_again
     id = params[:id]
     notify = Notify.find(id)
-
+    hit_count = notify.hit_count
+    hit_count = hit_count + 1
+    notify.update(hit_count: hit_count)
     channel_destination = notify.channel_destination
     contents = notify.contents
-    url = notify.image.url
+    image = notify.image
     case notify.notify_type
     when "text"
       broadcast_text(channel_destination,contents)
     when "stamp"
       broadcast_stamp(channel_destination,contents)
     when "image"
-      broadcast_image(channel_destination,url)
+      broadcast_image(channel_destination,image)
+    when "carousel"
+      broadcast_carousel(channel_destination,contents)
     when "map"
       address_array = map_converter(contents)
       broadcast_map(channel_destination,address_array)
+    when "text+image"
+      broadcast_text(channel_destination,contents)
+      broadcast_image(channel_destination,image)
     end
   end
 
   def set_richmenu
     @richmenu = Richmenu.new(richmenu_params)
-
     if @richmenu.save
       width = @richmenu.attributes["width"]
       height = @richmenu.attributes["height"]
@@ -1397,7 +1536,6 @@ class Api::LinesController < ApplicationController
       areas = []
 
       @richactions = Richaction.where(id: richaction_ids)
-
       @richactions.each do |richaction|
         area = {}
         bounds = {}
@@ -1569,7 +1707,7 @@ class Api::LinesController < ApplicationController
 
     base_number = 0
     if follow.present?
-      today = DateTime.now.beginning_of_day
+      today = DateTime.current.beginning_of_day
       date = follow.date.to_datetime
       base_number = (today - date).to_i
       if base_number > 60
@@ -1580,7 +1718,7 @@ class Api::LinesController < ApplicationController
     end
     if base_number > 1
       for i in 1..(base_number-1) do
-        datetime = DateTime.now
+        datetime = DateTime.current
         datetime = datetime.beginning_of_day
         datetime = datetime - i
         temp = datetime.strftime("%Y%m%d")

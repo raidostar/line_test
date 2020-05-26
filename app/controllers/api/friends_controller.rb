@@ -3,11 +3,16 @@ class Api::FriendsController < ApplicationController
     channel_id = current_user.target_channel
     @channel = Channel.find_by(channel_id: channel_id)
     channel_destination = @channel.channel_destination
-    @friends = Friend.where(channel_destination: channel_destination).order("last_message_time DESC")
+    @friends = Friend.where(channel_destination: channel_destination)
   end
 
   def show
-    @friend = Friend.find(params[:id])
+    id = params[:id].to_i
+    channel_id = current_user.target_channel
+    @channel = Channel.find_by(channel_id: channel_id)
+    channel_destination = @channel.channel_destination
+    @friends = Friend.where(channel_destination: channel_destination)
+    @friend = @friends[id]
   end
 
   def find_by_fr_account
@@ -18,40 +23,43 @@ class Api::FriendsController < ApplicationController
   def update
     id = params[:id]
     @friend = Friend.find(id)
-    tags = params[:tags].split(",")
+    tags_before = @friend.tags.split(",")
+    tags_after = params[:tags].split(",")
     channel_id = current_user.target_channel
-    tags.each do |tag|
-      @tag = Tag.where(name: tag, channel_id: channel_id, tag_group: 'friend')
+    @channel = Channel.find_by(channel_id: channel_id)
+    channel_destination = @channel.channel_destination
+
+    # tag update, friend tags update, option target_friend update
+    tags_for_delete = tags_before - tags_after
+    tags_for_delete.each do |tag|
+      friends_with_tag = Friend.where(channel_destination: channel_destination).where("tags like?","%#{tag}%").where.not(id: id)
+      if !friends_with_tag.present?
+        @options = Option.where("target_friend like?","#{tag}").where(channel_id: channel_id)
+        @options.each do |option|
+          if option.target_friend.present?
+            target_friend = option.target_friend.split(",")
+            target_friend.delete(tag)
+            option.update(target_friend: target_friend.join(","))
+          end
+        end
+        @tag = Tag.find_by(name: tag, tag_group: 'friend', channel_id: channel_id)
+        @tag.destroy
+      end
+    end
+
+    tags_for_create = tags_after - tags_before
+    tags_for_create.each do |tag|
+      @tag = Tag.find_by(name: tag, tag_group: 'friend', channel_id: channel_id)
+
       if !@tag.present?
-        @tag = Tag.new({name: tag, channel_id: channel_id, tag_group: 'friend'})
+        @tag = Tag.new({name: tag, tag_group: 'friend', channel_id: channel_id})
         if @tag.save
         else
           render json: @tag.errors, status: :unprocessable_entity
         end
       end
     end
-    if @friend.tags.present?
-      temp_array = @friend.tags.split(",") - tags
-      temp_array.each do |tag|
-        channel = Channel.find_by(channel_id: channel_id)
-        channel_destination = channel.channel_destination
-        friends = Friend.where(channel_destination: channel_destination)
-        friends = friends.where("tags like ?","%#{tag}%").where.not(id: id)
-        if !friends.present?
-          @tag = Tag.find_by(name: tag, tag_group: 'friend')
-
-          @tag.destroy
-          options = Option.where("target_friend like ?","%#{tag}%").where(channe_id: channel.channe_id)
-          options.each do |option|
-            temp_array = option.target_friend.split(",")
-            temp_array.delete(tag)
-            option.update(target_friend: temp_array.join(","))
-          end
-        end
-      end
-    end
-
-    if @friend.update(friends_params)
+    if @friend.update(tags: tags_after.join(","))
       render :show, status: :ok
     else
       render json: @friend.errors, status: :unprocessable_entity
@@ -105,7 +113,7 @@ class Api::FriendsController < ApplicationController
   def get_date_info
     @timeArray = []
     for i in 0..6
-      time = Time.new
+      time = Time.current
       time = time.days_ago(i)
       str = time.strftime("%m-%d-%w")
       @timeArray.push(str)
@@ -118,7 +126,7 @@ class Api::FriendsController < ApplicationController
     for i in 1..7
       info = {}
 
-      time = DateTime.now
+      time = DateTime.current
       time = time.beginning_of_day
       date = time.days_ago(i+1)
       time = time.days_ago(i)
@@ -139,7 +147,6 @@ class Api::FriendsController < ApplicationController
 
       @timeArray.push(info)
     end
-
     render json: @timeArray, status: :ok
   end
 

@@ -281,7 +281,6 @@ label.stampBtn:focus {
   box-shadow: 0 0 2px #666;
   border-radius: 5px;
   resize: none;
-  overflow: scroll;
 }
 .chattingContents:focus {
   outline: none;
@@ -296,7 +295,7 @@ label.stampBtn:focus {
   background-color: white;
   border-radius: 8px;
   opacity: 0.9;
-  overflow: scroll;
+
 }
 .stamp-panel-left {
   float: left;
@@ -324,7 +323,6 @@ label.stampBtn:focus {
   border-radius: 5px;
   resize: none;
   float: right;
-  overflow: scroll;
 }
 
 .balloon-left {
@@ -596,14 +594,13 @@ div.inline-radio button:active{
 .carousel-box {
   height: 100%;
   float: left;
-  overflow-x: scroll;
   overflow-y: hidden;
-  height: 26em;
+  height: 31em;
 }
 .bubble {
   background: white;
   width: 280px;
-  height: 94%;
+  height: 93%;
   border-radius: 8px;
   margin: .1em .3em;
   display: inline-block;
@@ -688,7 +685,7 @@ div.inline-radio button:active{
   width: 11em;
   z-index: 10;
   color: white;
-  overflow: scroll;
+  overflow: auto;
 }
 .css-option {
   height: 2em;
@@ -757,7 +754,6 @@ input[type=text]:not(.browser-default) {
   min-width: 4em;
   max-width: 100%;
   max-height: 100%;
-  overflow: scroll;
   border: 1px dotted grey;
   border-radius: 8px;
   text-align: center;

@@ -1,7 +1,6 @@
 .page {
   height: 88vh;
   width: 100%;
-  overflow: scroll;
 }
 .col{
   width: 33%;
@@ -10,7 +9,15 @@
   border: 2px solid #222;
   margin-left: 3px;
   border-radius: 8px;
-  overflow: scroll;
+}
+.folders {
+  height: 80vh;
+  overflow: auto;
+  -ms-overflow-style: none;
+  -o-overflow-style: none;
+}
+.folders::-webkit-scrollbar {
+  display:none;
 }
 .label{
   border-bottom: 2px solid grey;

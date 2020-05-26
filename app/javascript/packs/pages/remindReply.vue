@@ -47,10 +47,11 @@
             <i class="material-icons folder">event_note</i>
             条件リスト
             <button class="button" @click="addToggle">
-              <i class="material-icons btnMark">add_circle_outline</i>
+              <i class="material-icons btnMark" v-if="!addShow">add_circle_outline</i>
+              <i class="material-icons btnMark" v-else>remove_circle_outline</i>
             </button>
-            <button class="button" v-if="deleteShow" @click="deleteOption" rel="nofollow" data-method="delete">
-              <i class="material-icons btnMark">remove_circle_outline</i>
+            <button class="button delete" v-if="deleteShow" @click="deleteOption" rel="nofollow" data-method="delete">
+              <i class="material-icons btnMark" style="color: #dc3545;">delete</i>
             </button>
           </div>
           <transition name="slideUpDown">
@@ -96,63 +97,6 @@
           <transition name="slideUpDown">
             <div class="edit-panel" ref="edit" id="edit-panel" v-show="panelShow">
               <div style="width: 49.5%; float: left; margin-bottom: 2em;">
-                <!-- 조건어 설정 -->
-                <div class="option-setting">
-                  <div>
-                    <p class="settingMenu">条件語設定</p>
-                    <input type="text" name="option[target_keyword]" v-model="keyword" class="keywordInput" @keydown.enter="createKeyword">
-                    <a @click="clearKeyInput" v-if="keyword">
-                      <i class="material-icons keyword_cancel">cancel</i>
-                    </a>
-                  </div>
-                  <hr style="margin-top: 15px;" />
-                  <div>
-                    <span style="font-size: 14px;">条件語(クリックすると削除)</span>
-                    <span v-for="(key,index) in keywords" v-model="keywords" style="margin-top: 10px;">
-                      <button class="keywordsTag" @click="removeKeyword(index)">{{key}}</button>
-                    </span>
-                  </div>
-                </div>
-                <!-- 요일 설정 -->
-                <div class="option-setting">
-                  <p class="settingMenu">曜日設定</p>
-                  <input type="radio" class="settingRadio" id="unsetDay" value="unsetDay" v-model="setDay" @click="clearDay">
-                  <label class="setting" for="two">毎日</label>
-                  <input type="radio" class="settingRadio" id="setDay" value="setDay" v-model="setDay">
-                  <label class="setting" for="one">曜日選択</label>
-                  <div v-if="setDay=='setDay'">
-                    <p class="timeSet">
-                      <label>
-                        <input class="with-gap" type="checkbox" name="option[target_day]" value="1" v-model="targetDay"/>
-                        <span class="optCheck">月</span>
-                      </label>
-                      <label>
-                        <input class="with-gap" type="checkbox" name="option[target_day]" value="2" v-model="targetDay"/>
-                        <span class="optCheck">火</span>
-                      </label>
-                      <label>
-                        <input class="with-gap" type="checkbox" name="option[target_day]" value="3" v-model="targetDay"/>
-                        <span class="optCheck">水</span>
-                      </label>
-                      <label>
-                        <input class="with-gap" type="checkbox" name="option[target_day]" value="4" v-model="targetDay"/>
-                        <span class="optCheck">木</span>
-                      </label>
-                      <label>
-                        <input class="with-gap" type="checkbox" name="option[target_day]" value="5" v-model="targetDay"/>
-                        <span class="optCheck">金</span>
-                      </label>
-                      <label>
-                        <input class="with-gap" type="checkbox" name="option[target_day]" value="6" v-model="targetDay"/>
-                        <span class="optCheck">土</span>
-                      </label>
-                      <label>
-                        <input class="with-gap" type="checkbox" name="option[target_day]" value="0" v-model="targetDay"/>
-                        <span class="optCheck">日</span>
-                      </label>
-                    </p>
-                  </div>
-                </div>
                 <!-- 횟수 설정 -->
                 <div class="option-setting">
                   <p class="settingMenu">回数設定</p>
@@ -165,6 +109,13 @@
                       <input class="countSet" type="number" name="option[action_count]" v-model="actionCount">回
                     </p>
                   </div>
+                </div>
+                <!-- 리마인드 설정 -->
+                <div class="option-setting" style="margin-top: 58px;">
+                  <p class="settingMenu">リマインド条件設定</p>
+                  最後のメッセージから
+                  <input type="number" name="option[target_keyword]" v-model="days" class="daysInput">
+                  日後
                 </div>
               </div>
               <div style="width: 49.5%; float: right; margin-bottom: 2em;">
@@ -187,21 +138,6 @@
                   </div>
                 </div>
 
-                <!-- 시간 설정 -->
-                <div class="option-setting">
-                  <p class="settingMenu">時間設定</p>
-                  <input type="radio" class="settingRadio" id="unsetTime" value="unsetTime" v-model="setTime" @click="clearTime">
-                  <label class="setting" for="unsetTime">未指定</label>
-                  <input type="radio" class="settingRadio" id="setTime" value="setTime" v-model="setTime">
-                  <label class="setting" for="setTime">時間選択</label>
-                  <div v-if="setTime=='setTime'">
-                    <p class="timeSet">
-                      <input type="time" class="timeRange" v-model="startTime">
-                      ~
-                      <input type="time" class="timeRange" v-model="endTime">
-                    </p>
-                  </div>
-                </div>
                 <!-- 옵션태그 설정 -->
                 <div class="option-setting">
                   <div>
@@ -326,8 +262,8 @@
               <i class="material-icons stamp">sentiment_satisfied_alt</i>
             </button>
             <label class="stampBtn" title="イメージ追加">
-              <i class="material-icons stamp">gif</i>
-              <input type="file" @change="onFileChange" class="imageBtn" ref="fileInput" accept="img/*">
+              <i class="material-icons stamp">collections</i>
+              <input type="file" @change="onFileChange" @click="onFileChange" class="imageBtn" ref="fileInput" accept="img/*">
             </label>
             <button class="stampBtn" @click="toggleCarousel" title="キャルセル追加">
               <i class="material-icons stamp">border_color</i>
@@ -488,7 +424,7 @@
                 </div>
                 <label class="image-change" title="イメージ変更" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null">
                   イメージ変更
-                  <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
+                  <input type="file" @change="onImageChange" @click="onImageChange" class="imageBtn" ref="hero" accept="img/*">
                 </label>
                 <button class="image-remove" v-if="selectedComponent=='hero'&&heros[selectedBubble]!=null" @click="removeImage">
                   イメージ削除
@@ -510,7 +446,7 @@
                     <div class="blocks hero-block" :style="heroBackground[index]" ref="heroArea" @click="selectComponent('hero',index)" tabindex="0" @keydown.shift="keyNumberCheck">
                       <label class="add-label" title="イメージ追加">
                         <i class="material-icons add-bubble-image" v-if="!heros[index]">add</i>
-                        <input type="file" @change="onImageChange" class="imageBtn" ref="hero" accept="img/*">
+                        <input type="file" @change="onImageChange" @click="onImageChange" class="imageBtn" ref="hero" accept="img/*">
                       </label>
                       <div class="carousel-img-area" v-show="bubble.hero" :style="heroCSS[index]">
                         <img class="carousel-img" :src="bubble.hero" :style="imageCSS[index]">
@@ -525,11 +461,7 @@
                     <input type="text" v-model="bubble.body" style="display: none;">
 
                     <!-- footer -->
-                    <div class="blocks footer-block" v-if="selectedComponent=='footer'&&selectedBubble==index" style="border: 5px solid red" :style="footerBackground[index]">
-                      <div class="component footer-text" ref="footer" contenteditable="true" v-html="footer[index]" @input="syncFooter(index)" :style="footerCSS[index]">
-                      </div>
-                    </div>
-                    <div class="blocks footer-block" @click="selectComponent('footer', index)" v-else :style="footerBackground[index]">
+                    <div class="blocks footer-block" :style="footerBackground[index]" ref="footerArea" @click="selectComponent('footer',index)" tabindex="0" @keydown.shift="keyNumberCheck">
                       <div class="component footer-text" ref="footer" contenteditable="true" v-html="footer[index]" @input="syncFooter(index)" :style="footerCSS[index]">
                       </div>
                     </div>
@@ -565,6 +497,7 @@
                   keyboard_arrow_right
                 </i>
               </div>
+
             </div>
           </transition>
 
@@ -688,7 +621,7 @@
         formShow: false,
         addShow: false,
         newFolder: '',
-        selected: null,
+        selected: 0,
         selectedId: null,
         panelShow: false,
         allCheck: false,
@@ -793,6 +726,7 @@
         footer_button: 'uri',
         footer_uri: '',
         footer_message: '',
+        footer_data: '',
         selectedBubble: null,
         selectedComponent: null,
         carouselOpen: false,
@@ -818,21 +752,37 @@
         copied: {},
         copiedType: '',
         loading: true,
+        days: 0,
       }
     },
     mounted: function(){
-      this.fetchChannels();
+      this.accessCheck();
     },
     methods: {
+      accessCheck(){
+        this.loading = true
+        axios.post('/api/show_current').then((res)=>{
+          var status = res.data.user.status
+          var admit = res.data.user.admit
+          if((status=='client'||status=='master')&&!admit){
+            alert("このページの接続権限がありません。")
+            location.href = '/';
+          } else {
+            this.fetchChannels();
+          }
+        },(error)=>{
+          console.log(error)
+        })
+      },
       fetchChannels(){
-        axios.post('api/fetch_channels').then((res)=>{
+        axios.post('/api/fetch_channels').then((res)=>{
           if(res.data==null){
             alert("まず、チャンネルを登録してご利用ください。");
-            location.href = "/#/channelManage"
+            location.href = "/channelManage"
           } else {
             this.fetchTags();
             this.fetchOptions();
-            this.setStampNum();
+            this.fetchStamps();
             this.fetchEmojis();
             this.innerContent = this.contents
           }
@@ -843,7 +793,7 @@
       fetchTags(){
         this.loading = true
         axios.get('/api/tags?tag_group=option').then((res)=>{
-          this.tags = res.data.tags
+          this.tags = res.data
           this.loading = false
           var id = this.tags[0].id
           this.$nextTick(function(){
@@ -862,27 +812,42 @@
         })
       },
       fetchOptions(){
-        axios.post('api/options_by_tag',{
+        axios.post('/api/options_by_tag',{
           option_type: 'remindReply',
           tag_id: this.selectedTagId
         }).then((res)=>{
           this.options = res.data
+          if(this.options.length>0){
+            this.selected = 0
+            let id = this.options[0].id
+            this.selectOption(0,id)
+          }
           this.fetchTargets();
         },(error)=>{
           console.log(error)
         })
       },
       emptyAll(){
-        this.stampShow= false;
-        this.stampAreaShow= false;
-        this.emojiShow= false;
-        this.default_center = {lat: 35.681236,lng: 139.767125}
-        this.marker_center = {lat: 35.681236,lng: 139.767125}
-        this.mapShow = false
-        this.uploadedImage = ""
         this.contents = "";
         this.$refs.chatting.innerHTML = "";
         this.tag = ''
+      },
+      closeAll(except){
+        if(except != 'stamp'){
+          this.closeStamp();
+        }
+        if(except != 'emoji'){
+          this.closeEmoji();
+        }
+        if(except != 'image'){
+          this.closeImage();
+        }
+        if(except != 'carousel'){
+          this.closeCarousel();
+        }
+        if(except != 'map'){
+          this.closeMap();
+        }
       },
       addToggle(){
         //this.selectedId = null
@@ -958,6 +923,9 @@
         })
         this.selected = index
         this.selectedTagId = id
+        this.emptyAll();
+        this.clearCarousel();
+        this.options = []
         this.fetchOptions();
       },
       clearOptionCSS(){
@@ -977,7 +945,6 @@
           this.clearOptionCSS();
           this.$refs.option[index].style['background-color'] = '#444444'
           this.$refs.option[index].style['color'] = '#ffffff'
-          this.$refs.option[index].focus();
           this.$refs.edit.style.top = '100px'
           let top = this.$refs.edit.style.top
           top = top.substring(0,top.length-2)*1
@@ -1074,7 +1041,7 @@
         })
       },
       fetchReactions(){
-        axios.get('api/reactions?option_id='+this.selectedId).then((res)=>{
+        axios.get('/api/reactions?option_id='+this.selectedId).then((res)=>{
           this.bubbles = []
           this.resultHeaderCSS = []
           this.resultBodyCSS = []
@@ -1089,7 +1056,7 @@
         })
       },
       fetchEmojis(){
-        axios.get('api/emojis').then((res)=>{
+        axios.get('/api/emojis').then((res)=>{
           this.emojis = res.data.emojis
         },(error)=>{
           console.log(error)
@@ -1130,6 +1097,8 @@
           })
           .then((res)=>{
             alert("アクションセーブ完了")
+            this.emptyAll();
+            this.closeAll('all');
             this.reactionToggle();
             this.fetchOptions();
           }, (error) =>{
@@ -1141,7 +1110,7 @@
           axios.post('/api/reactions',{
             name: this.reactionName,
             reaction_type: 'stamp',
-            contents: target.substr(26,10),
+            contents: target.substr(40,target.length),
             match_option: this.selectedId,
             tag: this.tagtext.toString(),
           })
@@ -1169,7 +1138,7 @@
             axios.post('/api/reactions',{
               name: this.reactionName,
               reaction_type: 'stamp',
-              contents: target.substr(26,10),
+              contents: target.substr(40,target.length),
               match_option: this.selectedId,
               tag: this.tagtext.toString(),
             }).then((res)=>{
@@ -1310,9 +1279,10 @@
             data.append('footer_button[]', this.bubble_array[i].footer_button)
             data.append('footer_uri[]', this.bubble_array[i].footer_uri)
             data.append('footer_message[]', this.bubble_array[i].footer_message)
+            data.append('footer_data[]', this.bubble_array[i].footer_data)
           }
           data.append('bubble_num',this.bubble_array.length)
-          axios.post('api/bubbles',data)
+          axios.post('/api/bubbles',data)
           .then((res)=>{
             const data = res.data.toString()
             axios.post('/api/reactions',{
@@ -1395,27 +1365,22 @@
         var images = 'https://cdn.lineml.jp/api/media/sticker/'+para
         return images
       },
-      setStampNum(){
-        for(let i=1; i<47;i++){
-          let add = '1_'+i
+      fetchStamps(){
+        for(let i=34; i<74;i++){
+          let add = '11537_520027'+i
           this.stampNums.push(add)
         }
-        for(let i=100; i<180;i++){
-          let add = '1_'+i
+        for(let i=494; i<534;i++){
+          let add = '11538_51626'+i
           this.stampNums.push(add)
         }
-        for(let i=401; i<431;i++){
-          let add = '1_'+i
-          this.stampNums.push(add)
-        }
-        for(let i=501; i<528;i++){
-          let add = '1_'+i
+        for(let i=10; i<50;i++){
+          let add = '11539_521141'+i
           this.stampNums.push(add)
         }
       },
       toggleStamp(){
-        this.emojiShow = false;
-        this.mapShow = false;
+        this.closeAll('stamp')
         this.stampShow = !this.stampShow
       },
       selectStamp(num){
@@ -1427,7 +1392,22 @@
         this.flexablePadding = {"padding-right": "300px"}
       },
       closeStamp(){
+        this.stampShow = false;
         this.stampAreaShow = false;
+        this.flexablePadding = {"padding-right": "30px"}
+      },
+      closeCarousel(){
+        this.carouselAreaShow = false;
+        this.clearCarousel();
+      },
+      closeEmoji(){
+        this.emojiShow = false;
+        this.flexablePadding = {"padding-right": "30px"}
+      },
+      closeMap(){
+        this.mapShow = false;
+        this.default_center = {lat: 35.681236,lng: 139.767125}
+        this.marker_center = {lat: 35.681236,lng: 139.767125}
         this.flexablePadding = {"padding-right": "30px"}
       },
       resetPage(){
@@ -1452,16 +1432,18 @@
         this.showDetail = false
       },
       toggleEmoji(){
-        this.stampShow = false;
+        this.closeAll('emoji')
         this.emojiShow = !this.emojiShow
       },
       onFileChange(e){
-        this.stampShow = false;
-        this.stampAreaShow = false;
-        this.mapShow = false;
+        this.closeAll('all')
         let files = e.target.files || e.dataTransfer.files;
-        if(!files[0].type.match(/image.*/)){
-          alert("イメージファイルをアップロードしてください。")
+        if(files.length>0){
+          if(!files[0].type.match(/image.*/)){
+            alert("イメージファイルをアップロードしてください。")
+            return;
+          }
+        } else {
           return;
         }
         this.imageFile = files[0]
@@ -1477,17 +1459,16 @@
         reader.readAsDataURL(file);
       },
       onImageChange(e){
-        this.uploadedImage = ""
-        this.stampShow = false;
-        this.stampAreaShow = false;
-        this.mapShow = false;
-        this.contents = ""
-        this.innerContent = ""
+        this.closeAll('carousel')
 
         let files = e.target.files || e.dataTransfer.files;
         var index = this.selectedBubble
-        if(!files[0].type.match(/image.*/)){
-          alert("イメージファイルをアップロードしてください。")
+        if(files.length>0){
+          if(!files[0].type.match(/image.*/)){
+            alert("イメージファイルをアップロードしてください。")
+            return;
+          }
+        }else{
           return;
         }
         this.heros[index] = files[0]
@@ -1502,11 +1483,21 @@
         reader.readAsDataURL(file);
       },
       closeImage(){
+        this.imageFile = null
         this.uploadedImage = ''
         this.flexablePadding = {"padding-right": "30px"}
       },
       toggleCarousel(){
         this.emptyAll();
+        this.clearCarousel();
+        this.carouselAreaShow = !this.carouselAreaShow
+        if(this.carouselAreaShow){
+          this.$nextTick(function(){
+            this.selectComponent('header',0)
+          })
+        }
+      },
+      clearCarousel(){
         this.bubble_array = [{
           header: 'header', hero: null, body: 'body', footer: 'footer',
           header_gravity: 'top', header_align: 'start', header_size: 'md', header_bold: 'regular', header_color: '#111111',
@@ -1514,19 +1505,43 @@
           ,body_gravity: 'top', body_align: 'start', body_size: 'md', body_bold: 'regular', body_color: '#111111',
           body_background: '#ffffff', footer_gravity: 'top', footer_align: 'center', footer_size: 'md', footer_bold: 'regular'
           ,footer_color: '#111111', footer_background: '#ffffff', footer_type: 'text', footer_button: 'uri',footer_uri: '',
-          footer_message: ''
+          footer_message: '', footer_data: ''
         }]
         this.header = ['header']
         this.body = ['body']
         this.footer = ['footer']
         this.heros = []
-        this.carouselAreaShow = !this.carouselAreaShow
+
+        this.headerCSS = [{'margin-left':'0', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}]
+        this.heroCSS = [{'text-align':'center','background-color':'#ffffff'}]
+        this.imageCSS = [{'width':'100%', 'height': 'auto'}]
+        this.imageSize = ['100%']
+        this.bodyCSS = [{'margin-left':'0', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}]
+        this.footerCSS = [{'margin-left':'auto', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px', 'color':'#111111', 'background':'#ffffff'}]
+        this.headerBackground = [{'background-color':'#ffffff', 'border': '3px dotted #111'}]
+        this.heroBackground = [{'background-color':'#ffffff', 'border': '3px dotted #111'}]
+        this.bodyBackground = [{'background-color':'#ffffff', 'border': '3px dotted #111'}]
+        this.footerBackground = [{'background-color':'#ffffff', 'border': '3px dotted #111'}]
+
+        this.gravity = 'top'
+        this.align = 'start'
+        this.color = '#111111'
+        this.background = '#ffffff'
+        this.size = 'md'
+        this.bold = 'regular'
+        this.heroWidth = 1
+        this.heroHeight = 1
+        this.footer_type = 'text'
+        this.footer_button = 'uri'
+        this.footer_uri = ''
+        this.footer_message = ''
+        this.footer_data = ''
+        this.selectedBubble = null
+        this.selectedComponent = null
+        this.carouselOpen = false
       },
       toggleMap(){
-        this.uploadedImage = ""
-        this.stampShow = false
-        this.stampAreaShow = false
-        this.emojiShow = false
+        this.closeAll('map')
         this.mapShow = !this.mapShow
         if (this.mapShow==true){
           this.flexablePadding = {"padding-right": "315px"}
@@ -1684,7 +1699,7 @@
           axios.put('/api/reactions/'+this.selectedReaction.id,{
             name: this.reactionName,
             reaction_type: 'stamp',
-            contents: target.substr(26,10),
+            contents: target.substr(40,target.length),
             image: null,
             match_option: this.selectedId,
             tag: this.tagtext.toString(),
@@ -1755,6 +1770,9 @@
               } else if(bubble.footer_button=='message'&&bubble.footer_message.length==0){
                 alert("ボタンのメッセージを入力してください。");
                 return;
+              } else if(bubble.footer_button=='postback'&&bubble.footer_data.length==0){
+                alert("ボタンのデータを入力してください。");
+                return;
               }
             }
           }
@@ -1794,6 +1812,7 @@
             data.append('footer_button[]', this.bubble_array[i].footer_button)
             data.append('footer_uri[]', this.bubble_array[i].footer_uri)
             data.append('footer_message[]', this.bubble_array[i].footer_message)
+            data.append('footer_data[]', this.bubble_array[i].footer_data)
           }
           data.append('bubble_num',this.bubble_array.length)
           data.append('bubble_ids', this.selectedReaction.contents)
@@ -1865,7 +1884,7 @@
           return;
         }
         var targetTime = [this.startTime,this.endTime]
-        axios.put('api/options/'+this.selectedId,{
+        axios.put('/api/options/'+this.selectedId,{
           target_keyword: this.keywords.toString(),
           target_day: this.targetDay.toString(),
           target_time: targetTime.toString(),
@@ -1891,7 +1910,7 @@
           alert("コンマは条件語になれません。")
           return;
         }
-        axios.post('api/keyword_check',{
+        axios.post('/api/keyword_check',{
           keyword: this.keyword
         }).then((res)=>{
           if(res.data.length>0){
@@ -1917,19 +1936,6 @@
       fetchOption(){
         if(this.selected != null){
           this.selectedOption = this.options[this.selected]
-          if(this.selectedOption.target_keyword != null){
-            if(this.selectedOption.target_keyword.length != 0){
-              this.keywords = []
-              this.keywords = this.selectedOption.target_keyword.split(",");
-            }
-          }
-          this.targetDay = []
-          this.targetDay = this.selectedOption.target_day.split(",")
-          if(this.targetDay.length==7){
-            this.setDay = 'unsetDay'
-          } else {
-            this.setDay = 'setDay'
-          }
           var targetTime = this.selectedOption.target_time.split(",")
           this.startTime = targetTime[0]
           this.endTime = targetTime[1]
@@ -1944,7 +1950,7 @@
           } else {
             this.setCount = 'unsetCount'
           }
-
+          this.days = this.selectedOption.remind_after*1
           this.tagtext = this.selectedOption.tag.split(",")
           let friends = this.selectedOption.target_friend
           if(friends.length>0){
@@ -1954,7 +1960,7 @@
         }
       },
       fetchAllReactions(){
-        axios.post('api/reactions_all',{
+        axios.post('/api/reactions_all',{
           option_id: this.selectedId
         }).then((res)=>{
           this.reactionsLeft = res.data
@@ -1972,7 +1978,7 @@
           this.fetchReactions();
           this.reactionListShow = false;
         } else {
-          axios.post('api/link_option_reaction',{
+          axios.post('/api/link_option_reaction',{
             reaction_id: id,
             option_id: this.selectedId
           }).then((res)=>{
@@ -2070,7 +2076,7 @@
           ,body_gravity: 'top', body_align: 'start', body_size: 'md', body_bold: 'regular', body_color: '#111111',
           body_background: '#ffffff', footer_gravity: 'top', footer_align: 'center', footer_size: 'md', footer_bold: 'regular'
           ,footer_color: '#111111', footer_background: '#ffffff', footer_type: 'text', footer_button: 'uri',footer_uri: '',
-          footer_message: ''
+          footer_message: '', footer_data: ''
         }
         var headerStyle = {
           'margin-left':'0', 'margin-right':'auto', 'font-size':'15px', 'font-weight':'normal', 'margin-top':'0px',
@@ -2487,6 +2493,10 @@
       selectComponent(type,index){
         this.selectedComponent = type
         this.selectedBubble = index
+        this.clearHeaderCSS();
+        this.clearHeroCSS();
+        this.clearBodyCSS();
+        this.clearFooterCSS();
         switch(type){
           case 'header':
           this.gravity = this.bubble_array[index].header_gravity
@@ -2495,6 +2505,8 @@
           this.color = this.bubble_array[index].header_color
           this.background = this.bubble_array[index].header_background
           this.bold = this.bubble_array[index].header_bold
+          this.headerBackground[index].border = '5px solid red'
+
           break
           case 'hero':
           var ratio = this.bubble_array[index].hero_ratio.split(":")
@@ -2503,6 +2515,8 @@
           this.align = this.bubble_array[index].hero_align
           this.size = this.bubble_array[index].hero_size
           this.background = this.bubble_array[index].hero_background
+          this.heroBackground[index].border = '5px solid red'
+
           break
           case 'body':
           this.gravity = this.bubble_array[index].body_gravity
@@ -2511,6 +2525,8 @@
           this.color = this.bubble_array[index].body_color
           this.background = this.bubble_array[index].body_background
           this.bold = this.bubble_array[index].body_bold
+          this.bodyBackground[index].border = '5px solid red'
+
           break
           case 'footer':
           this.gravity = this.bubble_array[index].footer_gravity
@@ -2523,12 +2539,34 @@
           this.footer_button = this.bubble_array[index].footer_button
           this.footer_uri = this.bubble_array[index].footer_uri
           this.footer_message = this.bubble_array[index].footer_message
+          this.footerBackground[index].border = '5px solid red'
+
           break
           default:
           console.log("error")
         }
         this.fontColor = {'background-color': this.color}
         this.backgroundColor = {'background-color': this.background}
+      },
+      clearHeaderCSS(){
+        for(var i in this.headerBackground){
+          this.headerBackground[i].border = '3px dotted #111'
+        }
+      },
+      clearHeroCSS(){
+        for(var i in this.heroBackground){
+          this.heroBackground[i].border = '3px dotted #111'
+        }
+      },
+      clearBodyCSS(){
+        for(var i in this.bodyBackground){
+          this.bodyBackground[i].border = '3px dotted #111'
+        }
+      },
+      clearFooterCSS(){
+        for(var i in this.footerBackground){
+          this.footerBackground[i].border = '3px dotted #111'
+        }
       },
       stretchCarouselToggle(){
         this.carouselOpen = !this.carouselOpen
@@ -2541,7 +2579,7 @@
         }
       },
       fetchBubbles(ids){
-        axios.post('api/fetch_bubbles',{
+        axios.post('/api/fetch_bubbles',{
           ids: ids
         }).then((res)=>{
           this.carouselAreaShow = true;
@@ -2620,6 +2658,7 @@
           this.footer_button = bubble['footer_button']
           this.footer_uri = bubble['footer_uri']
           this.footer_message = bubble['footer_message']
+          this.footer_message = bubble['footer_data']
           break
           default:
           console.log("moveToSync error!")
@@ -2663,6 +2702,7 @@
         this.copied['footer_button']= this.footer_button
         this.copied['footer_uri']= this.footer_uri
         this.copied['footer_message']= this.footer_message
+        this.copied['footer_data']= this.footer_data
       },
       pasteCSS(){
         // var design = this.copiedCSS
@@ -2715,6 +2755,7 @@
             this.footer_button = this.copied['footer_button']
             this.footer_uri = this.copied['footer_uri']
             this.footer_message = this.copied['footer_message']
+            this.footer_data = this.copied['footer_data']
 
             this.syncFooterType();
             this.syncFooterButton();
@@ -2973,7 +3014,7 @@
           this.$nextTick(function(){
             var i = this.selectedBubble
             if(this.heros[i] == null){
-
+              this.$refs.hero[i].click();
             }
           })
           break;
@@ -2996,7 +3037,7 @@
           this.$nextTick(function(){
             var i = this.selectedBubble
             if(this.heros[i] == null){
-
+              this.$refs.hero[i].click();
             }
           })
           break;

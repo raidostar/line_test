@@ -15,7 +15,7 @@
             <i class="material-icons keyword_cancel">cancel</i>
           </a>
         </div>
-        <hr style="margin-top: 15px;" />
+        <hr style="margin-top: 15px;"/>
         <div>
           <span style="font-size: 14px;">条件語</span>
           <span v-for="(key,index) in keywords" v-model="keywords" style="margin-top: 10px;">
@@ -126,7 +126,7 @@
       <!-- 태그 설정 -->
       <div class="option-setting">
         <div>
-          <p class="settingMenu"> <!-- style="margin-top: 55px;"> -->
+          <p class="settingMenu">
             タグ設定
           </p>
           <input type="text" name="option[target_keyword]" v-model="tag" class="keywordInput" @keydown.enter="createTag">

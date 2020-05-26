@@ -27,10 +27,11 @@ class Api::GroupsController < ApplicationController
     group = params[:group]
     group_key = params[:group_key]
     group = Group.find_by(group: group)
-    if group.present?
-      result = group.authenticate(group_key)
+    if group == false
+      render json: false, status: :ok
+    else
+      render json: true, status: :ok
     end
-    render json: result, status: :ok
   end
 
   def create

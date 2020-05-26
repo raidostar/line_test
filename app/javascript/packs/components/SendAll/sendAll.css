@@ -139,7 +139,6 @@ hr {
   padding: 30px 30px;
   width: 95%;
   height: 100%;
-  overflow: scroll;
   border: 1px solid #C0C0C0;
   box-shadow: 0 0 2px #666;
   border-radius: 5px;
@@ -184,7 +183,12 @@ hr {
   background-color: white;
   border-radius: 8px;
   opacity: 0.9;
-  overflow: scroll;
+  overflow: auto;
+  -ms-overflow-style: none;
+  -o-overflow-style: none;
+}
+.sticker-panel::-webkit-scrollbar {
+  display:none;
 }
 .stamp-panel-left {
   float: left;
@@ -290,7 +294,6 @@ select {
   background-color: white;
   height:25em;
   border-radius: 8px;
-  overflow: scroll;
 }
 .detail:focus {
   outline: none;
@@ -379,7 +382,7 @@ label.stampBtn:focus {
   background: #444444;
 }
 .carouselArea {
-  height: 80%;
+  height: 84%;
   position: absolute;
   right: 1em;
   background: #2C3E5B;
@@ -390,8 +393,13 @@ label.stampBtn:focus {
 .carousel-box {
   height: 100%;
   float: left;
-  overflow-x: scroll;
   overflow-y: hidden;
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  -o-overflow-style: none;
+}
+.carousel-box::-webkit-scrollbar {
+  display:none;
 }
 .bubble {
   background: white;
@@ -424,6 +432,12 @@ label.stampBtn:focus {
 .bubble-box {
   width: max-content;
   height: 100%;
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  -o-overflow-style: none;
+}
+.bubble-box::-webkit-scrollbar {
+  display:none;
 }
 .header-block {
   min-height: 16%;
@@ -493,8 +507,13 @@ label.stampBtn:focus {
   width: 11em;
   z-index: 10;
   color: white;
-  overflow: scroll;
   text-align: center;
+  overflow: auto;
+  -ms-overflow-style: none;
+  -o-overflow-style: none;
+}
+.control-box::-webkit-scrollbar {
+  display:none;
 }
 .css-option {
   height: 2em;
@@ -523,7 +542,7 @@ input[type=text]:not(.browser-default) {
   height: 2.5em;
 }
 .bubble-setting {
-  margin-bottom: 1em;
+  margin-bottom: 2em;
 }
 .empty-bubble {
   width: 97%;
@@ -562,7 +581,6 @@ input[type=text]:not(.browser-default) {
   min-width: 4em;
   max-width: 100%;
   max-height: 100%;
-  overflow: scroll;
   border: 1px dotted grey;
   border-radius: 8px;
   text-align: center;
@@ -701,7 +719,19 @@ input.uri-text {
   height: 30em;
   position: absolute;
   top: 10em;
-  overflow-x: scroll;
+}
+.target_number {
+  color: #999999;
+  font-size: 10px;
+}
+.folders{
+  height: 560px;
+  overflow: auto;
+  -ms-overflow-style: none;
+  -o-overflow-style: none;
+}
+.folders::-webkit-scrollbar {
+  display:none;
 }
 .waiting-screen {
   position: absolute;

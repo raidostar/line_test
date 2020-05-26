@@ -54,16 +54,31 @@
   background-color: #2C3250;
   color: white;
 }
+.profile_menu_selected{
+  font-weight: 600;
+  background-color: #2C3250;
+  color: white;
+  padding: 5px 5px;
+  border-radius: 10px;
+  border: 1px solid #C0C0C0;
+  box-shadow: 0 0 2px #666;
+}
 .bottom-panel {
   margin: 0px 10px;
   padding: 0px 10px;
   text-align: left;
   width: 98%;
-  height: 74vh;
+  height: 71vh;
   border: 1px solid #FFF;
   border-radius: 8px;
   box-shadow: 0 0 2px #666;
-  background-color: #EEECFF
+  background-color: #EEECFF;
+  overflow: scroll;
+  -ms-overflow-style: none;
+  -o-overflow-style: none;
+}
+.bottom-panel::-webkit-scrollbar {
+  display:none;
 }
 button:focus {
   outline: none;
@@ -109,11 +124,13 @@ button:focus {
   float: left;
 }
 .detailInfo {
-  margin-left: 40px;
+  margin-right: 40px;
+  float: right;
 }
 .detailLine {
   width: 100%;
-  margin: 15px 0px;
+  margin-bottom: 15px;
+  height: 22px;
 }
 input.tagInput {
   float: left;
@@ -129,9 +146,8 @@ input.tagInput {
   height: 10em;
 }
 .in-panel {
-  height: 74vh;
+  height: inherit;
   max-height: 100%;
-  overflow: scroll;
 }
 .div-left {
   width: 46%;

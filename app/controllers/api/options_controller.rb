@@ -41,7 +41,7 @@ class Api::OptionsController < ApplicationController
 
   def update_option_remind
     @option = Option.find_by(option_type: 'welcomeReply', channel_id: current_user.target_channel)
-    @option.update(remind_after: params[:remind_after])
+    @option.update(remind_bool: params[:remind_bool])
     render :show, status: :ok
   end
 

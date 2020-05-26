@@ -3,6 +3,24 @@ Rails.application.routes.draw do
   get 'groups/create'
   get 'groups/show'
   get '/health' => 'api/healths#health'
+
+  get '/channelManage' => 'home#index'
+  get '/friendsList' => 'home#index'
+  get '/allMessages/all' => 'home#index'
+  get '/allMessages/:status' => 'home#index'
+  get '/personalMessages' => 'home#index'
+  get '/personalPage/:id' => 'home#index'
+  get '/dataAnalysis/:dataType' => 'home#index'
+  get '/sendAll' => 'home#index'
+  get '/autoReply' => 'home#index'
+  get '/remindReply' => 'home#index'
+  get '/actionTemplate' => 'home#index'
+  get '/tagManagement' => 'home#index'
+  get '/welcomeMessage' => 'home#index'
+  get '/richMenu' => 'home#index'
+  get '/adminPage' => 'home#index'
+  get '/membersManage' => 'home#index'
+
   devise_for :users, contorllers: {
     sessions: 'users/sessions'
   }
@@ -128,4 +146,7 @@ Rails.application.routes.draw do
   post 'api/fetch_members' => 'api/users#fetch_members'
   post 'api/users_update' => 'api/users#users_update'
   post 'api/fetch_current_channel' => 'api/channels#fetch_current_channel'
+  post 'api/adminCheck' => 'api/users#admin_check'
+  post 'api/get_message_number' => 'api/messages#get_message_number'
+  post 'api/get_reply_number' => 'api/messages#get_reply_number'
 end

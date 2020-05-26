@@ -12,9 +12,9 @@
         <option value="hourly">時間別</option>
         <option value="wdaily">曜日別</option>
         <option value="daily">日別</option>
-        <option value="monthly">月鼈</option>
+        <option value="monthly">月別</option>
       </select>
-      <span style="float: right;">全体のメッセージ数: {{ total }}件</span>
+      <span style="float: right;">全体のリプライ数: {{ total }}件</span>
     </div>
     <div style="margin-bottom: 8vh;">
      <line-chart class="chart" :data="data"/>
@@ -22,9 +22,11 @@
    <table>
     <tr>
       <th class="title">順位</th>
-      <th class="title">時間代</th>
-      <th class="title">頻度</th>
-      <th class="title">返事確率</th>
+      <th class="title" v-if="timeOption=='hourly'">時間別</th>
+      <th class="title" v-else-if="timeOption=='wdaily'">曜日別</th>
+      <th class="title" v-else-if="timeOption=='daily'">日別</th>
+      <th class="title" v-else-if="timeOption=='monthly'">月別</th>
+      <th class="title">割合</th>
     </tr>
     <tr>
       <td>
@@ -34,7 +36,6 @@
       </td>
       <td class="ranking">{{timeRank[0]}}</td>
       <td class="ranking">{{timeFreqRank[0]}}%</td>
-      <td class="ranking">多多</td>
     </tr>
     <tr>
       <td>
@@ -44,7 +45,6 @@
       </td>
       <td class="ranking">{{timeRank[1]}}</td>
       <td class="ranking">{{timeFreqRank[1]}}%</td>
-      <td class="ranking">多</td>
     </tr>
     <tr>
       <td>
@@ -54,7 +54,6 @@
       </td>
       <td class="ranking">{{timeRank[2]}}</td>
       <td class="ranking">{{timeFreqRank[2]}}%</td>
-      <td class="ranking">中</td>
     </tr>
   </table>
 </div>
@@ -84,7 +83,7 @@
     },
     methods: {
       fetchPersonalMessageData(reply_boolean){
-        axios.post('api/fetch_personal_message_data',{
+        axios.post('/api/fetch_personal_message_data',{
           id: this.id,
           reply_boolean: reply_boolean,
           time_option: this.timeOption
@@ -115,7 +114,6 @@
 .in-panel {
   height: 100%;
   max-height: 100%;
-  overflow: scroll;
 }
 table td {
   height: 20px;

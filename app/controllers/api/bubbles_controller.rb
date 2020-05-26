@@ -6,32 +6,27 @@ class Api::BubblesController < ApplicationController
   def create
     bubble_ids = []
     bubble_num = params[:bubble_num].to_i
-
     for i in 0...bubble_num do
       header = params[:headers][i]
       image = params[:images][i]
       body = params[:bodies][i]
       footer = params[:footers][i]
-
       header_gravity = params[:header_gravity][i]
       header_align = params[:header_align][i]
       header_size = params[:header_size][i]
       header_bold = params[:header_bold][i]
       header_color = params[:header_color][i]
       header_background = params[:header_background][i]
-
       hero_size = params[:hero_size][i]
       hero_align = params[:hero_align][i]
       hero_background = params[:hero_background][i]
       hero_ratio = params[:hero_ratio][i]
-
       body_gravity = params[:body_gravity][i]
       body_align = params[:body_align][i]
       body_size = params[:body_size][i]
       body_bold = params[:body_bold][i]
       body_color = params[:body_color][i]
       body_background = params[:body_background][i]
-
       footer_gravity = params[:footer_gravity][i]
       footer_align = params[:footer_align][i]
       footer_size = params[:footer_size][i]
@@ -43,6 +38,7 @@ class Api::BubblesController < ApplicationController
       footer_uri = params[:footer_uri][i]
       footer_message = params[:footer_message][i]
       footer_data = params[:footer_data][i]
+
       @bubble = Bubble.new({
         header: header, image: image, body: body, footer: footer, header_gravity: header_gravity, header_align: header_align,
         header_size: header_size,header_bold: header_bold,header_color: header_color,header_background: header_background,

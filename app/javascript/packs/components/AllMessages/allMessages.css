@@ -79,10 +79,10 @@ select {
   box-shadow: 0 0 1px rgba(0, 0, 0, 0.15);
 }
 .fadeInOut-enter-active {
-  animation: fadeIn .5s;
+  animation: fadeIn .1s;
 }
 .fadeInOut-leave-active {
-  animation: fadeIn .5s reverse;
+  animation: fadeIn .1s reverse;
 }
 .right-panel {
   margin: 16px 10px;
@@ -181,7 +181,7 @@ label.stampBtn:focus {
   left: 38em;
   text-align: center;
   margin: 0 auto;
-  z-index: 3;
+  z-index: 1;
 }
 .imageResult {
   width: 70px; height: 70px;
@@ -273,6 +273,11 @@ label.stampBtn:focus {
   border-radius: 5px;
   resize: none;
   overflow: scroll;
+  -ms-overflow-style: none;
+  -o-overflow-style: none;
+}
+.chattingContents::-webkit-scrollbar {
+  display:none;
 }
 .chattingContents:focus {
   outline: none;
@@ -287,7 +292,12 @@ label.stampBtn:focus {
   background-color: white;
   border-radius: 8px;
   opacity: 0.9;
-  overflow: scroll;
+  overflow: auto;
+  -ms-overflow-style: none;
+  -o-overflow-style: none;
+}
+.sticker-panel::-webkit-scrollbar {
+  display:none;
 }
 .stamp-panel-left {
   float: left;
@@ -316,6 +326,11 @@ label.stampBtn:focus {
   resize: none;
   float: right;
   overflow: scroll;
+  -ms-overflow-style: none;
+  -o-overflow-style: none;
+}
+.resultArea::-webkit-scrollbar {
+  display:none;
 }
 
 .balloon-left {
@@ -427,7 +442,7 @@ label.stampBtn:focus {
   background-color: white;
   height: 61vh;
   border-radius: 8px;
-  overflow: scroll;
+  overflow: auto;
 
 }
 .detail:focus {
@@ -513,7 +528,7 @@ a:not([href]):not([tabindex]):hover{
   float: right;
 }
 .searchBtn {
-  position: absolute;
+  /*position: absolute;*/
   top: 6.7em;
   right: 4.5em;
   z-index: 1;
@@ -530,8 +545,13 @@ a:not([href]):not([tabindex]):hover{
 .carousel-box {
   height: 100%;
   float: left;
-  overflow-x: scroll;
+  overflow-x: auto;
   overflow-y: hidden;
+  -ms-overflow-style: none;
+  -o-overflow-style: none;
+}
+.carousel-box::-webkit-scrollbar {
+  display:none;
 }
 .bubble {
   background: white;
@@ -633,8 +653,13 @@ a:not([href]):not([tabindex]):hover{
   width: 11em;
   z-index: 10;
   color: white;
-  overflow: scroll;
+  overflow: auto;
   text-align: center;
+  -ms-overflow-style: none;
+  -o-overflow-style: none;
+}
+.control-box::-webkit-scrollbar {
+  display:none;
 }
 .css-option {
   height: 2em;
@@ -709,6 +734,11 @@ input[type=text]:not(.browser-default) {
   text-align: center;
   padding: 0 15px;
   line-height: 100%;
+  -ms-overflow-style: none;
+  -o-overflow-style: none;
+}
+.component::-webkit-scrollbar {
+  display:none;
 }
 .component:focus {
   outline: none;
@@ -792,6 +822,88 @@ input[type=text]:not(.browser-default) {
 .design-buttons {
   margin-bottom: 2em;
 }
+.tips {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.cover {
+  position: absolute;
+  background-color: #FFFFFF;
+  opacity: 50%;
+}
+.top_cover {
+  top: 0;
+  width: 100%;
+  z-index: 5;
+}
+.bottom_cover {
+  bottom: 0;
+  width: 100%;
+  z-index: 5;
+}
+.left_cover {
+  left: 0;
+  height: 100%;
+  z-index: 5;
+}
+.right_cover {
+  right: 0;
+  height: 100%;
+  z-index: 5;
+}
+.focus_line {
+  position: absolute;
+  border: 3px dashed #dc3545;
+  z-index: 6;
+}
+.explanation {
+  position: absolute;
+  background-color: #000000;
+  opacity: .85;
+  border-radius: 8px;
+  z-index: 6;
+}
+.info_mark {
+  color: #ffc107;
+  font-size: 25px;
+  -ms-transform: rotate(180deg);
+  -webkit-transform: rotate(180deg);
+  transform: rotate(180deg);
+}
+.page_move {
+  position: absolute;
+  bottom: 18%;
+  width: 98%;
+  height: 12px;
+  margin: 0 auto;
+  color: #007bff;
+}
+.right_move {
+  position: relative;
+  left: 130px;
+}
+.left_move {
+  position: relative;
+  right: 115px;
+}
+.mover {
+  font-size: 22px;
+}
+.mover:hover {
+  cursor: pointer;
+}
+.tips_detail {
+  margin: 13px;
+}
+.tips_letter {
+  font-size: 18px;
+  color: #ffffff;
+  text-align: center;
+}
+
 
 .waiting-screen {
   position: absolute;
@@ -800,7 +912,7 @@ input[type=text]:not(.browser-default) {
   background-color: #ffffff;
   height: 100%;
   width: 100%;
-  z-index: 2;
+  z-index: 7;
 }
 .spinner {
   margin: 350px auto 0;
@@ -838,19 +950,24 @@ input[type=text]:not(.browser-default) {
   0%, 80%, 100% {
     -webkit-transform: scale(0);
     transform: scale(0);
-  } 40% {
-    -webkit-transform: scale(1.0);
-    transform: scale(1.0);
+    } 40% {
+      -webkit-transform: scale(1.0);
+      transform: scale(1.0);
+    }
   }
-}
-.balloon-leftimage {
-  display: inline-block;
-  position: relative;
-  height: auto;
-  width: max-content;
-  border-radius: 10px;
-  z-index: 1;
-  float: left;
-  color: white;
-  margin-right: 58%;
-}
+  .balloon-leftimage {
+    display: inline-block;
+    position: relative;
+    height: auto;
+    width: max-content;
+    border-radius: 10px;
+    z-index: 1;
+    float: left;
+    color: white;
+    margin-right: 58%;
+  }
+  .profile {
+    font-size: 48px;
+    margin-right: 10px;
+    color: #6495ed;
+  }

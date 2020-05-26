@@ -30,7 +30,7 @@ Vue.use(animate)
 Vue.component('paginate', Paginate)
 Vue.use(VueGoogleMaps, {
   load: {
-    key: 'AIzaSyDveRX7Bi5rvU26eCLTyB2bGVbsq5Cg4pQ',
+    key: process.env.VUE_APP_GOOGLEMAP_API_KEY,
     libraries: 'places',
     language: 'ja'
   }
@@ -58,9 +58,10 @@ const routes = [
     component: () => import("./pages/personalMessages.vue")
   },
   {
-    path: '/dataAnalysis',
+    path: '/dataAnalysis/:dataType',
     name: "DataAnalysis",
-    component: () => import("./pages/dataAnalysis.vue")
+    component: () => import("./pages/dataAnalysis.vue"),
+    props: true
   },
   {
     path: '/sendAll',
@@ -121,6 +122,7 @@ const routes = [
 ];
 
 const router = new VueRouter({
+  mode: 'history',
   routes
 });
 

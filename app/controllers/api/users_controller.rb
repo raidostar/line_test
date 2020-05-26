@@ -55,6 +55,23 @@ class Api::UsersController < ApplicationController
     render :index, status: :ok
   end
 
+  def admin_check
+    password = params[:password]
+    group_key = params[:group_key]
+
+    group = current_user.group
+    @group = Group.find_by(group: group)
+    admin_bool = @group.authenticate(group_key)
+    if admin_bool != false
+      email = current_user.email
+      user = User.find_for_authentication(email: email)
+      admin = user.valid_password?(password)
+      render json: admin, status: :ok
+    else
+      render json: false, status: :ok
+    end
+  end
+
   def save_target_channel
     target_channel = params[:target_channel]
     @user = current_user

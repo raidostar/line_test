@@ -17,8 +17,8 @@
           <tr>
             <th>順位</th>
             <th>タイプ</th>
-            <th>メッセージ値</th>
-            <th>頻度</th>
+            <th>メッセージ数</th>
+            <th>割合</th>
           </tr>
           <tr v-model="firstType">
             <td><i class="material-icons ranking-mark" id="first">looks_one</i>位</td>
@@ -52,8 +52,8 @@
           <tr>
             <th>順位</th>
             <th>タイプ</th>
-            <th>メッセージ値</th>
-            <th>頻度</th>
+            <th>メッセージ数</th>
+            <th>割合</th>
           </tr>
           <tr v-model="firstCheck">
             <td><i class="material-icons ranking-mark" id="first">looks_one</i>位</td>
@@ -104,7 +104,7 @@
     },
     methods: {
       fetchMessageTypeData(){
-        axios.post('api/fetch_message_type_data',{
+        axios.post('/api/fetch_message_type_data',{
           id: this.id,
           reply_boolean: true
         }).then((res)=>{
@@ -123,7 +123,7 @@
         })
       },
       fetchMessageCheckData(){
-        axios.post('api/fetch_message_check_data',{
+        axios.post('/api/fetch_message_check_data',{
           id: this.id,
           reply_boolean: true
         }).then((res)=>{

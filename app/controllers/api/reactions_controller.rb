@@ -1,6 +1,6 @@
 class Api::ReactionsController < ApplicationController
   def index
-    option = Option.find(params[:option_id])
+    option = Option.find_by(id: params[:option_id])
     @reactions = []
     if option.match_reaction.present?
       reaction_ids = option.match_reaction.split(",")
@@ -181,8 +181,7 @@ class Api::ReactionsController < ApplicationController
       params[:reaction][:channel_id] = current_user.target_channel
       params[:reaction][:target_number] = 0
       params.require(:reaction).permit(
-        :id, :name, :contents, :reaction_type ,:channel_id, :tag, :target_number,
-        :image, :created_at, :updated_at, :match_option
+        :id, :name, :contents, :reaction_type ,:channel_id, :tag, :target_number, :created_at, :updated_at, :match_option, :image
         )
     else
       params[:channel_id] = current_user.target_channel
