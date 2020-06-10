@@ -298,6 +298,9 @@
         let start = current - this.parPage;
         return this.friendsList.slice(start, current);
       },
+      testMethod(){
+        alert("test")
+      },
       getPageCount(){
         return Math.ceil(this.friendsList.length / this.parPage)
       },
