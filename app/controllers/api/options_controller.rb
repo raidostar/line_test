@@ -64,8 +64,11 @@ class Api::OptionsController < ApplicationController
     @option = Option.new(option)
     tags = params[:option][:tag].split(",")
     if @option.save
-      tag_create(tags)
-      render :show, status: :ok
+      if tag_create(tags)
+        render :show, status: :ok
+      else
+        render json:
+      end
     else
       render json: @tag.errors, status: :unprocessable_entity
     end
@@ -77,8 +80,9 @@ class Api::OptionsController < ApplicationController
       if !tagCheck.present?
         @tag = Tag.new(name: tag, tag_group: 'option', channel_id: current_user.target_channel)
         if @tag.save
+          return true
         else
-          render json: @reaction.errors, status: :unprocessable_entity
+          return false
         end
       end
     end

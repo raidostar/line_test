@@ -7,7 +7,7 @@
         <div class="bounce3"></div>
       </div>
     </div>
-    <div class="tips" v-show="tipsPage!=tips.length">
+    <!-- <div class="tips" v-show="tipsPage!=tips.length">
       <div class="cover top_cover" :style="topCover"></div>
       <div class="cover left_cover" :style="leftCover"></div>
       <div class="cover bottom_cover" :style="bottomCover"></div>
@@ -23,7 +23,7 @@
           <span class="right_move mover" @click="nextTip" v-model="nextWord">{{ nextWord }}</span>
         </div>
       </div>
-    </div>
+    </div> -->
     <div v-show="!loading">
       <div class="channel_buttons">
         <button class="button" @click="changeMode('create')">チャネル追加</button>

@@ -98,7 +98,7 @@
     <div class="bounce3"></div>
   </div>
 </div>
-<div>
+<!-- <div>
   <div class="tips" v-show="tipsPage!=tips.length">
     <div class="cover top_cover" :style="topCover"></div>
     <div class="cover left_cover" :style="leftCover"></div>
@@ -116,7 +116,7 @@
       </div>
     </div>
   </div>
-</div>
+</div> -->
 </div>
 </template>
 
@@ -297,6 +297,9 @@
         let current = this.currentPage * this.parPage;
         let start = current - this.parPage;
         return this.friendsList.slice(start, current);
+      },
+      testMethod(){
+        alert("test")
       },
       getPageCount(){
         return Math.ceil(this.friendsList.length / this.parPage)
