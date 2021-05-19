@@ -166,7 +166,9 @@ GEM
     mime-types (3.3.1)
       mime-types-data (~> 3.2015)
     mime-types-data (3.2019.1009)
-    mimemagic (0.3.4)
+    mimemagic (0.3.10)
+      nokogiri (~> 1)
+      rake
     mini_magick (4.10.1)
     mini_mime (1.0.2)
     mini_portile2 (2.4.0)
@@ -185,7 +187,8 @@ GEM
       activerecord (>= 5.2.1)
     popper_js (1.16.0)
     public_suffix (4.0.3)
-    puma (3.12.2)
+    puma (4.3.8)
+      nio4r (~> 2.0)
     rack (2.2.2)
     rack-cors (1.1.1)
       rack (>= 2.0.0)
@@ -328,7 +331,7 @@ DEPENDENCIES
   mini_magick
   mysql2 (>= 0.4.4, < 0.6.0)
   omniauth
-  puma (~> 3.11)
+  puma (~> 4.3)
   rack-cors
   rails (~> 5.2.3)
   ransack
