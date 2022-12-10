@@ -11,7 +11,7 @@
     "bootstrap-vue": "^2.0.0-rc.28",
     "chart.js": "^2.8.0",
     "core-js": "^3.6.4",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "geocoder": "^0.2.3",
     "global": "^4.4.0",
     "https": "^1.0.0",
